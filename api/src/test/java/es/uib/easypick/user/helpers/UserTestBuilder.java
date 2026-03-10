@@ -20,7 +20,7 @@ public class UserTestBuilder {
         this.id = UUID.randomUUID();
         this.email = "default.user@easypick.es";
         this.name = "Default User";
-        this.createdAt = OffsetDateTime.now().minusDays(10); // Registrado hace 10 días
+        this.createdAt = OffsetDateTime.now().minusDays(10);
     }
 
     public static UserTestBuilder aUser() {
