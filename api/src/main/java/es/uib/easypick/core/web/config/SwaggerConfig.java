@@ -1,4 +1,4 @@
-package es.uib.easypick.core.web;
+package es.uib.easypick.core.web.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

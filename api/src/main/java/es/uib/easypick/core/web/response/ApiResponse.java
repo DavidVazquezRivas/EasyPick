@@ -1,11 +1,11 @@
-package es.uib.easypick.core.web;
+package es.uib.easypick.core.web.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import es.uib.easypick.core.exceptions.ErrorCode;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -15,13 +15,13 @@ public class ApiResponse<T> {
     private T data;
     private ErrorDetails message;
     private String path;
-    private LocalDateTime timestamp;
+    private OffsetDateTime timestamp;
 
     public static <T> ApiResponse<T> success(T data) {
         return ApiResponse.<T>builder()
                 .success(true)
                 .data(data)
-                .timestamp(LocalDateTime.now())
+                .timestamp(OffsetDateTime.now())
                 .build();
     }
 
@@ -34,7 +34,7 @@ public class ApiResponse<T> {
                 .success(false)
                 .message(errorDetails)
                 .path(path)
-                .timestamp(LocalDateTime.now())
+                .timestamp(OffsetDateTime.now())
                 .build();
     }
 }

@@ -8,7 +8,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 
-import es.uib.easypick.core.usecase.UseCase;
+import es.uib.easypick.core.usecases.UseCase;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
