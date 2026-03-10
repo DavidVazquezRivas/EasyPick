@@ -1,4 +1,4 @@
-package es.uib.easypick.core.usecase;
+package es.uib.easypick.core.usecases;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package es.uib.easypick.core.usecase;
+package es.uib.easypick.core.usecases;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class UseCaseLoggingAspect {
     // Intercepts all methods within classes annotated with @UseCase
-    @Around("@within(es.uib.easypick.core.usecase.UseCase)")
+    @Around("@within(es.uib.easypick.core.usecases.UseCase)")
     public Object logUseCaseExecution(ProceedingJoinPoint joinPoint) throws Throwable {
         String useCaseName = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
