@@ -143,7 +143,7 @@ function FilterDropdown({
           onMouseDown={(e) => e.stopPropagation()}
           onClick={() => onChange([])}
           className="whitespace-nowrap flex items-center gap-2 px-4 py-2 text-[13px]"
-          style={{ color: '#6B7280' }}
+          style={{ color: tk.textMuted }}
         >
           Limpiar filtro
         </button>
@@ -157,8 +157,8 @@ function FilterDropdown({
             onClick={() => toggle(opt)}
             className="whitespace-nowrap flex items-center gap-2 px-4 py-2 text-[13px] font-medium w-full"
             style={{
-              color: selected ? '#5D4037' : '#1C1C1C',
-              backgroundColor: selected ? '#F5EFE9' : 'transparent',
+              color: selected ? tk.dropdownSelectedText : tk.text,
+              backgroundColor: selected ? tk.dropdownSelectedBg : 'transparent',
             }}
           >
             {filterKey === 'color' && (
@@ -240,6 +240,7 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
     name: item.name, tipo: item.tipo, color: item.color, ocasion: item.ocasion, marca: item.marca, img: item.img,
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { tk } = useContext(ThemeCtx);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -278,16 +279,16 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
 
   // View rows
   const rows: { label: string; value: React.ReactNode }[] = [
-    { label: 'Nombre',    value: <span style={{ color: '#5D4037' }}>{item.name}</span> },
-    { label: 'Categoría', value: <span style={{ color: '#5D4037' }}>{item.tipo}</span> },
+    { label: 'Nombre',    value: <span style={{ color: tk.accentText }}>{item.name}</span> },
+    { label: 'Categoría', value: <span style={{ color: tk.accentText }}>{item.tipo}</span> },
     {
       label: 'Color',
       value: (
         <span className="flex items-center flex-wrap gap-x-2 gap-y-1 justify-end">
           {item.color.map((c) => (
             <span key={c} className="flex items-center gap-1">
-              <span className="w-3.5 h-3.5 rounded-full inline-block shrink-0" style={{ backgroundColor: COLOR_SWATCHES[c] ?? '#ccc', border: c === 'Blanco' ? '1px solid #D1C9C2' : '1px solid transparent' }} />
-              <span style={{ color: '#5D4037' }}>{c}</span>
+              <span className="w-3.5 h-3.5 rounded-full inline-block shrink-0" style={{ backgroundColor: COLOR_SWATCHES[c] ?? '#ccc', border: c === 'Blanco' ? `1px solid ${tk.iconMuted}` : '1px solid transparent' }} />
+              <span style={{ color: tk.accentText }}>{c}</span>
             </span>
           ))}
         </span>
@@ -298,18 +299,18 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
       value: (
         <span className="flex flex-wrap gap-x-2 gap-y-1 justify-end">
           {item.ocasion.map((o, i) => (
-            <span key={o} style={{ color: '#5D4037' }}>{o}{i < item.ocasion.length - 1 ? ',' : ''}</span>
+            <span key={o} style={{ color: tk.accentText }}>{o}{i < item.ocasion.length - 1 ? ',' : ''}</span>
           ))}
         </span>
       ),
     },
-    { label: 'Marca',   value: <span style={{ color: '#5D4037' }}>{item.marca}</span> },
+    { label: 'Marca',   value: <span style={{ color: tk.accentText }}>{item.marca}</span> },
   ];
 
   return (
-    <div className="flex flex-col h-full relative" style={{ backgroundColor: '#FFFFFF' }}>
+    <div className="flex flex-col h-full relative" style={{ backgroundColor: tk.surface }}>
       {/* Image area */}
-      <div className="relative shrink-0" style={{ backgroundColor: '#F0ECE8' }}>
+      <div className="relative shrink-0" style={{ backgroundColor: tk.surfaceMuted }}>
         <div className="w-full" style={{ aspectRatio: '1/1' }}>
           {draft.img ? (
             <img src={draft.img} alt={draft.name} className="w-full h-full object-cover" />
@@ -320,8 +321,8 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
           )}
         </div>
         {/* Back button */}
-        <button onClick={onBack} className="absolute top-[54px] left-4 w-9 h-9 rounded-full flex items-center justify-center shadow-sm active:scale-90 transition-transform" style={{ backgroundColor: 'rgba(255,255,255,0.85)' }}>
-          <ChevronLeft className="w-5 h-5" style={{ color: '#1C1C1C' }} />
+        <button onClick={onBack} className="absolute top-[54px] left-4 w-9 h-9 rounded-full flex items-center justify-center shadow-sm active:scale-90 transition-transform" style={{ backgroundColor: tk.surface + 'D9' }}>
+          <ChevronLeft className="w-5 h-5" style={{ color: tk.text }} />
         </button>
         {/* Change image button (edit mode only) */}
         {editing && (
@@ -345,10 +346,10 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
 
       {/* Tabs */}
       <div className="pt-4 pb-0 shrink-0">
-        <div className="flex border-b" style={{ borderColor: '#E6DFD7' }}>
+        <div className="flex border-b" style={{ borderColor: tk.border }}>
           {(['info', 'outfit'] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)} className="flex-1 pb-3 text-[12px] font-medium transition-colors"
-              style={{ color: tab === t ? '#1C1C1C' : '#9CA3AF', borderBottom: tab === t ? '2px solid #1C1C1C' : '2px solid transparent' }}>
+              style={{ color: tab === t ? tk.text : tk.textMuted, borderBottom: tab === t ? `2px solid ${tk.text}` : '2px solid transparent' }}>
               {t === 'info' ? 'Información' : 'Outfit'}
             </button>
           ))}
@@ -361,25 +362,25 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
           <div className="px-5 pt-2">
             {/* Section header */}
             <div className="flex items-center justify-between mt-4 mb-2">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9CA3AF' }}>Información de prenda</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: tk.textMuted }}>Información de prenda</p>
               {!editing ? (
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}>
+                  <button onClick={() => setConfirmDelete(true)} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: tk.destructiveSurface, color: tk.destructive }}>
                     <Trash2 className="w-3 h-3" />
                     Eliminar
                   </button>
-                  <button onClick={() => setEditing(true)} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: '#F0ECE8', color: '#5D4037' }}>
+                  <button onClick={() => setEditing(true)} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: tk.accentSurface, color: tk.accent }}>
                     <Pencil className="w-3 h-3" />
                     Editar
                   </button>
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <button onClick={handleCancel} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: '#F0ECE8', color: '#6B7280' }}>
+                  <button onClick={handleCancel} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: tk.surfaceMuted, color: tk.textSub }}>
                     <X className="w-3 h-3" />
                     Cancelar
                   </button>
-                  <button onClick={handleSave} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: '#1C1C1C', color: '#FFFFFF' }}>
+                  <button onClick={handleSave} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium active:scale-95 transition-transform" style={{ backgroundColor: tk.invertedBg, color: tk.invertedText }}>
                     <Check className="w-3 h-3" />
                     Guardar
                   </button>
@@ -390,20 +391,20 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
             {!editing ? (
               // View mode
               rows.map((row, i) => (
-                <div key={row.label} className="flex items-center justify-between py-3" style={{ borderBottom: i < rows.length - 1 ? '1px solid #F0ECE8' : 'none' }}>
-                  <span className="text-[14px]" style={{ color: '#6B7280' }}>{row.label}</span>
+                <div key={row.label} className="flex items-center justify-between py-3" style={{ borderBottom: i < rows.length - 1 ? `1px solid ${tk.borderLight}` : 'none' }}>
+                  <span className="text-[14px]" style={{ color: tk.textSub }}>{row.label}</span>
                   <span className="text-[14px] font-medium">{row.value}</span>
                 </div>
               ))
             ) : (
               // Edit mode
               EDIT_FIELDS.map((field, i) => (
-                <div key={field.key} className="flex items-center justify-between py-3" style={{ borderBottom: i < EDIT_FIELDS.length - 1 ? '1px solid #F0ECE8' : 'none' }}>
-                  <span className="text-[14px] shrink-0" style={{ color: '#6B7280' }}>{field.label}</span>
+                <div key={field.key} className="flex items-center justify-between py-3" style={{ borderBottom: i < EDIT_FIELDS.length - 1 ? `1px solid ${tk.borderLight}` : 'none' }}>
+                  <span className="text-[14px] shrink-0" style={{ color: tk.textSub }}>{field.label}</span>
                   {field.options.length === 0 ? (
                     <input
                       className="text-[14px] font-medium text-right bg-transparent outline-none border-b"
-                      style={{ color: '#1C1C1C', borderColor: '#C4B8B0', minWidth: 0, maxWidth: '55%' }}
+                      style={{ color: tk.text, borderColor: tk.iconMuted, minWidth: 0, maxWidth: '55%' }}
                       value={draft[field.key]}
                       onChange={(e) => setDraft((d) => ({ ...d, [field.key]: e.target.value }))}
                     />
@@ -429,10 +430,10 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
                               }
                             }}
                             className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95"
-                            style={{ backgroundColor: selected ? '#5D4037' : '#F0ECE8', color: selected ? '#FFFFFF' : '#1C1C1C' }}
+                            style={{ backgroundColor: selected ? tk.pillActiveBg : tk.pillBg, color: selected ? tk.pillActiveText : tk.pillText }}
                           >
                             {field.key === 'color' && (
-                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLOR_SWATCHES[opt] ?? '#ccc', border: opt === 'Blanco' ? '1px solid #D1C9C2' : '1px solid transparent' }} />
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLOR_SWATCHES[opt] ?? '#ccc', border: opt === 'Blanco' ? `1px solid ${tk.iconMuted}` : '1px solid transparent' }} />
                             )}
                             {opt}
                           </button>
@@ -449,28 +450,28 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
             const matching = savedOutfits.filter(o => o.pieces.some(p => p.id === item.id));
             if (matching.length === 0) return (
               <div className="flex flex-col items-center justify-center py-20 gap-2 px-5">
-                <Layers className="w-10 h-10" style={{ color: '#C4B8B0' }} strokeWidth={1.5} />
-                <p className="text-[13px] text-center" style={{ color: '#6B7280' }}>Aún no hay outfits con esta prenda</p>
+                <Layers className="w-10 h-10" style={{ color: tk.iconMuted }} strokeWidth={1.5} />
+                <p className="text-[13px] text-center" style={{ color: tk.textSub }}>Aún no hay outfits con esta prenda</p>
               </div>
             );
             return (
               <div className="px-5 pt-4 flex flex-col gap-3 pb-6">
-                <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#9CA3AF' }}>Outfits con esta prenda</p>
+                <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: tk.textMuted }}>Outfits con esta prenda</p>
                 {matching.map(outfit => (
                   <button
                     key={outfit.id}
                     onClick={() => onOpenOutfit(outfit.id)}
                     className="flex items-center gap-3 p-3 rounded-2xl active:scale-[0.98] transition-transform text-left w-full"
-                    style={{ backgroundColor: '#F0ECE8', border: '1.5px solid #E6DFD7' }}
+                    style={{ backgroundColor: tk.surfaceMuted, border: `1.5px solid ${tk.border}` }}
                   >
                     <div style={{ width: 56, height: 56, borderRadius: 10, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                       <OutfitCollage pieces={outfit.pieces} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: '#1C1C1C', lineHeight: 1.3 }}>Outfit guardado</p>
-                      <p style={{ fontSize: 12, color: '#9CA3AF', textTransform: 'capitalize' }}>{outfit.date} · {outfit.pieces.length} prendas</p>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: tk.text, lineHeight: 1.3 }}>Outfit guardado</p>
+                      <p style={{ fontSize: 12, color: tk.textMuted, textTransform: 'capitalize' }}>{outfit.date} · {outfit.pieces.length} prendas</p>
                     </div>
-                    <ChevronLeft style={{ width: 16, height: 16, color: '#C4B8B0', transform: 'rotate(180deg)', flexShrink: 0 }} strokeWidth={2} />
+                    <ChevronLeft style={{ width: 16, height: 16, color: tk.iconMuted, transform: 'rotate(180deg)', flexShrink: 0 }} strokeWidth={2} />
                   </button>
                 ))}
               </div>
@@ -482,17 +483,17 @@ function ItemDetail({ item, onBack, onUpdate, onDelete, savedOutfits, onOpenOutf
       {/* ── Delete confirmation dialog ── */}
       {confirmDelete && (
         <div className="absolute inset-0 z-50 flex items-end justify-center pb-8 px-5" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}>
-          <div className="w-full rounded-[24px] overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
+          <div className="w-full rounded-[24px] overflow-hidden" style={{ backgroundColor: tk.surface }}>
             <div className="px-6 pt-6 pb-4 flex flex-col items-center gap-2">
-              <span className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEE2E2' }}>
-                <Trash2 className="w-6 h-6" style={{ color: '#DC2626' }} />
+              <span className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: tk.destructiveSurface }}>
+                <Trash2 className="w-6 h-6" style={{ color: tk.destructive }} />
               </span>
-              <p className="text-[16px] font-bold mt-1" style={{ color: '#1C1C1C' }}>Eliminar prenda</p>
-              <p className="text-[13px] text-center" style={{ color: '#6B7280' }}>¿Seguro que quieres eliminar <span className="font-semibold" style={{ color: '#1C1C1C' }}>{item.name}</span>? Esta acción no se puede deshacer.</p>
+              <p className="text-[16px] font-bold mt-1" style={{ color: tk.text }}>Eliminar prenda</p>
+              <p className="text-[13px] text-center" style={{ color: tk.textSub }}>¿Seguro que quieres eliminar <span className="font-semibold" style={{ color: tk.text }}>{item.name}</span>? Esta acción no se puede deshacer.</p>
             </div>
-            <div className="flex border-t" style={{ borderColor: '#F0ECE8' }}>
-              <button onClick={() => setConfirmDelete(false)} className="flex-1 py-4 text-[15px] font-medium border-r active:bg-gray-50 transition-colors" style={{ color: '#6B7280', borderColor: '#F0ECE8' }}>Cancelar</button>
-              <button onClick={() => onDelete(item.id)} className="flex-1 py-4 text-[15px] font-semibold active:bg-red-50 transition-colors" style={{ color: '#DC2626' }}>Eliminar</button>
+            <div className="flex border-t" style={{ borderColor: tk.borderLight }}>
+              <button onClick={() => setConfirmDelete(false)} className="flex-1 py-4 text-[15px] font-medium border-r active:bg-gray-50 transition-colors" style={{ color: tk.textSub, borderColor: tk.borderLight }}>Cancelar</button>
+              <button onClick={() => onDelete(item.id)} className="flex-1 py-4 text-[15px] font-semibold active:bg-red-50 transition-colors" style={{ color: tk.destructive }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -540,6 +541,7 @@ function AddGarmentFlow({ onAdd, onCancel, initialImg }: {
   const [draft, setDraft] = useState<{ name: string; tipo: string; color: string[]; ocasion: string[]; marca: string }>({
     name: 'Nueva prenda', tipo: 'Tops', color: [], ocasion: [], marca: '',
   });
+  const { tk } = useContext(ThemeCtx);
 
   // Seed draft on first mount from initial image
   useEffect(() => {
@@ -603,14 +605,14 @@ function AddGarmentFlow({ onAdd, onCancel, initialImg }: {
   // ── Scanning step ──
   if (step === 'scanning') {
     return (
-      <div className="flex flex-col h-full" style={{ backgroundColor: '#F8F9FA' }}>
+      <div className="flex flex-col h-full" style={{ backgroundColor: tk.bg }}>
         <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleRetryCapture} />
         <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleRetryCapture} />
         <div className="pt-[54px] shrink-0" />
         <div className="flex-1 flex flex-col items-center justify-center gap-8 px-8">
-          <p className="text-[18px] font-bold tracking-tight" style={{ color: '#1C1C1C' }}>Analizando prenda</p>
+          <p className="text-[18px] font-bold tracking-tight" style={{ color: tk.text }}>Analizando prenda</p>
           {/* Photo card */}
-          <div className="relative rounded-[20px] overflow-hidden shadow-2xl" style={{ width: 200, height: 267, backgroundColor: '#E8E0D8' }}>
+          <div className="relative rounded-[20px] overflow-hidden shadow-2xl" style={{ width: 200, height: 267, backgroundColor: tk.surfaceMuted }}>
             {imgSrc && <img src={imgSrc} alt="" className="w-full h-full object-cover" />}
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.12) 100%)' }} />
             {/* Scan line */}
@@ -622,8 +624,8 @@ function AddGarmentFlow({ onAdd, onCancel, initialImg }: {
           </div>
           {/* Loader */}
           <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded-full border-2 animate-spin" style={{ borderColor: 'rgba(93,64,55,0.18)', borderTopColor: '#5D4037' }} />
-            <p className="text-[13px] font-medium" style={{ color: '#6B7280' }}>Identificando tipo, color y ocasión…</p>
+            <div className="w-4 h-4 rounded-full border-2 animate-spin" style={{ borderColor: tk.borderLight, borderTopColor: tk.accent }} />
+            <p className="text-[13px] font-medium" style={{ color: tk.textSub }}>Identificando tipo, color y ocasión…</p>
           </div>
         </div>
       </div>
@@ -632,54 +634,54 @@ function AddGarmentFlow({ onAdd, onCancel, initialImg }: {
 
   // ── Confirm step ──
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: '#F8F9FA' }}>
+    <div className="flex flex-col h-full" style={{ backgroundColor: tk.bg }}>
       <div className="pt-[54px] shrink-0" />
-      <div className="px-5 py-3 shrink-0 flex items-center justify-between border-b" style={{ borderColor: '#E6DFD7', backgroundColor: '#F8F9FA' }}>
-        <p className="text-[17px] font-bold" style={{ color: '#1C1C1C' }}>Nueva prenda</p>
-        <button onClick={onCancel} className="text-[13px] font-medium active:opacity-60" style={{ color: '#6B7280' }}>Cancelar</button>
+      <div className="px-5 py-3 shrink-0 flex items-center justify-between border-b" style={{ borderColor: tk.border, backgroundColor: tk.bg }}>
+        <p className="text-[17px] font-bold" style={{ color: tk.text }}>Nueva prenda</p>
+        <button onClick={onCancel} className="text-[13px] font-medium active:opacity-60" style={{ color: tk.textSub }}>Cancelar</button>
       </div>
       {/* Scrollable form */}
       <div className="flex-1 overflow-y-auto pb-2">
         {/* Image */}
-        <div className="mx-5 mt-4 rounded-[20px] overflow-hidden shadow-sm" style={{ backgroundColor: '#FFFFFF', aspectRatio: '3/4' }}>
+        <div className="mx-5 mt-4 rounded-[20px] overflow-hidden shadow-sm" style={{ backgroundColor: tk.surface, aspectRatio: '3/4' }}>
           {imgSrc
             ? <img src={imgSrc} alt="prenda" className="w-full h-full object-contain" />
-            : <div className="w-full h-full flex items-center justify-center"><Shirt className="w-16 h-16" style={{ color: '#C4B8B0' }} strokeWidth={1.2} /></div>}
+            : <div className="w-full h-full flex items-center justify-center"><Shirt className="w-16 h-16" style={{ color: tk.iconMuted }} strokeWidth={1.2} /></div>}
         </div>
         <div className="px-5 mt-5 flex flex-col gap-1">
           {/* Section header */}
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: '#9CA3AF' }}>Información de prenda</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: tk.textMuted }}>Información de prenda</p>
           {/* Card */}
-          <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: '#FFFFFF', borderColor: '#E6DFD7' }}>
+          <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
             {/* Name */}
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: '#F0ECE8' }}>
-              <span className="text-[14px]" style={{ color: '#6B7280' }}>Nombre</span>
+            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: tk.borderLight }}>
+              <span className="text-[14px]" style={{ color: tk.textSub }}>Nombre</span>
               <input
                 className="text-[14px] font-medium text-right bg-transparent outline-none"
-                style={{ color: '#1C1C1C', minWidth: 0, maxWidth: '55%' }}
+                style={{ color: tk.text, minWidth: 0, maxWidth: '55%' }}
                 value={draft.name}
                 onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
               />
             </div>
             {/* Category */}
-            <div className="flex items-start justify-between px-4 py-3 border-b" style={{ borderColor: '#F0ECE8' }}>
-              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: '#6B7280' }}>Categoría</span>
+            <div className="flex items-start justify-between px-4 py-3 border-b" style={{ borderColor: tk.borderLight }}>
+              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: tk.textSub }}>Categoría</span>
               <div className="flex flex-wrap gap-1.5 justify-end" style={{ maxWidth: '65%' }}>
                 {FILTERS.tipo.options.map((opt) => {
                   const sel = draft.tipo === opt;
-                  return <button key={opt} onClick={() => setDraft((d) => ({ ...d, tipo: opt }))} className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? '#5D4037' : '#F0ECE8', color: sel ? '#FFFFFF' : '#1C1C1C' }}>{opt}</button>;
+                  return <button key={opt} onClick={() => setDraft((d) => ({ ...d, tipo: opt }))} className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? tk.pillActiveBg : tk.pillBg, color: sel ? tk.pillActiveText : tk.pillText }}>{opt}</button>;
                 })}
               </div>
             </div>
             {/* Color */}
-            <div className="flex items-start justify-between px-4 py-3 border-b" style={{ borderColor: '#F0ECE8' }}>
-              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: '#6B7280' }}>Color</span>
+            <div className="flex items-start justify-between px-4 py-3 border-b" style={{ borderColor: tk.borderLight }}>
+              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: tk.textSub }}>Color</span>
               <div className="flex flex-wrap gap-1.5 justify-end" style={{ maxWidth: '65%' }}>
                 {FILTERS.color.options.map((opt) => {
                   const sel = draft.color.includes(opt);
                   return (
-                    <button key={opt} onClick={() => toggleMulti('color', opt)} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? '#5D4037' : '#F0ECE8', color: sel ? '#FFFFFF' : '#1C1C1C' }}>
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLOR_SWATCHES[opt] ?? '#ccc', border: opt === 'Blanco' ? '1px solid #D1C9C2' : '1px solid transparent' }} />
+                    <button key={opt} onClick={() => toggleMulti('color', opt)} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? tk.pillActiveBg : tk.pillBg, color: sel ? tk.pillActiveText : tk.pillText }}>
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLOR_SWATCHES[opt] ?? '#ccc', border: opt === 'Blanco' ? `1px solid ${tk.iconMuted}` : '1px solid transparent' }} />
                       {opt}
                     </button>
                   );
@@ -687,22 +689,22 @@ function AddGarmentFlow({ onAdd, onCancel, initialImg }: {
               </div>
             </div>
             {/* Ocasión */}
-            <div className="flex items-start justify-between px-4 py-3 border-b" style={{ borderColor: '#F0ECE8' }}>
-              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: '#6B7280' }}>Ocasión</span>
+            <div className="flex items-start justify-between px-4 py-3 border-b" style={{ borderColor: tk.borderLight }}>
+              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: tk.textSub }}>Ocasión</span>
               <div className="flex flex-wrap gap-1.5 justify-end" style={{ maxWidth: '65%' }}>
                 {FILTERS.ocasion.options.map((opt) => {
                   const sel = draft.ocasion.includes(opt);
-                  return <button key={opt} onClick={() => toggleMulti('ocasion', opt)} className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? '#5D4037' : '#F0ECE8', color: sel ? '#FFFFFF' : '#1C1C1C' }}>{opt}</button>;
+                  return <button key={opt} onClick={() => toggleMulti('ocasion', opt)} className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? tk.pillActiveBg : tk.pillBg, color: sel ? tk.pillActiveText : tk.pillText }}>{opt}</button>;
                 })}
               </div>
             </div>
             {/* Marca */}
             <div className="flex items-start justify-between px-4 py-3" >
-              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: '#6B7280' }}>Marca</span>
+              <span className="text-[14px] shrink-0 pt-0.5" style={{ color: tk.textSub }}>Marca</span>
               <div className="flex flex-wrap gap-1.5 justify-end" style={{ maxWidth: '65%' }}>
                 {FILTERS.marca.options.map((opt) => {
                   const sel = draft.marca === opt;
-                  return <button key={opt} onClick={() => setDraft((d) => ({ ...d, marca: opt }))} className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? '#5D4037' : '#F0ECE8', color: sel ? '#FFFFFF' : '#1C1C1C' }}>{opt}</button>;
+                  return <button key={opt} onClick={() => setDraft((d) => ({ ...d, marca: opt }))} className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all active:scale-95" style={{ backgroundColor: sel ? tk.pillActiveBg : tk.pillBg, color: sel ? tk.pillActiveText : tk.pillText }}>{opt}</button>;
                 })}
               </div>
             </div>
@@ -710,8 +712,8 @@ function AddGarmentFlow({ onAdd, onCancel, initialImg }: {
         </div>
       </div>
       {/* Bottom buttons */}
-      <div className="shrink-0 px-5 pb-6 pt-3 flex gap-3 border-t" style={{ borderColor: '#E6DFD7', backgroundColor: '#F8F9FA' }}>
-        <button onClick={() => onAdd({ ...draft, img: imgSrc, category: draft.tipo })} className="w-full py-3 rounded-full text-[14px] font-semibold active:scale-95 transition-transform" style={{ backgroundColor: '#1C1C1C', color: '#FFFFFF' }}>
+      <div className="shrink-0 px-5 pb-6 pt-3 flex gap-3 border-t" style={{ borderColor: tk.border, backgroundColor: tk.bg }}>
+        <button onClick={() => onAdd({ ...draft, img: imgSrc, category: draft.tipo })} className="w-full py-3 rounded-full text-[14px] font-semibold active:scale-95 transition-transform" style={{ backgroundColor: tk.invertedBg, color: tk.invertedText }}>
           Añadir prenda
         </button>
       </div>
@@ -815,17 +817,18 @@ const REJECT_REASONS_I18N: Record<'es' | 'en', string[]> = {
 // ─── OutfitCollage ────────────────────────────────────────────────────────────
 
 function OutfitCollage({ pieces }: { pieces: Item[] }) {
+  const { tk } = useContext(ThemeCtx);
   const slots = Array.from({ length: 4 }, (_, i) => pieces[i] ?? null);
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', height: '100%', gap: 1 }}>
       {slots.map((piece, i) => (
-        <div key={i} style={{ backgroundColor: '#EBE5DF', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div key={i} style={{ backgroundColor: tk.surfaceMuted, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {piece?.img ? (
             <img src={piece.img} alt={piece.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : piece ? (
-            <Shirt style={{ width: '35%', height: '35%', color: '#C4B8B0', opacity: 0.6 }} strokeWidth={1.2} />
+            <Shirt style={{ width: '35%', height: '35%', color: tk.iconMuted, opacity: 0.6 }} strokeWidth={1.2} />
           ) : (
-            <div style={{ backgroundColor: '#E0DAD4', width: '100%', height: '100%' }} />
+            <div style={{ backgroundColor: tk.border, width: '100%', height: '100%' }} />
           )}
         </div>
       ))}
@@ -898,14 +901,14 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
           <button
             onClick={() => handleSelectTemplate({ id: 'generar', label: 'Generar outfit', description: 'Look aleatorio', ocasion: 'Casual', defaultDays: 1, configurable: false })}
             className="col-span-2 flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.97] transition-all text-left"
-            style={{ backgroundColor: tk.accent, border: `1px solid ${tk.accent}` }}
+            style={{ backgroundColor: tk.featureBg, border: `1px solid ${tk.featureBg}` }}
           >
-            <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-              <Sparkles className="w-5 h-5" style={{ color: tk.invertedText }} strokeWidth={1.8} />
+            <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: tk.featureIconBg }}>
+              <Sparkles className="w-5 h-5" style={{ color: tk.featureIconColor }} strokeWidth={1.8} />
             </span>
             <div>
-              <p className="text-[14px] font-bold" style={{ color: tk.invertedText }}>{t.generateOutfitLabel}</p>
-              <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.invertedText, opacity: 0.6 }}>{t.generateOutfitDesc}</p>
+              <p className="text-[14px] font-bold" style={{ color: tk.featureText }}>{t.generateOutfitLabel}</p>
+              <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.featureSubText }}>{t.generateOutfitDesc}</p>
             </div>
           </button>
           {SITUATION_TEMPLATES.map(tpl => {
@@ -916,17 +919,17 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
                 onClick={() => handleSelectTemplate(tpl)}
                 className={`flex flex-col items-start gap-2.5 p-3.5 rounded-2xl active:scale-[0.97] transition-all text-left${isCustom ? ' col-span-2' : ''}`}
                 style={isCustom
-                  ? { backgroundColor: tk.accent, border: `1px solid ${tk.accent}` }
+                  ? { backgroundColor: tk.featureBg, border: `1px solid ${tk.featureBg}` }
                   : { backgroundColor: tk.surface, border: `1px solid ${tk.border}` }}
               >
                 {isCustom ? (
                   <div className="w-full flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-                      <SituationIcon id={tpl.id} className="w-5 h-5" style={{ color: tk.invertedText }} />
+                    <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: tk.featureIconBg }}>
+                      <SituationIcon id={tpl.id} className="w-5 h-5" style={{ color: tk.featureIconColor }} />
                     </span>
                     <div>
-                      <p className="text-[14px] font-bold" style={{ color: tk.invertedText }}>{getSituationLabel(tpl.id, lang)}</p>
-                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.invertedText, opacity: 0.6 }}>{getSituationDesc(tpl.id, lang)}</p>
+                      <p className="text-[14px] font-bold" style={{ color: tk.featureText }}>{getSituationLabel(tpl.id, lang)}</p>
+                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.featureSubText }}>{getSituationDesc(tpl.id, lang)}</p>
                     </div>
                   </div>
                 ) : (
@@ -936,7 +939,7 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
                     </span>
                     <div>
                       <p className="text-[13px] font-semibold" style={{ color: tk.text }}>{getSituationLabel(tpl.id, lang)}</p>
-                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.textMuted }}>{getSituationDesc(tpl.id, lang)}</p>
+                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.textSub }}>{getSituationDesc(tpl.id, lang)}</p>
                     </div>
                   </>
                 )}
@@ -1058,7 +1061,7 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
           <ChevronLeft className="w-4 h-4" strokeWidth={2} />
           {t.newSituation}
         </button>
-        <span className="text-[11px] px-2.5 py-1 rounded-full" style={{ backgroundColor: tk.accentSurface, color: tk.accentText }}>
+        <span className="text-[11px] px-2.5 py-1 rounded-full" style={{ backgroundColor: tk.accentSurface, color: tk.accent }}>
           {plan.length} {plan.length === 1 ? 'outfit' : 'outfits'}
         </span>
       </div>
@@ -1086,7 +1089,7 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
               <button
                 onClick={() => handleRegenOutfit(idx)}
                 className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full active:scale-90 transition-transform"
-                style={{ backgroundColor: tk.accentSurface, color: tk.accentText }}
+                style={{ backgroundColor: tk.accentSurface, color: tk.accent }}
               >
                 <RefreshCw className="w-3 h-3" strokeWidth={2} />
                 {t.regenerate}
@@ -1227,7 +1230,7 @@ function BrandCircle({ brand }: { brand: string }) {
     >
       <div
         className="w-14 h-14 rounded-full relative overflow-hidden transition-colors duration-200"
-        style={{ backgroundColor: logoLoaded ? tk.surface : meta.bg, border: `2px solid ${tk.border}` }}
+        style={{ backgroundColor: '#FFFFFF', border: `2px solid ${tk.border}` }}
       >
         {!logoLoaded && (
           <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold">
@@ -1291,9 +1294,9 @@ function ExploreView({
               key={item.id}
               onClick={() => window.open(BRAND_URLS[item.brand] ?? '#', '_blank', 'noopener,noreferrer')}
               className="rounded-lg overflow-hidden active:scale-[0.97] transition-transform text-left"
-              style={{ outline: '2px dashed #C4A882', outlineOffset: '-2px' }}
+              style={{ outline: `2px dashed ${tk.border}`, outlineOffset: '-2px' }}
             >
-              <div className="relative w-full aspect-[3/4] bg-[#F0ECE8]">
+              <div className="relative w-full aspect-[3/4]" style={{ backgroundColor: tk.surfaceMuted }}>
                 <img
                   src={item.img}
                   alt={item.name}
@@ -1302,7 +1305,7 @@ function ExploreView({
                 />
                 <span
                   className="absolute top-2 right-2 text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.88)', color: '#92400E' }}
+                  style={{ backgroundColor: tk.surface + 'E0', color: tk.accentText }}
                 >
                   {t.sponsored}
                 </span>
@@ -1558,19 +1561,10 @@ function SugerenciasView({
       <div className="pt-[54px]" />
 
       {/* Header */}
-      <div className="px-5 pt-4 pb-2 flex items-center justify-between shrink-0">
-        <div>
-        <h1 className="text-[22px] font-bold leading-tight" style={{ color: tk.text }}>{t.suggestionsTitle}</h1>
+      <div className="px-5 pt-4 pb-2 flex items-center shrink-0">
+        <div className="flex-1">
+          <h1 className="text-[22px] font-bold leading-tight" style={{ color: tk.text }}>{t.suggestionsTitle}</h1>
           <p className="text-[12px] capitalize" style={{ color: tk.textMuted }}>{getTodayLabel()}</p>
-        </div>
-        <div className="flex gap-1.5 items-center">
-          {Array.from({ length: DAILY_LIMIT }, (_, i) => (
-            <div key={i} className="rounded-full transition-all duration-300" style={{
-              width: i === currentIdx ? '20px' : '6px',
-              height: '6px',
-              backgroundColor: i < currentIdx ? '#7C4F31' : i === currentIdx ? '#1C1C1C' : '#E6DFD7',
-            }} />
-          ))}
         </div>
       </div>
 
@@ -1956,7 +1950,7 @@ function OutfitsView({
           <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.explore}</span>
         </button>
         <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: tk.invertedBg }}>
-          <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
+          <Plus className="w-7 h-7" style={{ color: tk.invertedText }} strokeWidth={2.5} />
         </button>
         <button onClick={onNavProto} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
           <Wand2 className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
@@ -2082,40 +2076,54 @@ const LIGHT_TK = {
   toggleTrackOff: '#D1CBC4',
   filterActiveBg: '#5D4037',
   filterActiveText: '#FFFFFF',
-  filterInactiveBg: '#E6DFD7',
-  filterInactiveText: '#1C1C1C',
+  filterInactiveBg: '#F5EFE9',
+  filterInactiveText: '#5D4037',
   dropdownBg: '#FFFFFF',
   dropdownSelectedBg: '#F5EFE9',
   dropdownSelectedText: '#5D4037',
+  destructive: '#DC2626',
+  destructiveSurface: '#FEE2E2',
+  featureBg: '#5D4037',
+  featureText: '#FFFFFF',
+  featureSubText: 'rgba(255,255,255,0.65)',
+  featureIconBg: 'rgba(255,255,255,0.15)',
+  featureIconColor: '#FFFFFF',
 };
 const DARK_TK = {
-  bg: '#0D0D0F',
-  surface: '#1C1C1E',
-  surfaceMuted: '#2C2C2E',
-  border: '#38383A',
-  borderLight: '#2C2C2E',
-  text: '#F5F5F7',
-  textSub: '#9CA3AF',
-  textMuted: '#6B7280',
-  iconMuted: '#555558',
-  accent: '#C4A882',
-  accentSurface: '#2C2C2E',
-  accentText: '#D4A574',
-  invertedBg: '#F5F5F7',
-  invertedText: '#0D0D0F',
-  navBg: '#1C1C1E',
-  pillBg: '#2C2C2E',
-  pillText: '#F5F5F7',
-  pillActiveBg: '#C4A882',
-  pillActiveText: '#1C1C1C',
-  toggleTrackOff: '#3A3A3C',
-  filterActiveBg: '#C4A882',
-  filterActiveText: '#1C1C1C',
-  filterInactiveBg: '#2C2C2E',
-  filterInactiveText: '#F5F5F7',
-  dropdownBg: '#1C1C1E',
-  dropdownSelectedBg: '#2C2C2E',
-  dropdownSelectedText: '#C4A882',
+  bg: '#1A1410',
+  surface: '#261E17',
+  surfaceMuted: '#32261E',
+  border: '#4A3728',
+  borderLight: '#3D2E22',
+  text: '#EDE0D0',
+  textSub: '#B09880',
+  textMuted: '#7A6455',
+  iconMuted: '#5C4A3A',
+  accent: '#5D4037',
+  accentSurface: '#F0ECE8',
+  accentText: '#EDE0D0',
+  invertedBg: '#EDE0D0',
+  invertedText: '#1A1410',
+  navBg: '#211812',
+  pillBg: '#32261E',
+  pillText: '#EDE0D0',
+  pillActiveBg: '#5D4037',
+  pillActiveText: '#FFFFFF',
+  toggleTrackOff: '#4A3728',
+  filterActiveBg: '#F5EFE9',
+  filterActiveText: '#5D4037',
+  filterInactiveBg: '#32261E',
+  filterInactiveText: '#EDE0D0',
+  dropdownBg: '#261E17',
+  dropdownSelectedBg: '#F5EFE9',
+  dropdownSelectedText: '#5D4037',
+  destructive: '#F87171',
+  destructiveSurface: '#3A1818',
+  featureBg: '#F0ECE8',
+  featureText: '#5D4037',
+  featureSubText: 'rgba(93,64,55,0.9)',
+  featureIconBg: '#5D4037',
+  featureIconColor: '#FFFFFF',
 };
 type TK = typeof LIGHT_TK;
 type Lang = 'es' | 'en';
@@ -2415,17 +2423,17 @@ function NotificationsPanel({
           >
             <div
               className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center mt-0.5"
-              style={{ backgroundColor: n.unread ? tk.accentSurface : tk.pillBg ?? tk.surfaceMuted }}
+              style={{ backgroundColor: n.unread ? tk.accentSurface : tk.pillBg, boxShadow: n.unread ? `0 0 0 1.5px ${tk.accent}50` : 'none' }}
             >
-              {n.icon === 'outfit'   && <Sparkles     className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
-              {n.icon === 'wardrobe' && <Shirt         className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
-              {n.icon === 'store'    && <ShoppingBag   className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
-              {n.icon === 'reminder' && <CalendarDays  className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
+              {n.icon === 'outfit'   && <Sparkles     className="w-[15px] h-[15px]" style={{ color: tk.accent }} strokeWidth={1.8} />}
+              {n.icon === 'wardrobe' && <Shirt         className="w-[15px] h-[15px]" style={{ color: tk.accent }} strokeWidth={1.8} />}
+              {n.icon === 'store'    && <ShoppingBag   className="w-[15px] h-[15px]" style={{ color: tk.accent }} strokeWidth={1.8} />}
+              {n.icon === 'reminder' && <CalendarDays  className="w-[15px] h-[15px]" style={{ color: tk.accent }} strokeWidth={1.8} />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="text-[12px] font-semibold leading-tight" style={{ color: tk.text }}>{n.title}</p>
-                {n.unread && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: tk.accentText }} />}
+                {n.unread && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: tk.accent }} />}
               </div>
               <p className="text-[11px] mt-0.5 leading-snug" style={{ color: tk.textSub }}>{n.body}</p>
               <p className="text-[10px] mt-1" style={{ color: tk.textMuted }}>{n.time}</p>
@@ -2646,10 +2654,10 @@ function AllSettingsView({
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl active:scale-[0.98] transition-all"
                   style={{ backgroundColor: notifFreq === val ? tk.accentSurface : tk.surfaceMuted }}
                 >
-                  <span className="text-[13px] font-medium" style={{ color: notifFreq === val ? tk.accentText : tk.text }}>
+                  <span className="text-[13px] font-medium" style={{ color: notifFreq === val ? tk.accent : tk.text }}>
                     {val === 'immediate' ? t.freqImmediate : val === 'daily' ? t.freqDaily : val === 'weekly' ? t.freqWeekly : t.freqNever}
                   </span>
-                  {notifFreq === val && <Check className="w-4 h-4" style={{ color: tk.accentText }} strokeWidth={2.5} />}
+                  {notifFreq === val && <Check className="w-4 h-4" style={{ color: tk.accent }} strokeWidth={2.5} />}
                 </button>
               ))}
             </div>
@@ -2790,7 +2798,7 @@ export function Wardrobe() {
 
   return (
     <ThemeCtx.Provider value={{ tk: darkMode ? DARK_TK : LIGHT_TK, lang }}>
-    <>
+    <div className="relative w-full h-full">
     <div style={{ display: navTab === 'outfits' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
       <OutfitsView items={items} savedOutfits={savedOutfits} onDeleteOutfit={handleDeleteOutfit} onMoveOutfit={handleMoveOutfit} onSaveOutfit={handleSaveOutfit} onNavArmario={() => setNavTab('armario')} onNavExplorar={() => setNavTab('explorar')} onNavProto={() => setNavTab('pronto')} onAdd={openPick} openOutfitId={openOutfitId} onClearOpenOutfit={() => setOpenOutfitId(null)} />
     </div>
@@ -2805,43 +2813,10 @@ export function Wardrobe() {
       {/* ── Sticky header ── */}
       <div className="pt-[54px]"></div>
       <div className="sticky top-0 z-30 pt-5 pb-3 px-5" style={{ backgroundColor: darkMode ? DARK_TK.bg : LIGHT_TK.bg }}>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h1 className="text-[26px] font-bold tracking-tight" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }}>
             {I18N[lang].wardrobeTitle}
           </h1>
-          <div className="flex items-center gap-2">
-            {/* Notifications button */}
-            <button
-              ref={notifBtnRef}
-              onClick={() => {
-                const rect = notifBtnRef.current?.getBoundingClientRect() ?? null;
-                setNotifBtnRect(rect);
-                setNotifOpen(v => !v);
-                setSettingsOpen(false);
-              }}
-              className="relative w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              style={{ backgroundColor: darkMode ? DARK_TK.pillBg : LIGHT_TK.pillBg }}
-            >
-              <Bell className="w-[17px] h-[17px]" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={1.8} />
-              {notifications.some(n => n.unread) && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444', border: `2px solid ${darkMode ? DARK_TK.bg : LIGHT_TK.bg}` }} />
-              )}
-            </button>
-            {/* Settings button */}
-            <button
-              ref={settingsBtnRef}
-              onClick={() => {
-                const rect = settingsBtnRef.current?.getBoundingClientRect() ?? null;
-                setSettingsBtnRect(rect);
-                setSettingsOpen(v => !v);
-                setNotifOpen(false);
-              }}
-              className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              style={{ backgroundColor: darkMode ? DARK_TK.pillBg : LIGHT_TK.pillBg }}
-            >
-              <Settings className="w-[17px] h-[17px]" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={1.8} />
-            </button>
-          </div>
         </div>
 
         {/* Dropdown filters */}
@@ -2990,42 +2965,42 @@ export function Wardrobe() {
           <div
             className="mx-4 mb-4 rounded-[20px] overflow-hidden transition-all duration-300"
             style={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E6DFD7',
+              backgroundColor: darkMode ? DARK_TK.surface : LIGHT_TK.surface,
+              border: `1px solid ${darkMode ? DARK_TK.border : LIGHT_TK.border}`,
               transform: pickVisible ? 'translateY(0)' : 'translateY(110%)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-5 pt-5 pb-3 border-b" style={{ borderColor: '#F0ECE8' }}>
-              <p className="text-[16px] font-bold text-center" style={{ color: '#1C1C1C' }}>Añadir prenda</p>
-              <p className="text-[12px] text-center mt-0.5" style={{ color: '#9CA3AF' }}>Elige cómo subir la imagen</p>
+            <div className="px-5 pt-5 pb-3 border-b" style={{ borderColor: darkMode ? DARK_TK.borderLight : LIGHT_TK.borderLight }}>
+              <p className="text-[16px] font-bold text-center" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }}>Añadir prenda</p>
+              <p className="text-[12px] text-center mt-0.5" style={{ color: darkMode ? DARK_TK.textMuted : LIGHT_TK.textMuted }}>Elige cómo subir la imagen</p>
             </div>
             {/* Cámara */}
             <button
               onClick={() => pickCameraRef.current?.click()}
-              className="flex items-center gap-4 w-full px-5 py-4 border-b active:bg-[#F0ECE8] transition-colors"
-              style={{ borderColor: '#F0ECE8' }}
+              className="flex items-center gap-4 w-full px-5 py-4 border-b active:opacity-75 transition-opacity"
+              style={{ borderColor: darkMode ? DARK_TK.borderLight : LIGHT_TK.borderLight }}
             >
-              <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#F0ECE8' }}>
-                <Camera className="w-5 h-5" style={{ color: '#5D4037' }} strokeWidth={1.8} />
+              <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: darkMode ? DARK_TK.surfaceMuted : LIGHT_TK.accentSurface }}>
+                <Camera className="w-5 h-5" style={{ color: darkMode ? DARK_TK.accent : LIGHT_TK.accent }} strokeWidth={1.8} />
               </span>
               <div className="flex flex-col items-start">
-                <span className="text-[15px] font-semibold" style={{ color: '#1C1C1C' }}>Cámara</span>
-                <span className="text-[12px]" style={{ color: '#9CA3AF' }}>Toma una foto ahora</span>
+                <span className="text-[15px] font-semibold" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }}>Cámara</span>
+                <span className="text-[12px]" style={{ color: darkMode ? DARK_TK.textMuted : LIGHT_TK.textMuted }}>Toma una foto ahora</span>
               </div>
             </button>
             {/* Galería */}
             <button
               onClick={() => pickGalleryRef.current?.click()}
-              className="flex items-center gap-4 w-full px-5 py-4 active:bg-[#F0ECE8] transition-colors"
+              className="flex items-center gap-4 w-full px-5 py-4 active:opacity-75 transition-opacity"
             >
-              <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#F0ECE8' }}>
-                <Image className="w-5 h-5" style={{ color: '#5D4037' }} strokeWidth={1.8} />
+              <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: darkMode ? DARK_TK.surfaceMuted : LIGHT_TK.accentSurface }}>
+                <Image className="w-5 h-5" style={{ color: darkMode ? DARK_TK.accent : LIGHT_TK.accent }} strokeWidth={1.8} />
               </span>
               <div className="flex flex-col items-start">
-                <span className="text-[15px] font-semibold" style={{ color: '#1C1C1C' }}>Galería</span>
-                <span className="text-[12px]" style={{ color: '#9CA3AF' }}>Elige desde tus fotos</span>
+                <span className="text-[15px] font-semibold" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }}>Galería</span>
+                <span className="text-[12px]" style={{ color: darkMode ? DARK_TK.textMuted : LIGHT_TK.textMuted }}>Elige desde tus fotos</span>
               </div>
             </button>
           </div>
@@ -3033,16 +3008,16 @@ export function Wardrobe() {
           <div
             className="mx-4 mb-8 rounded-[18px] overflow-hidden transition-all duration-300"
             style={{
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #E6DFD7',
+              backgroundColor: darkMode ? DARK_TK.surface : LIGHT_TK.surface,
+              border: `1px solid ${darkMode ? DARK_TK.border : LIGHT_TK.border}`,
               transform: pickVisible ? 'translateY(0)' : 'translateY(110%)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={closePick}
-              className="w-full py-4 text-[15px] font-semibold active:bg-[#F0ECE8] transition-colors"
-              style={{ color: '#5D4037' }}
+              className="w-full py-4 text-[15px] font-semibold active:opacity-75 transition-opacity"
+              style={{ color: darkMode ? DARK_TK.accent : LIGHT_TK.accent }}
             >
               Cancelar
             </button>
@@ -3139,7 +3114,42 @@ export function Wardrobe() {
         lang={lang}
         onSetLang={setLang}
       />
-    </>
+
+      {/* ── Global notification & settings buttons overlay ── */}
+      <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ paddingTop: 74, paddingRight: 20 }}>
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <button
+            ref={notifBtnRef}
+            onClick={() => {
+              const rect = notifBtnRef.current?.getBoundingClientRect() ?? null;
+              setNotifBtnRect(rect);
+              setNotifOpen(v => !v);
+              setSettingsOpen(false);
+            }}
+            className="relative w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ backgroundColor: darkMode ? DARK_TK.pillBg : LIGHT_TK.pillBg }}
+          >
+            <Bell className="w-[17px] h-[17px]" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={1.8} />
+            {notifications.some(n => n.unread) && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444', border: `2px solid ${darkMode ? DARK_TK.bg : LIGHT_TK.bg}` }} />
+            )}
+          </button>
+          <button
+            ref={settingsBtnRef}
+            onClick={() => {
+              const rect = settingsBtnRef.current?.getBoundingClientRect() ?? null;
+              setSettingsBtnRect(rect);
+              setSettingsOpen(v => !v);
+              setNotifOpen(false);
+            }}
+            className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+            style={{ backgroundColor: darkMode ? DARK_TK.pillBg : LIGHT_TK.pillBg }}
+          >
+            <Settings className="w-[17px] h-[17px]" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={1.8} />
+          </button>
+        </div>
+      </div>
+    </div>
     </ThemeCtx.Provider>
   );
 }
