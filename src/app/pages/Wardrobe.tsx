@@ -1,6 +1,6 @@
-﻿import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Shirt, Layers, ChevronDown, ChevronLeft, Pencil, Check, X, Camera, Trash2, Image, Sparkles, Wand2, Heart, UtensilsCrossed, Plane, Briefcase, Sun, Sliders, RefreshCw, CalendarDays, PartyPopper, Dumbbell, Search } from 'lucide-react';
+import { Plus, Shirt, Layers, ChevronDown, ChevronLeft, Pencil, Check, X, Camera, Trash2, Image, Sparkles, Wand2, Heart, UtensilsCrossed, Plane, Briefcase, Sun, Sliders, RefreshCw, CalendarDays, PartyPopper, Dumbbell, Search, Bell, Settings, ChevronRight, Moon, ShoppingBag, Globe, LogOut, User, Shield, HelpCircle, Star, FileText } from 'lucide-react';
 
 const FILTERS = {
   tipo:    { label: 'Tipo',    options: ['Tops', 'Pantalones', 'Calzado', 'Accesorios', 'Vestidos', 'Abrigos'] },
@@ -73,6 +73,7 @@ function FilterDropdown({
   openKey: FilterKey | null;
   setOpenKey: (k: FilterKey | null) => void;
 }) {
+  const { tk } = useContext(ThemeCtx);
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const isOpen = openKey === filterKey;
@@ -133,8 +134,8 @@ function FilterDropdown({
         top: dropPos.top,
         left: dropPos.left ?? 'auto',
         right: dropPos.right ?? 'auto',
-        backgroundColor: '#FFFFFF',
-        borderColor: '#E6DFD7',
+        backgroundColor: tk.dropdownBg,
+        borderColor: tk.border,
       }}
     >
       {isActive && (
@@ -171,7 +172,7 @@ function FilterDropdown({
             )}
             {opt}
             {selected && (
-              <span className="ml-auto pl-3 text-[11px]" style={{ color: '#5D4037' }}>✓</span>
+              <span className="ml-auto pl-3 text-[11px]" style={{ color: tk.dropdownSelectedText }}>✓</span>
             )}
           </button>
         );
@@ -194,8 +195,8 @@ function FilterDropdown({
         onClick={handleOpen}
         className="shrink-0 flex items-center gap-1 pl-3 pr-2 py-[7px] rounded-full text-[13px] font-medium transition-all active:scale-95"
         style={{
-          backgroundColor: isActive ? '#5D4037' : '#E6DFD7',
-          color: isActive ? '#FFFFFF' : '#1C1C1C',
+          backgroundColor: isActive ? tk.filterActiveBg : tk.filterInactiveBg,
+          color: isActive ? tk.filterActiveText : tk.filterInactiveText,
         }}
       >
         <span className="flex items-center gap-1.5">
@@ -790,6 +791,27 @@ function getTodayLabel() {
   return new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
+function getSituationLabel(id: SituationType, lang: 'es' | 'en'): string {
+  const map: Record<'es' | 'en', Record<SituationType, string>> = {
+    es: { custom: 'Personalizado', cena: 'Cena', viaje: 'Viaje', trabajo: 'Semana laboral', fiesta: 'Fiesta', finde: 'Fin de semana', deporte: 'Deporte', generar: 'Generar outfit' },
+    en: { custom: 'Custom', cena: 'Dinner', viaje: 'Trip', trabajo: 'Work week', fiesta: 'Party', finde: 'Weekend', deporte: 'Sports', generar: 'Generate outfit' },
+  };
+  return map[lang][id];
+}
+
+function getSituationDesc(id: SituationType, lang: 'es' | 'en'): string {
+  const map: Record<'es' | 'en', Record<SituationType, string>> = {
+    es: { custom: 'Define tu propia situación', cena: 'Look elegante para la ocasión', viaje: 'Un outfit por cada día del viaje', trabajo: 'Looks profesionales para la oficina', fiesta: 'Outfit para brillar esta noche', finde: 'Planes informales y relajados', deporte: 'Looks cómodos para entrenar', generar: 'Crea un look al instante con tus prendas' },
+    en: { custom: 'Define your own situation', cena: 'Elegant look for the occasion', viaje: 'One outfit per day of the trip', trabajo: 'Professional looks for the office', fiesta: 'Outfit to shine tonight', finde: 'Informal and relaxed plans', deporte: 'Comfortable looks for training', generar: 'Create a look instantly with your items' },
+  };
+  return map[lang][id];
+}
+
+const REJECT_REASONS_I18N: Record<'es' | 'en', string[]> = {
+  es: ['No me convence', 'No disponible hoy', 'Fuera de ocasión', 'No me favorece'],
+  en: ['Not convinced', 'Not available today', 'Wrong occasion', "Doesn't suit me"],
+};
+
 // ─── OutfitCollage ────────────────────────────────────────────────────────────
 
 function OutfitCollage({ pieces }: { pieces: Item[] }) {
@@ -814,6 +836,8 @@ function OutfitCollage({ pieces }: { pieces: Item[] }) {
 // ─── SituationPlannerView ─────────────────────────────────────────────────────
 
 function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOutfit: (o: SavedOutfit) => void }) {
+  const { tk, lang } = useContext(ThemeCtx);
+  const t = I18N[lang];
   const [step, setStep] = useState<'select' | 'configure' | 'results'>('select');
   const [template, setTemplate] = useState<SituationTemplate | null>(null);
   const [days, setDays] = useState(1);
@@ -825,7 +849,7 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
   const buildPlan = (_tpl: SituationTemplate, numDays: number, ocasion: string) => {
     const usedIds = new Set<number>();
     return Array.from({ length: numDays }, (_, i) => ({
-      label: numDays === 1 ? 'Look del día' : `Día ${i + 1}`,
+      label: numDays === 1 ? t.lookOfDay : `${t.day} ${i + 1}`,
       outfit: generateOutfitForOcasion(items, ocasion, usedIds),
     }));
   };
@@ -866,53 +890,53 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
     return (
       <div className="px-5 py-4 flex flex-col gap-4">
         <div>
-          <p className="text-[15px] font-bold" style={{ color: '#1C1C1C' }}>¿Cuál es la situación?</p>
-          <p className="text-[12px] mt-0.5" style={{ color: '#9CA3AF' }}>Selecciona y genera looks adaptados a tu ocasión</p>
+          <p className="text-[15px] font-bold" style={{ color: tk.text }}>{t.whichSituation}</p>
+          <p className="text-[12px] mt-0.5" style={{ color: tk.textMuted }}>{t.whichSituationSub}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {/* Quick generate */}
           <button
-            onClick={() => handleSelectTemplate({ id: 'generar', label: 'Generar outfit', description: 'Look aleatorio con tus prendas', ocasion: 'Casual', defaultDays: 1, configurable: false })}
+            onClick={() => handleSelectTemplate({ id: 'generar', label: 'Generar outfit', description: 'Look aleatorio', ocasion: 'Casual', defaultDays: 1, configurable: false })}
             className="col-span-2 flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.97] transition-all text-left"
-            style={{ backgroundColor: '#5D4037', border: '1px solid #5D4037' }}
+            style={{ backgroundColor: tk.accent, border: `1px solid ${tk.accent}` }}
           >
             <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-              <Sparkles className="w-5 h-5" style={{ color: '#FFFFFF' }} strokeWidth={1.8} />
+              <Sparkles className="w-5 h-5" style={{ color: tk.invertedText }} strokeWidth={1.8} />
             </span>
             <div>
-              <p className="text-[14px] font-bold" style={{ color: '#FFFFFF' }}>Generar outfit</p>
-              <p className="text-[11px] leading-tight mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>Crea un look al instante con tus prendas</p>
+              <p className="text-[14px] font-bold" style={{ color: tk.invertedText }}>{t.generateOutfitLabel}</p>
+              <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.invertedText, opacity: 0.6 }}>{t.generateOutfitDesc}</p>
             </div>
           </button>
-          {SITUATION_TEMPLATES.map(t => {
-            const isCustom = t.id === 'custom';
+          {SITUATION_TEMPLATES.map(tpl => {
+            const isCustom = tpl.id === 'custom';
             return (
               <button
-                key={t.id}
-                onClick={() => handleSelectTemplate(t)}
+                key={tpl.id}
+                onClick={() => handleSelectTemplate(tpl)}
                 className={`flex flex-col items-start gap-2.5 p-3.5 rounded-2xl active:scale-[0.97] transition-all text-left${isCustom ? ' col-span-2' : ''}`}
                 style={isCustom
-                  ? { backgroundColor: '#5D4037', border: '1px solid #5D4037' }
-                  : { backgroundColor: '#FFFFFF', border: '1px solid #E6DFD7' }}
+                  ? { backgroundColor: tk.accent, border: `1px solid ${tk.accent}` }
+                  : { backgroundColor: tk.surface, border: `1px solid ${tk.border}` }}
               >
                 {isCustom ? (
                   <div className="w-full flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-                      <SituationIcon id={t.id} className="w-5 h-5" style={{ color: '#FFFFFF' }} />
+                      <SituationIcon id={tpl.id} className="w-5 h-5" style={{ color: tk.invertedText }} />
                     </span>
                     <div>
-                      <p className="text-[14px] font-bold" style={{ color: '#FFFFFF' }}>{t.label}</p>
-                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>{t.description}</p>
+                      <p className="text-[14px] font-bold" style={{ color: tk.invertedText }}>{getSituationLabel(tpl.id, lang)}</p>
+                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.invertedText, opacity: 0.6 }}>{getSituationDesc(tpl.id, lang)}</p>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#F0ECE8' }}>
-                      <SituationIcon id={t.id} className="w-[18px] h-[18px]" style={{ color: '#5D4037' }} />
+                    <span className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: tk.accentSurface }}>
+                      <SituationIcon id={tpl.id} className="w-[18px] h-[18px]" style={{ color: tk.accent }} />
                     </span>
                     <div>
-                      <p className="text-[13px] font-semibold" style={{ color: '#1C1C1C' }}>{t.label}</p>
-                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: '#9CA3AF' }}>{t.description}</p>
+                      <p className="text-[13px] font-semibold" style={{ color: tk.text }}>{getSituationLabel(tpl.id, lang)}</p>
+                      <p className="text-[11px] leading-tight mt-0.5" style={{ color: tk.textMuted }}>{getSituationDesc(tpl.id, lang)}</p>
                     </div>
                   </>
                 )}
@@ -927,74 +951,74 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
   if (step === 'configure') {
     return (
       <div className="px-5 py-4 flex flex-col gap-5">
-        <button onClick={() => setStep('select')} className="flex items-center gap-1.5 text-[13px] w-fit" style={{ color: '#5D4037' }}>
+        <button onClick={() => setStep('select')} className="flex items-center gap-1.5 text-[13px] w-fit" style={{ color: tk.accentText }}>
           <ChevronLeft className="w-4 h-4" strokeWidth={2} />
-          Cambiar situación
+          {t.changeSituation}
         </button>
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: '#F0ECE8' }}>
-            <SituationIcon id={template!.id} className="w-5 h-5" style={{ color: '#5D4037' }} />
+          <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: tk.accentSurface }}>
+            <SituationIcon id={template!.id} className="w-5 h-5" style={{ color: tk.accent }} />
           </span>
           <div>
-            <p className="text-[15px] font-bold" style={{ color: '#1C1C1C' }}>{template?.label}</p>
-            <p className="text-[12px]" style={{ color: '#9CA3AF' }}>Configura los detalles</p>
+            <p className="text-[15px] font-bold" style={{ color: tk.text }}>{getSituationLabel(template!.id, lang)}</p>
+            <p className="text-[12px]" style={{ color: tk.textMuted }}>{t.configureDetails}</p>
           </div>
         </div>
 
         {/* Custom occasion picker + description */}
         {template?.id === 'custom' && (
           <>
-            <div className="rounded-2xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6DFD7' }}>
-              <p className="text-[13px] font-semibold mb-1" style={{ color: '#1C1C1C' }}>Describe la situación</p>
-              <p className="text-[11px] mb-3" style={{ color: '#9CA3AF' }}>Cuéntanos el contexto para afinar la propuesta</p>
+            <div className="rounded-2xl p-4" style={{ backgroundColor: tk.surface, border: `1px solid ${tk.border}` }}>
+              <p className="text-[13px] font-semibold mb-1" style={{ color: tk.text }}>{t.describeOccasion}</p>
+              <p className="text-[11px] mb-3" style={{ color: tk.textMuted }}>{t.describeOccasionSub}</p>
               <textarea
                 value={customDescription}
                 onChange={e => setCustomDescription(e.target.value)}
-                placeholder="Ej: cena de negocios en restaurante elegante, reunión informal con amigos en terraza…"
+                placeholder={t.describeOccasionPlaceholder}
                 maxLength={200}
                 rows={3}
                 className="w-full resize-none rounded-xl px-3 py-2.5 text-[13px] outline-none transition-all"
                 style={{
-                  backgroundColor: '#F0ECE8',
-                  color: '#1C1C1C',
+                  backgroundColor: tk.surfaceMuted,
+                  color: tk.text,
                   border: '1.5px solid transparent',
                   lineHeight: '1.5',
                 }}
-                onFocus={e => (e.currentTarget.style.borderColor = '#5D4037')}
+                onFocus={e => (e.currentTarget.style.borderColor = tk.accent)}
                 onBlur={e => (e.currentTarget.style.borderColor = 'transparent')}
               />
-              <p className="text-[10px] text-right mt-1" style={{ color: '#C4B8B0' }}>{customDescription.length}/200</p>
+              <p className="text-[10px] text-right mt-1" style={{ color: tk.iconMuted }}>{customDescription.length}/200</p>
             </div>
           </>
         )}
 
         {/* Days picker */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6DFD7' }}>
-          <p className="text-[13px] font-semibold mb-4" style={{ color: '#1C1C1C' }}>¿Cuántos días?</p>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: tk.surface, border: `1px solid ${tk.border}` }}>
+          <p className="text-[13px] font-semibold mb-4" style={{ color: tk.text }}>{t.howManyDays}</p>
           <div className="flex items-center justify-center gap-5">
             <button
               onClick={() => setDays(d => Math.max(1, d - 1))}
               className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              style={{ backgroundColor: '#F0ECE8' }}
+              style={{ backgroundColor: tk.surfaceMuted }}
             >
-              <span className="text-[22px] leading-none font-light" style={{ color: '#1C1C1C' }}>−</span>
+              <span className="text-[22px] leading-none font-light" style={{ color: tk.text }}>−</span>
             </button>
-            <span className="text-[32px] font-bold w-10 text-center tabular-nums" style={{ color: '#1C1C1C' }}>{days}</span>
+            <span className="text-[32px] font-bold w-10 text-center tabular-nums" style={{ color: tk.text }}>{days}</span>
             <button
               onClick={() => setDays(d => Math.min(7, d + 1))}
               className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform"
-              style={{ backgroundColor: '#F0ECE8' }}
+              style={{ backgroundColor: tk.surfaceMuted }}
             >
-              <span className="text-[22px] leading-none font-light" style={{ color: '#1C1C1C' }}>+</span>
+              <span className="text-[22px] leading-none font-light" style={{ color: tk.text }}>+</span>
             </button>
           </div>
-          <p className="text-[11px] text-center mt-3" style={{ color: '#9CA3AF' }}>Máximo 7 días</p>
+          <p className="text-[11px] text-center mt-3" style={{ color: tk.textMuted }}>{t.maxDays}</p>
         </div>
 
         {template?.id === 'custom' && (
           <>
-            <div className="rounded-2xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6DFD7' }}>
-              <p className="text-[13px] font-semibold mb-3" style={{ color: '#1C1C1C' }}>Tipo de ocasión</p>
+            <div className="rounded-2xl p-4" style={{ backgroundColor: tk.surface, border: `1px solid ${tk.border}` }}>
+              <p className="text-[13px] font-semibold mb-3" style={{ color: tk.text }}>{t.occasionType}</p>
               <div className="flex flex-wrap gap-2">
                 {(['Casual', 'Sport', 'Formal', 'Trabajo', 'Fiesta'] as const).map(o => (
                   <button
@@ -1002,8 +1026,8 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
                     onClick={() => setCustomOcasion(o)}
                     className="px-3 py-1.5 rounded-full text-[12px] font-medium transition-all active:scale-95"
                     style={{
-                      backgroundColor: customOcasion === o ? '#1C1C1C' : '#F0ECE8',
-                      color: customOcasion === o ? '#FFFFFF' : '#5D4037',
+                      backgroundColor: customOcasion === o ? tk.invertedBg : tk.surfaceMuted,
+                      color: customOcasion === o ? tk.invertedText : tk.accentText,
                     }}
                   >
                     {o}
@@ -1017,10 +1041,10 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
         <button
           onClick={handleGenerate}
           className="w-full py-3.5 rounded-2xl text-[14px] font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          style={{ backgroundColor: '#1C1C1C', color: '#FFFFFF' }}
+          style={{ backgroundColor: tk.invertedBg, color: tk.invertedText }}
         >
           <Sparkles className="w-4 h-4" strokeWidth={2} />
-          Generar plan
+          {t.generatePlan}
         </button>
       </div>
     );
@@ -1030,63 +1054,63 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
   return (
     <div className="px-5 py-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <button onClick={handleReset} className="flex items-center gap-1.5 text-[13px]" style={{ color: '#5D4037' }}>
+        <button onClick={handleReset} className="flex items-center gap-1.5 text-[13px]" style={{ color: tk.accentText }}>
           <ChevronLeft className="w-4 h-4" strokeWidth={2} />
-          Nueva situación
+          {t.newSituation}
         </button>
-        <span className="text-[11px] px-2.5 py-1 rounded-full" style={{ backgroundColor: '#F0ECE8', color: '#5D4037' }}>
+        <span className="text-[11px] px-2.5 py-1 rounded-full" style={{ backgroundColor: tk.accentSurface, color: tk.accentText }}>
           {plan.length} {plan.length === 1 ? 'outfit' : 'outfits'}
         </span>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: '#F0ECE8' }}>
-          <SituationIcon id={template!.id} className="w-5 h-5" style={{ color: '#5D4037' }} />
+        <span className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: tk.accentSurface }}>
+          <SituationIcon id={template!.id} className="w-5 h-5" style={{ color: tk.accent }} />
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-[15px] font-bold" style={{ color: '#1C1C1C' }}>Plan: {template?.label}</p>
+          <p className="text-[15px] font-bold" style={{ color: tk.text }}>{t.planOf} {getSituationLabel(template!.id, lang)}</p>
           {customDescription ? (
-            <p className="text-[11px] mt-0.5 leading-tight line-clamp-2" style={{ color: '#5D4037' }}>"{customDescription}"</p>
+            <p className="text-[11px] mt-0.5 leading-tight line-clamp-2" style={{ color: tk.accentText }}>"{customDescription}"</p>
           ) : (
-            <p className="text-[12px]" style={{ color: '#9CA3AF' }}>Propuestas de tu armario</p>
+            <p className="text-[12px]" style={{ color: tk.textMuted }}>{t.proposalsFromWardrobe}</p>
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
         {plan.map((dayPlan, idx) => (
-          <div key={idx} className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E6DFD7' }}>
+          <div key={idx} className="rounded-2xl overflow-hidden" style={{ backgroundColor: tk.surface, border: `1px solid ${tk.border}` }}>
             {/* Card header */}
-            <div className="flex items-center justify-between px-4 pt-3.5 pb-3 border-b" style={{ borderColor: '#F0ECE8' }}>
-              <p className="text-[13px] font-bold" style={{ color: '#1C1C1C' }}>{dayPlan.label}</p>
+            <div className="flex items-center justify-between px-4 pt-3.5 pb-3 border-b" style={{ borderColor: tk.borderLight }}>
+              <p className="text-[13px] font-bold" style={{ color: tk.text }}>{dayPlan.label}</p>
               <button
                 onClick={() => handleRegenOutfit(idx)}
                 className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full active:scale-90 transition-transform"
-                style={{ backgroundColor: '#F0ECE8', color: '#5D4037' }}
+                style={{ backgroundColor: tk.accentSurface, color: tk.accentText }}
               >
                 <RefreshCw className="w-3 h-3" strokeWidth={2} />
-                Regenerar
+                {t.regenerate}
               </button>
             </div>
             {/* Pieces */}
             <div className="px-4 py-3 flex flex-col gap-2">
               {dayPlan.outfit.length === 0 ? (
-                <p className="text-[12px] text-center py-2" style={{ color: '#9CA3AF' }}>Sin prendas suficientes</p>
+                <p className="text-[12px] text-center py-2" style={{ color: tk.textMuted }}>{t.notEnoughItems}</p>
               ) : (
                 dayPlan.outfit.map(piece => (
-                  <div key={piece.id} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ backgroundColor: '#F0ECE8' }}>
-                    <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: '#FFFFFF' }}>
+                  <div key={piece.id} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ backgroundColor: tk.surfaceMuted }}>
+                    <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: tk.surface }}>
                       {piece.img ? (
                         <img src={piece.img} alt={piece.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Shirt className="w-3.5 h-3.5" style={{ color: '#C4B8B0' }} strokeWidth={1.5} />
+                          <Shirt className="w-3.5 h-3.5" style={{ color: tk.iconMuted }} strokeWidth={1.5} />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-semibold truncate" style={{ color: '#1C1C1C' }}>{piece.name}</p>
-                      <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{piece.tipo}</p>
+                      <p className="text-[12px] font-semibold truncate" style={{ color: tk.text }}>{piece.name}</p>
+                      <p className="text-[10px]" style={{ color: tk.textMuted }}>{piece.tipo}</p>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       {piece.color.map(c => (
@@ -1095,7 +1119,7 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
                           className="w-3 h-3 rounded-full"
                           style={{
                             backgroundColor: COLOR_SWATCHES[c] ?? '#D1D5DB',
-                            border: c === 'Blanco' ? '1px solid #E6DFD7' : 'none',
+                            border: c === 'Blanco' ? `1px solid ${tk.border}` : 'none',
                           }}
                         />
                       ))}
@@ -1120,15 +1144,15 @@ function SituationPlannerView({ items, onSaveOutfit }: { items: Item[]; onSaveOu
             setSavedPlan(true);
           }}
           className="w-full py-3.5 rounded-2xl text-[14px] font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-          style={{ backgroundColor: '#1C1C1C', color: '#FFFFFF' }}
+          style={{ backgroundColor: tk.invertedBg, color: tk.invertedText }}
         >
           <Heart className="w-4 h-4" strokeWidth={2} />
-          Guardar plan
+          {t.savePlan}
         </button>
       ) : (
         <div className="flex items-center justify-center gap-2 py-3.5 rounded-2xl" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
           <Check className="w-4 h-4" style={{ color: '#16A34A' }} strokeWidth={2.5} />
-          <p className="text-[13px] font-semibold" style={{ color: '#16A34A' }}>Plan guardado</p>
+          <p className="text-[13px] font-semibold" style={{ color: '#16A34A' }}>{t.planSaved}</p>
         </div>
       )}
     </div>
@@ -1194,6 +1218,7 @@ const SPONSORED_ITEMS = [
 
 function BrandCircle({ brand }: { brand: string }) {
   const [logoLoaded, setLogoLoaded] = useState(false);
+  const { tk } = useContext(ThemeCtx);
   const meta = BRAND_META[brand];
   return (
     <button
@@ -1202,7 +1227,7 @@ function BrandCircle({ brand }: { brand: string }) {
     >
       <div
         className="w-14 h-14 rounded-full relative overflow-hidden transition-colors duration-200"
-        style={{ backgroundColor: logoLoaded ? '#FFFFFF' : meta.bg, border: '2px solid #E6DFD7' }}
+        style={{ backgroundColor: logoLoaded ? tk.surface : meta.bg, border: `2px solid ${tk.border}` }}
       >
         {!logoLoaded && (
           <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold">
@@ -1217,7 +1242,8 @@ function BrandCircle({ brand }: { brand: string }) {
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
         />
       </div>
-      <span className="text-[10px] font-medium w-14 text-center leading-tight" style={{ color: '#6B7280' }}>
+      <span
+        className="text-[9px]" style={{ color: tk.textSub }}>
         {brand}
       </span>
     </button>
@@ -1235,17 +1261,19 @@ function ExploreView({
   onNavProto: () => void;
   onAdd: () => void;
 }) {
+  const { tk, lang } = useContext(ThemeCtx);
+  const t = I18N[lang];
   const brands = Object.keys(BRAND_META);
 
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: '#F8F9FA' }}>
+    <div className="flex flex-col h-full" style={{ backgroundColor: tk.bg }}>
       {/* Spacer for status bar */}
       <div className="pt-[54px]" />
 
       {/* Header */}
-      <div className="sticky top-0 z-30 pt-5 pb-3 px-5" style={{ backgroundColor: '#F8F9FA' }}>
-        <h1 className="text-[26px] font-bold tracking-tight mb-1" style={{ color: '#1C1C1C' }}>Explorar</h1>
-        <p className="text-[13px] mb-4" style={{ color: '#9CA3AF' }}>Prendas patrocinadas para tu estilo</p>
+      <div className="sticky top-0 z-30 pt-5 pb-3 px-5" style={{ backgroundColor: tk.bg }}>
+        <h1 className="text-[26px] font-bold tracking-tight mb-1" style={{ color: tk.text }}>{t.explore}</h1>
+        <p className="text-[13px] mb-4" style={{ color: tk.textMuted }}>{t.sponsoredItems}</p>
 
         {/* Brand circles — each links directly to brand site */}
         <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -1276,7 +1304,7 @@ function ExploreView({
                   className="absolute top-2 right-2 text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
                   style={{ backgroundColor: 'rgba(255,255,255,0.88)', color: '#92400E' }}
                 >
-                  Patrocinado
+                  {t.sponsored}
                 </span>
               </div>
             </button>
@@ -1285,25 +1313,25 @@ function ExploreView({
       </div>
 
       {/* Bottom nav */}
-      <div className="h-[70px] flex items-center justify-around px-4 z-40 border-t shrink-0" style={{ backgroundColor: '#FFFFFF', borderColor: '#E6DFD7' }}>
+      <div className="h-[70px] flex items-center justify-around px-4 z-40 border-t shrink-0" style={{ backgroundColor: tk.navBg, borderColor: tk.border }}>
         <button onClick={onNavArmario} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Shirt className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Armario</span>
+          <Shirt className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.wardrobe}</span>
         </button>
         <button className="flex flex-col items-center gap-1">
-          <Search className="w-6 h-6" style={{ color: '#1C1C1C' }} strokeWidth={2} />
-          <span className="text-[10px] font-semibold" style={{ color: '#1C1C1C' }}>Explorar</span>
+          <Search className="w-6 h-6" style={{ color: tk.text }} strokeWidth={2} />
+          <span className="text-[10px] font-semibold" style={{ color: tk.text }}>{t.explore}</span>
         </button>
-        <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: '#1C1C1C' }}>
-          <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
+        <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: tk.invertedBg }}>
+          <Plus className="w-7 h-7" style={{ color: tk.invertedText }} strokeWidth={2.5} />
         </button>
         <button onClick={onNavProto} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Wand2 className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Sugerencias</span>
+          <Wand2 className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.suggestions}</span>
         </button>
         <button onClick={onNavOutfits} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Layers className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Outfits</span>
+          <Layers className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.outfits}</span>
         </button>
       </div>
     </div>
@@ -1312,7 +1340,7 @@ function ExploreView({
 
 // ─── OutfitsView ──────────────────────────────────────────────────────────────
 
-const REJECT_REASONS = ['No me convence', 'No disponible hoy', 'Fuera de ocasión', 'No me favorece'];
+
 
 // ─── SugerenciasView ─────────────────────────────────────────────────────────
 
@@ -1335,6 +1363,8 @@ function SugerenciasView({
   onNavOutfits: () => void;
   onAdd: () => void;
 }) {
+  const { tk, lang } = useContext(ThemeCtx);
+  const t = I18N[lang];
   const DAILY_LIMIT = 5;
   const SWIPE_X = 80;
   const SWIPE_Y = 70;
@@ -1479,43 +1509,43 @@ function SugerenciasView({
 
   const navBar = (
     <div className="h-[70px] flex items-center justify-around px-4 z-40 border-t shrink-0"
-      style={{ backgroundColor: '#FFFFFF', borderColor: '#E6DFD7' }}>
+      style={{ backgroundColor: tk.navBg, borderColor: tk.border }}>
       <button onClick={onNavArmario} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-        <Shirt className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-        <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Armario</span>
+        <Shirt className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+        <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.wardrobe}</span>
       </button>
       <button onClick={onNavExplorar} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-        <Search className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-        <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Explorar</span>
+        <Search className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+        <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.explore}</span>
       </button>
-      <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: '#1C1C1C' }}>
-        <Plus className="w-7 h-7" style={{ color: '#FFFFFF' }} strokeWidth={2.5} />
+      <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: tk.invertedBg }}>
+        <Plus className="w-7 h-7" style={{ color: tk.invertedText }} strokeWidth={2.5} />
       </button>
       <button className="flex flex-col items-center gap-1">
-        <Wand2 className="w-6 h-6" style={{ color: '#1C1C1C' }} strokeWidth={2} />
-        <span className="text-[10px] font-semibold" style={{ color: '#1C1C1C' }}>Sugerencias</span>
+        <Wand2 className="w-6 h-6" style={{ color: tk.text }} strokeWidth={2} />
+        <span className="text-[10px] font-semibold" style={{ color: tk.text }}>{t.suggestions}</span>
       </button>
       <button onClick={onNavOutfits} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-        <Layers className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-        <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Outfits</span>
+        <Layers className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+        <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.outfits}</span>
       </button>
     </div>
   );
 
   if (done) {
     return (
-      <div className="flex flex-col h-full" style={{ backgroundColor: '#F8F9FA' }}>
+      <div className="flex flex-col h-full" style={{ backgroundColor: tk.bg }}>
         <div className="pt-[54px]" />
         <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6 text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0ECE8' }}>
-            <Sparkles className="w-9 h-9" style={{ color: '#7C4F31' }} strokeWidth={1.5} />
+          <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: tk.accentSurface }}>
+            <Sparkles className="w-9 h-9" style={{ color: tk.accentText }} strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-[21px] font-bold mb-2" style={{ color: '#1C1C1C' }}>¡Todo visto por hoy!</p>
-            <p className="text-[13px] leading-relaxed" style={{ color: '#9CA3AF' }}>Has revisado los 5 outfits del día. Vuelve mañana para nuevas combinaciones.</p>
+            <p className="text-[21px] font-bold mb-2" style={{ color: tk.text }}>{t.allSeenToday}</p>
+            <p className="text-[13px] leading-relaxed" style={{ color: tk.textMuted }}>{t.allSeenBody}</p>
           </div>
-          <div className="px-5 py-2 rounded-full text-[13px] font-medium" style={{ backgroundColor: '#F0ECE8', color: '#7C4F31' }}>
-            5 / 5 outfits vistos
+          <div className="px-5 py-2 rounded-full text-[13px] font-medium" style={{ backgroundColor: tk.accentSurface, color: tk.accentText }}>
+            {DAILY_LIMIT} / {DAILY_LIMIT} {t.seenOutfits}
           </div>
         </div>
         {navBar}
@@ -1524,14 +1554,14 @@ function SugerenciasView({
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: '#F8F9FA', userSelect: 'none' }}>
+    <div className="flex flex-col h-full" style={{ backgroundColor: tk.bg, userSelect: 'none' }}>
       <div className="pt-[54px]" />
 
       {/* Header */}
       <div className="px-5 pt-4 pb-2 flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-[22px] font-bold leading-tight" style={{ color: '#1C1C1C' }}>Sugerencias</h1>
-          <p className="text-[12px] capitalize" style={{ color: '#9CA3AF' }}>{getTodayLabel()}</p>
+        <h1 className="text-[22px] font-bold leading-tight" style={{ color: tk.text }}>{t.suggestionsTitle}</h1>
+          <p className="text-[12px] capitalize" style={{ color: tk.textMuted }}>{getTodayLabel()}</p>
         </div>
         <div className="flex gap-1.5 items-center">
           {Array.from({ length: DAILY_LIMIT }, (_, i) => (
@@ -1623,7 +1653,7 @@ function SugerenciasView({
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.14)', backdropFilter: 'blur(8px)', borderRadius: 100, padding: '4px 10px' }}>
                 <Sparkles style={{ width: 11, height: 11, color: '#FFFFFF' }} strokeWidth={1.8} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#FFFFFF' }}>Outfit {currentIdx + 1} de {DAILY_LIMIT}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#FFFFFF' }}>{t.outfitLabel} {currentIdx + 1} {t.outfitOf} {DAILY_LIMIT}</span>
               </div>
             </div>
             {/* Ver prendas button */}
@@ -1639,7 +1669,7 @@ function SugerenciasView({
               }}
             >
               <ChevronLeft style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.75)', transform: 'rotate(90deg)' }} strokeWidth={2} />
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>Ver prendas</span>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 500 }}>{t.seeItems}</span>
             </button>
           </div>
 
@@ -1653,7 +1683,7 @@ function SugerenciasView({
           position: 'absolute',
           inset: '0 16px 0 16px',
           marginBottom: '1px',
-          backgroundColor: '#FAFAF9',
+          backgroundColor: tk.surface,
           display: 'flex', flexDirection: 'column',
           transform: piecesVisible ? `translateY(${pieceDragY}px)` : 'translateY(100%)',
           transition: pieceDragY > 0 ? 'none' : 'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
@@ -1664,30 +1694,30 @@ function SugerenciasView({
             onPointerDown={(e) => { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); pieceDragStart.current = e.clientY; }}
             onPointerMove={(e) => { const dy = e.clientY - pieceDragStart.current; if (dy > 0) { pieceDragYRef.current = dy; setPieceDragY(dy); } }}
             onPointerUp={() => { if (pieceDragYRef.current > 60) closePieces(); pieceDragYRef.current = 0; setPieceDragY(0); }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: '1px solid #F0ECE8', flexShrink: 0, touchAction: 'none', cursor: 'grab', paddingTop: 10, paddingBottom: 12 }}>
-            <div style={{ width: 36, height: 4, backgroundColor: '#E6DFD7', borderRadius: 2, marginBottom: 12 }} />
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottom: `1px solid ${tk.borderLight}`, flexShrink: 0, touchAction: 'none', cursor: 'grab', paddingTop: 10, paddingBottom: 12 }}>
+            <div style={{ width: 36, height: 4, backgroundColor: tk.border, borderRadius: 2, marginBottom: 12 }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 16px' }}>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#1C1C1C' }}>Prendas del outfit</p>
-              <button onClick={(e) => { e.stopPropagation(); closePieces(); }} style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#F0ECE8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <X style={{ width: 14, height: 14, color: '#5D4037' }} strokeWidth={2.5} />
+              <p style={{ fontSize: 15, fontWeight: 700, color: tk.text }}>{t.itemsOfOutfit}</p>
+              <button onClick={(e) => { e.stopPropagation(); closePieces(); }} style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: tk.surfaceMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <X style={{ width: 14, height: 14, color: tk.accentText }} strokeWidth={2.5} />
               </button>
             </div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {outfit.length === 0 ? (
-              <p style={{ fontSize: 13, textAlign: 'center', color: '#9CA3AF', paddingTop: 20 }}>Sin prendas suficientes</p>
+              <p style={{ fontSize: 13, textAlign: 'center', color: tk.textMuted, paddingTop: 20 }}>{t.notEnoughItems}</p>
             ) : outfit.map(piece => (
-              <div key={piece.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 14, backgroundColor: '#F0ECE8' }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, overflow: 'hidden', backgroundColor: '#FFFFFF', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div key={piece.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 14, backgroundColor: tk.surfaceMuted }}>
+                <div style={{ width: 48, height: 48, borderRadius: 10, overflow: 'hidden', backgroundColor: tk.surface, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {piece.img ? (
                     <img src={piece.img} alt={piece.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <Shirt style={{ width: 20, height: 20, color: '#C4B8B0' }} strokeWidth={1.5} />
+                    <Shirt style={{ width: 20, height: 20, color: tk.iconMuted }} strokeWidth={1.5} />
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1C1C1C', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{piece.name}</p>
-                  <p style={{ fontSize: 11, color: '#9CA3AF' }}>{piece.tipo} · {piece.marca}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: tk.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{piece.name}</p>
+                  <p style={{ fontSize: 11, color: tk.textMuted }}>{piece.tipo} · {piece.marca}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
                   {piece.color.map(c => (
@@ -1719,22 +1749,22 @@ function SugerenciasView({
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              width: '100%', backgroundColor: '#FFFFFF',
+              width: '100%', backgroundColor: tk.surface,
               borderRadius: '24px 24px 0 0',
               padding: '20px 20px 36px',
               transform: rejectVisible ? 'translateY(0)' : 'translateY(100%)',
               transition: 'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
-            <div style={{ width: 36, height: 4, backgroundColor: '#E6DFD7', borderRadius: 2, margin: '0 auto 20px' }} />
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#1C1C1C', marginBottom: 4 }}>¿Por qué no te gusta?</p>
-            <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 16 }}>Tu feedback mejora las próximas sugerencias</p>
+            <div style={{ width: 36, height: 4, backgroundColor: tk.border, borderRadius: 2, margin: '0 auto 20px' }} />
+            <p style={{ fontSize: 16, fontWeight: 700, color: tk.text, marginBottom: 4 }}>{t.rejectTitle}</p>
+            <p style={{ fontSize: 13, color: tk.textMuted, marginBottom: 16 }}>{t.rejectSubtitle}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {REJECT_REASONS.map(reason => (
+              {REJECT_REASONS_I18N[lang].map(reason => (
                 <button
                   key={reason}
                   onClick={closeReject}
-                  style={{ width: '100%', padding: '12px 16px', borderRadius: 14, backgroundColor: '#F0ECE8', border: '1.5px solid #E6DFD7', textAlign: 'left' as const, fontSize: 14, fontWeight: 500, color: '#1C1C1C', cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: 14, backgroundColor: tk.surfaceMuted, border: `1.5px solid ${tk.border}`, textAlign: 'left' as const, fontSize: 14, fontWeight: 500, color: tk.text, cursor: 'pointer' }}
                 >
                   {reason}
                 </button>
@@ -1742,22 +1772,22 @@ function SugerenciasView({
               <textarea
                 value={customReason}
                 onChange={e => setCustomReason(e.target.value)}
-                placeholder="Cuéntanos más (opcional)..."
+                placeholder={t.tellUsMore}
                 rows={2}
                 style={{
                   width: '100%', padding: '10px 14px', borderRadius: 12,
-                  backgroundColor: '#F0ECE8', border: '1.5px solid #E6DFD7',
-                  fontSize: 13, resize: 'none' as const, outline: 'none', color: '#1C1C1C',
+                  backgroundColor: tk.surfaceMuted, border: `1.5px solid ${tk.border}`,
+                  fontSize: 13, resize: 'none' as const, outline: 'none', color: tk.text,
                   fontFamily: 'inherit',
                 }}
-                onFocus={e => (e.currentTarget.style.borderColor = '#5D4037')}
-                onBlur={e => (e.currentTarget.style.borderColor = '#E6DFD7')}
+                onFocus={e => (e.currentTarget.style.borderColor = tk.accent)}
+                onBlur={e => (e.currentTarget.style.borderColor = tk.border)}
               />
               <button
                 onClick={closeReject}
-                style={{ width: '100%', padding: '10px', marginTop: 2, borderRadius: 14, fontSize: 13, fontWeight: 500, color: '#9CA3AF', cursor: 'pointer', backgroundColor: 'transparent' }}
+                style={{ width: '100%', padding: '10px', marginTop: 2, borderRadius: 14, fontSize: 13, fontWeight: 500, color: tk.textMuted, cursor: 'pointer', backgroundColor: 'transparent' }}
               >
-                Saltar
+                {t.skipBtn}
               </button>
             </div>
           </div>
@@ -1794,6 +1824,8 @@ function OutfitsView({
   openOutfitId?: number | null;
   onClearOpenOutfit?: () => void;
 }) {
+  const { tk, lang } = useContext(ThemeCtx);
+  const t = I18N[lang];
   const [subTab, setSubTab] = useState<'situaciones' | 'guardados'>('situaciones');
   const [savedSubTab, setSavedSubTab] = useState<'guardados' | 'favoritos'>('guardados');
   const [zoomedSavedId, setZoomedSavedId] = useState<number | null>(null);
@@ -1810,22 +1842,22 @@ function OutfitsView({
   }, [openOutfitId]);
 
   return (
-    <div className="flex flex-col h-full relative" style={{ backgroundColor: '#F8F9FA' }}>
+    <div className="flex flex-col h-full relative" style={{ backgroundColor: tk.bg }}>
       <div className="pt-[54px]"></div>
       {/* Sticky header */}
-      <div className="sticky top-0 z-30 pt-5 px-5" style={{ backgroundColor: '#F8F9FA' }}>
-        <h1 className="text-[26px] font-bold tracking-tight mb-4" style={{ color: '#1C1C1C' }}>Outfits</h1>
-        <div className="flex border-b" style={{ borderColor: '#E6DFD7' }}>
-          {(['situaciones', 'guardados'] as const).map((t) => (
+      <div className="sticky top-0 z-30 pt-5 px-5" style={{ backgroundColor: tk.bg }}>
+        <h1 className="text-[26px] font-bold tracking-tight mb-4" style={{ color: tk.text }}>{t.outfits}</h1>
+        <div className="flex border-b" style={{ borderColor: tk.border }}>
+          {(['situaciones', 'guardados'] as const).map((tab) => (
             <button
-              key={t}
-              onClick={() => setSubTab(t)}
+              key={tab}
+              onClick={() => setSubTab(tab)}
               className="flex-1 pb-3 text-[13px] font-medium transition-colors flex flex-col items-center gap-1 pt-1"
-              style={{ color: subTab === t ? '#1C1C1C' : '#9CA3AF', borderBottom: subTab === t ? '2px solid #1C1C1C' : '2px solid transparent' }}
+              style={{ color: subTab === tab ? tk.text : tk.textMuted, borderBottom: subTab === tab ? `2px solid ${tk.text}` : '2px solid transparent' }}
             >
-              {t === 'situaciones' && <CalendarDays className="w-4 h-4" strokeWidth={1.8} />}
-              {t === 'guardados'   && <Heart className="w-4 h-4" strokeWidth={1.8} />}
-              {t === 'situaciones' ? 'Situaciones' : 'Guardados'}
+              {tab === 'situaciones' && <CalendarDays className="w-4 h-4" strokeWidth={1.8} />}
+              {tab === 'guardados'   && <Heart className="w-4 h-4" strokeWidth={1.8} />}
+              {tab === 'situaciones' ? t.situationsTab : t.savedTab}
             </button>
           ))}
         </div>
@@ -1845,15 +1877,15 @@ function OutfitsView({
                   onClick={() => setSavedSubTab(col)}
                   style={{
                     flex: 1, padding: '8px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600,
-                    backgroundColor: savedSubTab === col ? '#1C1C1C' : '#F0ECE8',
-                    color: savedSubTab === col ? '#FFFFFF' : '#6B7280',
+                    backgroundColor: savedSubTab === col ? tk.invertedBg : tk.surfaceMuted,
+                    color: savedSubTab === col ? tk.invertedText : tk.textSub,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer',
                   }}
                 >
                   {col === 'favoritos' && (
-                    <Heart style={{ width: 11, height: 11, color: savedSubTab === col ? '#FFFFFF' : '#6B7280' }} strokeWidth={2} fill={savedSubTab === col ? '#FFFFFF' : 'none'} />
+                    <Heart style={{ width: 11, height: 11, color: savedSubTab === col ? tk.invertedText : tk.textSub }} strokeWidth={2} fill={savedSubTab === col ? tk.invertedText : 'none'} />
                   )}
-                  {col === 'guardados' ? 'Guardados' : 'Favoritos'}
+                  {col === 'guardados' ? t.savedTab : t.favoritesTab}
                 </button>
               ))}
             </div>
@@ -1862,18 +1894,16 @@ function OutfitsView({
               const colItems = savedOutfits.filter(o => o.collection === savedSubTab);
               if (colItems.length === 0) return (
                 <div className="flex flex-col items-center justify-center gap-3" style={{ paddingTop: 60 }}>
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F0ECE8' }}>
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: tk.accentSurface }}>
                     {savedSubTab === 'favoritos'
-                      ? <Heart className="w-7 h-7" style={{ color: '#C4B8B0' }} strokeWidth={1.5} />
-                      : <Layers className="w-7 h-7" style={{ color: '#C4B8B0' }} strokeWidth={1.5} />}
+                      ? <Heart className="w-7 h-7" style={{ color: tk.iconMuted }} strokeWidth={1.5} />
+                      : <Layers className="w-7 h-7" style={{ color: tk.iconMuted }} strokeWidth={1.5} />}
                   </div>
-                  <p className="text-[15px] font-semibold" style={{ color: '#1C1C1C' }}>
-                    {savedSubTab === 'favoritos' ? 'Sin favoritos' : 'Sin outfits guardados'}
+                  <p className="text-[15px] font-semibold" style={{ color: tk.text }}>
+                    {savedSubTab === 'favoritos' ? t.noFavorites : t.noSavedOutfits}
                   </p>
-                  <p className="text-[13px] text-center px-8" style={{ color: '#9CA3AF' }}>
-                    {savedSubTab === 'favoritos'
-                      ? 'Pulsa el corazón en Sugerencias para añadir favoritos'
-                      : 'Acepta un outfit en Sugerencias para guardarlo aquí'}
+                  <p className="text-[13px] text-center px-8" style={{ color: tk.textMuted }}>
+                    {savedSubTab === 'favoritos' ? t.noFavoritesBody : t.noSavedBody}
                   </p>
                 </div>
               );
@@ -1883,13 +1913,13 @@ function OutfitsView({
                     <div
                       key={outfit.id}
                       onClick={() => setZoomedSavedId(outfit.id)}
-                      style={{ aspectRatio: '3/4', borderRadius: 16, overflow: 'hidden', border: '1px solid #E6DFD7', cursor: 'pointer', position: 'relative' }}
+                      style={{ aspectRatio: '3/4', borderRadius: 16, overflow: 'hidden', border: `1px solid ${tk.border}`, cursor: 'pointer', position: 'relative' }}
                     >
                       <OutfitCollage pieces={outfit.pieces} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 45%)' }} />
                       <div style={{ position: 'absolute', bottom: 10, left: 10, right: 10 }}>
                         <p style={{ fontSize: 10, fontWeight: 600, color: '#FFFFFF', textTransform: 'capitalize', lineHeight: 1.3, marginBottom: 1 }}>{outfit.date}</p>
-                        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.72)' }}>{outfit.pieces.length} prendas</p>
+                        <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.72)' }}>{outfit.pieces.length} {t.piecesUnit}</p>
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); onMoveOutfit(outfit.id, outfit.collection === 'favoritos' ? 'guardados' : 'favoritos'); }}
@@ -1916,25 +1946,25 @@ function OutfitsView({
       </div>
 
       {/* Bottom nav */}
-      <div className="h-[70px] flex items-center justify-around px-4 z-40 border-t shrink-0" style={{ backgroundColor: '#FFFFFF', borderColor: '#E6DFD7' }}>
+      <div className="h-[70px] flex items-center justify-around px-4 z-40 border-t shrink-0" style={{ backgroundColor: tk.navBg, borderColor: tk.border }}>
         <button onClick={onNavArmario} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Shirt className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Armario</span>
+          <Shirt className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.wardrobe}</span>
         </button>
         <button onClick={onNavExplorar} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Search className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Explorar</span>
+          <Search className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.explore}</span>
         </button>
-        <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: '#1C1C1C' }}>
+        <button onClick={onAdd} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5" style={{ backgroundColor: tk.invertedBg }}>
           <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
         </button>
         <button onClick={onNavProto} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Wand2 className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Sugerencias</span>
+          <Wand2 className="w-6 h-6" style={{ color: tk.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: tk.textSub }}>{t.suggestions}</span>
         </button>
         <button className="flex flex-col items-center gap-1">
-          <Layers className="w-6 h-6" style={{ color: '#1C1C1C' }} strokeWidth={2} />
-          <span className="text-[10px] font-semibold" style={{ color: '#1C1C1C' }}>Outfits</span>
+          <Layers className="w-6 h-6" style={{ color: tk.text }} strokeWidth={2} />
+          <span className="text-[10px] font-semibold" style={{ color: tk.text }}>{t.outfits}</span>
         </button>
       </div>
 
@@ -1962,7 +1992,7 @@ function OutfitsView({
                 width: '100%',
                 borderRadius: 24,
                 overflow: 'hidden',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: tk.surface,
                 boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
                 transform: visible ? 'scale(1)' : 'scale(0.78)',
                 opacity: visible ? 1 : 0,
@@ -1972,12 +2002,12 @@ function OutfitsView({
               {outfit && (
                 <>
                   {/* Header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 14px', borderBottom: '1px solid #F0ECE8' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 14px', borderBottom: `1px solid ${tk.borderLight}` }}>
                     <div>
-                      <p style={{ fontSize: 15, fontWeight: 700, color: '#1C1C1C', lineHeight: 1.3 }}>
-                        {outfit.collection === 'favoritos' ? 'Outfit favorito' : 'Outfit guardado'}
+                      <p style={{ fontSize: 15, fontWeight: 700, color: tk.text, lineHeight: 1.3 }}>
+                        {outfit.collection === 'favoritos' ? t.favOutfit : t.savedOutfit}
                       </p>
-                      <p style={{ fontSize: 12, color: '#9CA3AF', textTransform: 'capitalize' }}>{outfit.date}</p>
+                      <p style={{ fontSize: 12, color: tk.textMuted, textTransform: 'capitalize' }}>{outfit.date}</p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
@@ -2003,15 +2033,15 @@ function OutfitsView({
                   {/* Pieces */}
                   <div style={{ padding: '12px 16px 18px', display: 'flex', flexDirection: 'column', gap: 9 }}>
                     {outfit.pieces.map(piece => (
-                      <div key={piece.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 14, backgroundColor: '#F0ECE8' }}>
-                        <div style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', flexShrink: 0, backgroundColor: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div key={piece.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 14, backgroundColor: tk.surfaceMuted }}>
+                        <div style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', flexShrink: 0, backgroundColor: tk.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {piece.img
                             ? <img src={piece.img} alt={piece.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            : <Shirt style={{ width: 22, height: 22, color: '#C4B8B0' }} strokeWidth={1.5} />}
+                            : <Shirt style={{ width: 22, height: 22, color: tk.iconMuted }} strokeWidth={1.5} />}
                         </div>
                         <div style={{ minWidth: 0 }}>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: '#1C1C1C', lineHeight: 1.3 }}>{piece.name}</p>
-                          <p style={{ fontSize: 12, color: '#9CA3AF' }}>{piece.tipo} · {piece.marca}</p>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: tk.text, lineHeight: 1.3 }}>{piece.name}</p>
+                          <p style={{ fontSize: 12, color: tk.textMuted }}>{piece.tipo} · {piece.marca}</p>
                         </div>
                       </div>
                     ))}
@@ -2027,7 +2057,624 @@ function OutfitsView({
   );
 }
 
-// ─── Wardrobe ────────────────────────────────────────────────────────────────
+// ─── Theme tokens ────────────────────────────────────────────────────────────
+
+const LIGHT_TK = {
+  bg: '#F8F9FA',
+  surface: '#FFFFFF',
+  surfaceMuted: '#F0ECE8',
+  border: '#E6DFD7',
+  borderLight: '#F0ECE8',
+  text: '#1C1C1C',
+  textSub: '#6B7280',
+  textMuted: '#9CA3AF',
+  iconMuted: '#C4B8B0',
+  accent: '#5D4037',
+  accentSurface: '#F0ECE8',
+  accentText: '#7C4F31',
+  invertedBg: '#1C1C1C',
+  invertedText: '#FFFFFF',
+  navBg: '#FFFFFF',
+  pillBg: '#E6DFD7',
+  pillText: '#1C1C1C',
+  pillActiveBg: '#5D4037',
+  pillActiveText: '#FFFFFF',
+  toggleTrackOff: '#D1CBC4',
+  filterActiveBg: '#5D4037',
+  filterActiveText: '#FFFFFF',
+  filterInactiveBg: '#E6DFD7',
+  filterInactiveText: '#1C1C1C',
+  dropdownBg: '#FFFFFF',
+  dropdownSelectedBg: '#F5EFE9',
+  dropdownSelectedText: '#5D4037',
+};
+const DARK_TK = {
+  bg: '#0D0D0F',
+  surface: '#1C1C1E',
+  surfaceMuted: '#2C2C2E',
+  border: '#38383A',
+  borderLight: '#2C2C2E',
+  text: '#F5F5F7',
+  textSub: '#9CA3AF',
+  textMuted: '#6B7280',
+  iconMuted: '#555558',
+  accent: '#C4A882',
+  accentSurface: '#2C2C2E',
+  accentText: '#D4A574',
+  invertedBg: '#F5F5F7',
+  invertedText: '#0D0D0F',
+  navBg: '#1C1C1E',
+  pillBg: '#2C2C2E',
+  pillText: '#F5F5F7',
+  pillActiveBg: '#C4A882',
+  pillActiveText: '#1C1C1C',
+  toggleTrackOff: '#3A3A3C',
+  filterActiveBg: '#C4A882',
+  filterActiveText: '#1C1C1C',
+  filterInactiveBg: '#2C2C2E',
+  filterInactiveText: '#F5F5F7',
+  dropdownBg: '#1C1C1E',
+  dropdownSelectedBg: '#2C2C2E',
+  dropdownSelectedText: '#C4A882',
+};
+type TK = typeof LIGHT_TK;
+type Lang = 'es' | 'en';
+const ThemeCtx = createContext<{ tk: TK; lang: Lang }>({ tk: LIGHT_TK, lang: 'es' });
+
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+
+const I18N = {
+  es: {
+    wardrobeTitle: 'Mi Armario', explore: 'Explorar', suggestions: 'Sugerencias',
+    outfits: 'Outfits', wardrobe: 'Armario', settingsTitle: 'Ajustes',
+    notifsTitle: 'Notificaciones', allSettings: 'Todos los ajustes',
+    darkMode: 'Tema oscuro', pushNotifs: 'Notificaciones push',
+    language: 'Idioma', currency: 'Moneda', preferences: 'Preferencias',
+    region: 'Región', account: 'Cuenta', profile: 'Perfil', privacy: 'Privacidad',
+    security: 'Seguridad', support: 'Ayuda y soporte', helpCenter: 'Centro de ayuda',
+    reportProblem: 'Reportar un problema', rateApp: 'Valorar la app',
+    about: 'Acerca de', version: 'Versión', terms: 'Términos de uso',
+    privacyPolicy: 'Política de privacidad', logout: 'Cerrar sesión',
+    markAllRead: 'Marcar todo leído', noItems: 'Sin prendas con estos filtros',
+    cancel: 'Cancelar', sponsoredItems: 'Prendas patrocinadas para tu estilo',
+    currencyValue: 'EUR (€)', spanish: 'Español', english: 'English',
+    appVersion: '1.0.0 (build 42)',
+    // SugerenciasView
+    suggestionsTitle: 'Sugerencias', outfitLabel: 'Outfit', outfitOf: 'de',
+    seenOutfits: 'outfits vistos', seeItems: 'Ver prendas',
+    allSeenToday: '¡Todo visto por hoy!',
+    allSeenBody: 'Has revisado los 5 outfits del día. Vuelve mañana para nuevas combinaciones.',
+    itemsOfOutfit: 'Prendas del outfit', notEnoughItems: 'Sin prendas suficientes',
+    rejectTitle: '¿Por qué no te gusta?',
+    rejectSubtitle: 'Tu feedback mejora las próximas sugerencias',
+    skipBtn: 'Saltar', tellUsMore: 'Cuéntanos más (opcional)...',
+    // OutfitsView
+    situationsTab: 'Situaciones', savedTab: 'Guardados', favoritesTab: 'Favoritos',
+    noSavedOutfits: 'Sin outfits guardados', noFavorites: 'Sin favoritos',
+    noSavedBody: 'Acepta un outfit en Sugerencias para guardarlo aquí',
+    noFavoritesBody: 'Pulsa el corazón en Sugerencias para añadir favoritos',
+    favOutfit: 'Outfit favorito', savedOutfit: 'Outfit guardado', piecesUnit: 'prendas',
+    // ExploreView
+    sponsored: 'Patrocinado',
+    // SituationPlannerView
+    whichSituation: '¿Cuál es la situación?',
+    whichSituationSub: 'Selecciona y genera looks adaptados a tu ocasión',
+    generateOutfitLabel: 'Generar outfit',
+    generateOutfitDesc: 'Crea un look al instante con tus prendas',
+    changeSituation: 'Cambiar situación', newSituation: 'Nueva situación',
+    configureDetails: 'Configura los detalles',
+    describeOccasion: 'Describe la situación',
+    describeOccasionSub: 'Cuéntanos el contexto para afinar la propuesta',
+    describeOccasionPlaceholder: 'Ej: cena de negocios en restaurante elegante, reunión informal con amigos en terraza…',
+    howManyDays: '¿Cuántos días?', maxDays: 'Máximo 7 días',
+    occasionType: 'Tipo de ocasión', generatePlan: 'Generar plan',
+    savePlan: 'Guardar plan', planSaved: 'Plan guardado', regenerate: 'Regenerar',
+    proposalsFromWardrobe: 'Propuestas de tu armario', planOf: 'Plan:',
+    lookOfDay: 'Look del día', day: 'Día',
+    // Notifications settings
+    notifCustomize: 'Personalizar notificaciones', notifTypes: 'Tipos',
+    notifOutfitSuggestions: 'Sugerencias de outfit',
+    notifOutfitSuggestionsDesc: 'Recibe outfits nuevos cada día',
+    notifWardrobeActivity: 'Actividad del armario',
+    notifWardrobeActivityDesc: 'Prendas sin usar, actualizaciones',
+    notifStoreNews: 'Novedades de tiendas',
+    notifStoreNewsDesc: 'Nuevas colecciones y ofertas',
+    notifReminders: 'Recordatorios', notifRemindersDesc: 'Prendas sin usar hace tiempo',
+    notifFrequency: 'Frecuencia', freqImmediate: 'Inmediata', freqDaily: 'Resumen diario',
+    freqWeekly: 'Resumen semanal', freqNever: 'Nunca',
+    quietHours: 'Horas silenciosas', quietHoursDesc: 'Sin notificaciones de 22:00 a 8:00',
+  },
+  en: {
+    wardrobeTitle: 'My Wardrobe', explore: 'Explore', suggestions: 'Suggestions',
+    outfits: 'Outfits', wardrobe: 'Wardrobe', settingsTitle: 'Settings',
+    notifsTitle: 'Notifications', allSettings: 'All settings',
+    darkMode: 'Dark mode', pushNotifs: 'Push notifications',
+    language: 'Language', currency: 'Currency', preferences: 'Preferences',
+    region: 'Region', account: 'Account', profile: 'Profile', privacy: 'Privacy',
+    security: 'Security', support: 'Help & Support', helpCenter: 'Help center',
+    reportProblem: 'Report a problem', rateApp: 'Rate the app',
+    about: 'About', version: 'Version', terms: 'Terms of use',
+    privacyPolicy: 'Privacy policy', logout: 'Log out',
+    markAllRead: 'Mark all as read', noItems: 'No items with these filters',
+    cancel: 'Cancel', sponsoredItems: 'Sponsored items for your style',
+    currencyValue: 'EUR (€)', spanish: 'Español', english: 'English',
+    appVersion: '1.0.0 (build 42)',
+    // SugerenciasView
+    suggestionsTitle: 'Suggestions', outfitLabel: 'Outfit', outfitOf: 'of',
+    seenOutfits: 'outfits seen', seeItems: 'See items',
+    allSeenToday: 'All done for today!',
+    allSeenBody: "You've reviewed today's 5 outfits. Come back tomorrow for new ideas.",
+    itemsOfOutfit: 'Outfit items', notEnoughItems: 'Not enough items',
+    rejectTitle: "Why don't you like it?",
+    rejectSubtitle: 'Your feedback improves future suggestions',
+    skipBtn: 'Skip', tellUsMore: 'Tell us more (optional)...',
+    // OutfitsView
+    situationsTab: 'Situations', savedTab: 'Saved', favoritesTab: 'Favorites',
+    noSavedOutfits: 'No saved outfits', noFavorites: 'No favorites',
+    noSavedBody: 'Accept an outfit in Suggestions to save it here',
+    noFavoritesBody: 'Tap the heart in Suggestions to add favorites',
+    favOutfit: 'Favorite outfit', savedOutfit: 'Saved outfit', piecesUnit: 'items',
+    // ExploreView
+    sponsored: 'Sponsored',
+    // SituationPlannerView
+    whichSituation: "What's the situation?",
+    whichSituationSub: 'Select and generate looks adapted to your occasion',
+    generateOutfitLabel: 'Generate outfit',
+    generateOutfitDesc: 'Create a look instantly with your items',
+    changeSituation: 'Change situation', newSituation: 'New situation',
+    configureDetails: 'Configure details',
+    describeOccasion: 'Describe the situation',
+    describeOccasionSub: 'Tell us the context to refine the suggestion',
+    describeOccasionPlaceholder: 'E.g. business dinner at elegant restaurant, casual gathering on a terrace…',
+    howManyDays: 'How many days?', maxDays: 'Maximum 7 days',
+    occasionType: 'Occasion type', generatePlan: 'Generate plan',
+    savePlan: 'Save plan', planSaved: 'Plan saved', regenerate: 'Regenerate',
+    proposalsFromWardrobe: 'Proposals from your wardrobe', planOf: 'Plan:',
+    lookOfDay: 'Look of the day', day: 'Day',
+    // Notifications settings
+    notifCustomize: 'Customize notifications', notifTypes: 'Types',
+    notifOutfitSuggestions: 'Outfit suggestions',
+    notifOutfitSuggestionsDesc: 'Receive new outfits every day',
+    notifWardrobeActivity: 'Wardrobe activity',
+    notifWardrobeActivityDesc: 'Unused items, updates',
+    notifStoreNews: 'Store news',
+    notifStoreNewsDesc: 'New collections and deals',
+    notifReminders: 'Reminders', notifRemindersDesc: 'Items unused for a long time',
+    notifFrequency: 'Frequency', freqImmediate: 'Immediate', freqDaily: 'Daily digest',
+    freqWeekly: 'Weekly digest', freqNever: 'Never',
+    quietHours: 'Quiet hours', quietHoursDesc: 'No notifications from 10 PM to 8 AM',
+  },
+} as const;
+
+// ─── Notifications & Settings data ───────────────────────────────────────────
+
+const INITIAL_NOTIFICATIONS = [
+  { id: 1, icon: 'outfit',    title: 'Nuevo outfit sugerido',  body: 'Tienes 3 combinaciones nuevas para hoy',         time: 'hace 5 min',   unread: true  },
+  { id: 2, icon: 'wardrobe',  title: 'Armario actualizado',    body: 'Tu armario ya cuenta con 30 prendas',            time: 'hace 2 h',     unread: true  },
+  { id: 3, icon: 'store',     title: 'Nueva colección Zara',   body: 'Descubre las novedades de temporada',            time: 'ayer',         unread: false },
+  { id: 4, icon: 'reminder',  title: 'Prendas sin usar',       body: '3 prendas llevan más de 30 días sin uso',        time: 'hace 3 días',  unread: false },
+];
+type NotifItem = typeof INITIAL_NOTIFICATIONS[number];
+
+// ─── SettingsPanel ────────────────────────────────────────────────────────────
+
+function SettingsPanel({
+  open, anchorRect, onClose, darkMode, onToggleDark, pushNotifs, onTogglePush, lang, onSetLang, onOpenAllSettings,
+}: {
+  open: boolean; anchorRect: DOMRect | null; onClose: () => void;
+  darkMode: boolean; onToggleDark: () => void;
+  pushNotifs: boolean; onTogglePush: () => void;
+  lang: Lang; onSetLang: (l: Lang) => void;
+  onOpenAllSettings: () => void;
+}) {
+  const { tk } = useContext(ThemeCtx);
+  const t = I18N[lang];
+  const panelRef = useRef<HTMLDivElement>(null);
+  const screen = typeof document !== 'undefined' ? document.getElementById('phone-screen') : null;
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current?.contains(e.target as Node)) return;
+      onClose();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open, onClose]);
+
+  if (!open || !screen || !anchorRect) return null;
+  const screenRect = screen.getBoundingClientRect();
+  const top = anchorRect.bottom - screenRect.top + 6;
+  const right = screenRect.right - anchorRect.right;
+
+  const Toggle = ({ value, onToggle }: { value: boolean; onToggle: () => void }) => (
+    <button
+      onClick={onToggle}
+      className="relative w-10 h-6 rounded-full transition-colors duration-200 shrink-0"
+      style={{ backgroundColor: value ? tk.invertedBg : tk.toggleTrackOff }}
+    >
+      <span
+        className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200"
+        style={{ transform: value ? 'translateX(16px)' : 'translateX(0)' }}
+      />
+    </button>
+  );
+
+  return createPortal(
+    <div
+      ref={panelRef}
+      className="absolute rounded-[16px] shadow-xl border z-[9999] overflow-hidden"
+      style={{ top, right, width: 248, backgroundColor: tk.surface, borderColor: tk.border }}
+    >
+      {/* Preferencias */}
+      <div className="px-4 pt-3 pb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest mb-1" style={{ color: tk.textMuted }}>{t.preferences}</p>
+        {/* Dark mode */}
+        <div className="flex items-center justify-between py-2.5">
+          <div className="flex items-center gap-2.5">
+            <Moon className="w-[15px] h-[15px]" style={{ color: tk.text }} strokeWidth={1.8} />
+            <span className="text-[13px]" style={{ color: tk.text }}>{t.darkMode}</span>
+          </div>
+          <Toggle value={darkMode} onToggle={onToggleDark} />
+        </div>
+        {/* Push notifications */}
+        <div className="flex items-center justify-between py-2.5">
+          <div className="flex items-center gap-2.5">
+            <Bell className="w-[15px] h-[15px]" style={{ color: tk.text }} strokeWidth={1.8} />
+            <span className="text-[13px]" style={{ color: tk.text }}>{t.pushNotifs}</span>
+          </div>
+          <Toggle value={pushNotifs} onToggle={onTogglePush} />
+        </div>
+      </div>
+
+      <div className="h-px mx-4" style={{ backgroundColor: tk.borderLight }} />
+
+      {/* Language */}
+      <div className="px-4 pt-2 pb-2.5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: tk.textMuted }}>{t.language}</p>
+        <div className="flex gap-2">
+          {(['es', 'en'] as const).map(l => (
+            <button
+              key={l}
+              onClick={() => onSetLang(l)}
+              className="flex-1 py-1.5 rounded-full text-[12px] font-semibold transition-all active:scale-95"
+              style={{ backgroundColor: lang === l ? tk.invertedBg : tk.pillBg, color: lang === l ? tk.invertedText : tk.textSub }}
+            >
+              {l === 'es' ? `🇪🇸 ${t.spanish}` : `🇬🇧 ${t.english}`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="h-px" style={{ backgroundColor: tk.borderLight }} />
+
+      {/* All settings */}
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 active:opacity-70 transition-opacity"
+        onClick={() => { onClose(); onOpenAllSettings(); }}
+      >
+        <span className="text-[13px] font-semibold" style={{ color: tk.text }}>{t.allSettings}</span>
+        <ChevronRight className="w-[15px] h-[15px]" style={{ color: tk.textMuted }} strokeWidth={2} />
+      </button>
+    </div>,
+    screen
+  );
+}
+
+// ─── NotificationsPanel ───────────────────────────────────────────────────────
+
+function NotificationsPanel({
+  open, anchorRect, onClose, notifications, onMarkAllRead,
+}: {
+  open: boolean; anchorRect: DOMRect | null; onClose: () => void;
+  notifications: NotifItem[]; onMarkAllRead: () => void;
+}) {
+  const { tk, lang } = useContext(ThemeCtx);
+  const t = I18N[lang];
+  const panelRef = useRef<HTMLDivElement>(null);
+  const screen = typeof document !== 'undefined' ? document.getElementById('phone-screen') : null;
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current?.contains(e.target as Node)) return;
+      onClose();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open, onClose]);
+
+  if (!open || !screen || !anchorRect) return null;
+  const screenRect = screen.getBoundingClientRect();
+  const top = anchorRect.bottom - screenRect.top + 6;
+  const right = screenRect.right - anchorRect.right;
+
+  return createPortal(
+    <div
+      ref={panelRef}
+      className="absolute rounded-[16px] shadow-xl border z-[9999] overflow-hidden"
+      style={{ top, right, width: 270, backgroundColor: tk.surface, borderColor: tk.border }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b" style={{ borderColor: tk.borderLight }}>
+        <p className="text-[14px] font-semibold" style={{ color: tk.text }}>{t.notifsTitle}</p>
+        {notifications.some(n => n.unread) && (
+          <button onClick={onMarkAllRead} className="text-[11px] font-medium active:opacity-60" style={{ color: tk.accentText }}>
+            {t.markAllRead}
+          </button>
+        )}
+      </div>
+
+      {/* List */}
+      <div className="overflow-y-auto" style={{ maxHeight: 310 }}>
+        {notifications.map((n, i) => (
+          <div
+            key={n.id}
+            className="flex items-start gap-3 px-4 py-3"
+            style={{ borderBottom: i < notifications.length - 1 ? `1px solid ${tk.borderLight}` : 'none', backgroundColor: n.unread ? tk.surfaceMuted : tk.surface }}
+          >
+            <div
+              className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center mt-0.5"
+              style={{ backgroundColor: n.unread ? tk.accentSurface : tk.pillBg ?? tk.surfaceMuted }}
+            >
+              {n.icon === 'outfit'   && <Sparkles     className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
+              {n.icon === 'wardrobe' && <Shirt         className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
+              {n.icon === 'store'    && <ShoppingBag   className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
+              {n.icon === 'reminder' && <CalendarDays  className="w-[15px] h-[15px]" style={{ color: tk.accentText }} strokeWidth={1.8} />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className="text-[12px] font-semibold leading-tight" style={{ color: tk.text }}>{n.title}</p>
+                {n.unread && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: tk.accentText }} />}
+              </div>
+              <p className="text-[11px] mt-0.5 leading-snug" style={{ color: tk.textSub }}>{n.body}</p>
+              <p className="text-[10px] mt-1" style={{ color: tk.textMuted }}>{n.time}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>,
+    screen
+  );
+}
+
+// ─── AllSettingsView ──────────────────────────────────────────────────────────
+
+function AllSettingsView({
+  open, onClose, darkMode, onToggleDark, pushNotifs, onTogglePush, lang, onSetLang,
+}: {
+  open: boolean; onClose: () => void;
+  darkMode: boolean; onToggleDark: () => void;
+  pushNotifs: boolean; onTogglePush: () => void;
+  lang: Lang; onSetLang: (l: Lang) => void;
+}) {
+  const { tk } = useContext(ThemeCtx);
+  const t = I18N[lang];
+  const [notifSettingsOpen, setNotifSettingsOpen] = useState(false);
+  const [notifOutfits, setNotifOutfits] = useState(true);
+  const [notifWardrobe, setNotifWardrobe] = useState(true);
+  const [notifStore, setNotifStore] = useState(false);
+  const [notifReminders, setNotifReminders] = useState(true);
+  const [notifFreq, setNotifFreq] = useState<'immediate' | 'daily' | 'weekly' | 'never'>('immediate');
+  const [quietHours, setQuietHours] = useState(true);
+
+  const Toggle = ({ value, onToggle }: { value: boolean; onToggle: () => void }) => (
+    <button
+      onClick={onToggle}
+      className="relative w-10 h-6 rounded-full transition-colors duration-200 shrink-0"
+      style={{ backgroundColor: value ? tk.invertedBg : tk.toggleTrackOff }}
+    >
+      <span
+        className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200"
+        style={{ transform: value ? 'translateX(16px)' : 'translateX(0)' }}
+      />
+    </button>
+  );
+
+  const Section = ({ title }: { title: string }) => (
+    <p className="px-5 pt-5 pb-2 text-[11px] font-semibold uppercase tracking-widest" style={{ color: tk.textMuted }}>{title}</p>
+  );
+
+  const Row = ({ icon, label, right, last, danger }: { icon: React.ReactNode; label: string; right?: React.ReactNode; last?: boolean; danger?: boolean }) => (
+    <div className="flex items-center justify-between px-4 py-3.5"
+      style={{ borderBottom: last ? 'none' : `1px solid ${tk.borderLight}` }}>
+      <div className="flex items-center gap-3">
+        <span style={{ color: danger ? '#EF4444' : tk.textSub }}>{icon}</span>
+        <span className="text-[14px]" style={{ color: danger ? '#EF4444' : tk.text }}>{label}</span>
+      </div>
+      {right ?? <ChevronRight className="w-4 h-4" style={{ color: tk.textMuted }} strokeWidth={1.8} />}
+    </div>
+  );
+
+  const screen = typeof document !== 'undefined' ? document.getElementById('phone-screen') : null;
+  if (!screen) return null;
+
+  return createPortal(
+    <div
+      className="absolute inset-0 z-[9990] flex flex-col"
+      style={{
+        backgroundColor: tk.bg,
+        transform: open ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.38s cubic-bezier(0.32,0.72,0,1)',
+      }}
+    >
+      <div className="pt-[54px]" />
+      {/* Header */}
+      <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b shrink-0" style={{ borderColor: tk.border, backgroundColor: tk.bg }}>
+        <h1 className="text-[20px] font-bold" style={{ color: tk.text }}>{t.settingsTitle}</h1>
+        <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-60 transition-opacity" style={{ backgroundColor: tk.pillBg }}>
+          <X className="w-4 h-4" style={{ color: tk.textSub }} strokeWidth={2} />
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto pb-8">
+
+        {/* Preferencias */}
+        <Section title={t.preferences} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row icon={<Moon className="w-4 h-4" strokeWidth={1.8} />} label={t.darkMode} right={<Toggle value={darkMode} onToggle={onToggleDark} />} />
+          <Row icon={<Bell className="w-4 h-4" strokeWidth={1.8} />} label={t.pushNotifs} right={<Toggle value={pushNotifs} onToggle={onTogglePush} />} last />
+        </div>
+
+        {/* Notificaciones */}
+        <Section title={t.notifsTitle} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <button
+            className="w-full flex items-center justify-between px-4 py-3.5 active:opacity-60 transition-opacity"
+            onClick={() => setNotifSettingsOpen(true)}
+          >
+            <div className="flex items-center gap-3">
+              <Bell className="w-4 h-4" style={{ color: tk.textSub }} strokeWidth={1.8} />
+              <span className="text-[14px]" style={{ color: tk.text }}>{t.notifCustomize}</span>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: tk.textMuted }} strokeWidth={1.8} />
+          </button>
+        </div>
+
+        {/* Idioma */}
+        <Section title={t.language} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row
+            icon={<Globe className="w-4 h-4" strokeWidth={1.8} />}
+            label={t.language}
+            last
+            right={
+              <div className="flex gap-1.5">
+                {(['es', 'en'] as const).map(l => (
+                  <button key={l} onClick={() => onSetLang(l)}
+                    className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all active:scale-95"
+                    style={{ backgroundColor: lang === l ? tk.invertedBg : tk.pillBg, color: lang === l ? tk.invertedText : tk.textSub }}
+                  >
+                    {l === 'es' ? 'ES' : 'EN'}
+                  </button>
+                ))}
+              </div>
+            }
+          />
+        </div>
+
+        {/* Región */}
+        <Section title={t.region} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row icon={<Globe className="w-4 h-4" strokeWidth={1.8} />} label={t.language}
+            right={<span className="text-[13px]" style={{ color: tk.textSub }}>{lang === 'es' ? t.spanish : t.english}</span>} />
+          <Row icon={<FileText className="w-4 h-4" strokeWidth={1.8} />} label={t.currency} last
+            right={<span className="text-[13px]" style={{ color: tk.textSub }}>{t.currencyValue}</span>} />
+        </div>
+
+        {/* Cuenta */}
+        <Section title={t.account} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row icon={<User className="w-4 h-4" strokeWidth={1.8} />} label={t.profile} />
+          <Row icon={<Shield className="w-4 h-4" strokeWidth={1.8} />} label={t.privacy} />
+          <Row icon={<Settings className="w-4 h-4" strokeWidth={1.8} />} label={t.security} last />
+        </div>
+
+        {/* Soporte */}
+        <Section title={t.support} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row icon={<HelpCircle className="w-4 h-4" strokeWidth={1.8} />} label={t.helpCenter} />
+          <Row icon={<Star className="w-4 h-4" strokeWidth={1.8} />} label={t.rateApp} />
+          <Row icon={<FileText className="w-4 h-4" strokeWidth={1.8} />} label={t.reportProblem} last />
+        </div>
+
+        {/* Acerca de */}
+        <Section title={t.about} />
+        <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row icon={<FileText className="w-4 h-4" strokeWidth={1.8} />} label={t.terms} />
+          <Row icon={<Shield className="w-4 h-4" strokeWidth={1.8} />} label={t.privacyPolicy} />
+          <Row icon={<Star className="w-4 h-4" strokeWidth={1.8} />} label={t.version} last
+            right={<span className="text-[13px]" style={{ color: tk.textMuted }}>{t.appVersion}</span>} />
+        </div>
+
+        {/* Logout */}
+        <div className="mx-4 mt-5 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+          <Row icon={<LogOut className="w-4 h-4" strokeWidth={1.8} />} label={t.logout} last danger right={null} />
+        </div>
+      </div>
+
+      {/* ── Notification settings sub-panel ── */}
+      <div
+        className="absolute inset-0 flex flex-col"
+        style={{
+          backgroundColor: tk.bg,
+          transform: notifSettingsOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.32s cubic-bezier(0.32,0.72,0,1)',
+          zIndex: 10,
+        }}
+      >
+        <div className="pt-[54px]" />
+        <div className="px-5 pt-4 pb-3 flex items-center gap-3 border-b shrink-0" style={{ borderColor: tk.border, backgroundColor: tk.bg }}>
+          <button onClick={() => setNotifSettingsOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center active:opacity-60 transition-opacity" style={{ backgroundColor: tk.pillBg }}>
+            <ChevronLeft className="w-4 h-4" style={{ color: tk.textSub }} strokeWidth={2} />
+          </button>
+          <h2 className="text-[18px] font-bold" style={{ color: tk.text }}>{t.notifCustomize}</h2>
+        </div>
+        <div className="flex-1 overflow-y-auto pb-8">
+          {/* Types */}
+          <Section title={t.notifTypes} />
+          <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+            {([
+              [<Sparkles className="w-4 h-4" strokeWidth={1.8} />, t.notifOutfitSuggestions, t.notifOutfitSuggestionsDesc, notifOutfits, () => setNotifOutfits(v => !v)],
+              [<Shirt className="w-4 h-4" strokeWidth={1.8} />, t.notifWardrobeActivity, t.notifWardrobeActivityDesc, notifWardrobe, () => setNotifWardrobe(v => !v)],
+              [<ShoppingBag className="w-4 h-4" strokeWidth={1.8} />, t.notifStoreNews, t.notifStoreNewsDesc, notifStore, () => setNotifStore(v => !v)],
+              [<CalendarDays className="w-4 h-4" strokeWidth={1.8} />, t.notifReminders, t.notifRemindersDesc, notifReminders, () => setNotifReminders(v => !v)],
+            ] as [React.ReactNode, string, string, boolean, () => void][]).map(([icon, label, desc, val, setter], i, arr) => (
+              <div key={String(label)} className="flex items-center justify-between px-4 py-3.5"
+                style={{ borderBottom: i < arr.length - 1 ? `1px solid ${tk.borderLight}` : 'none' }}>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span style={{ color: tk.textSub }}>{icon}</span>
+                  <div className="min-w-0">
+                    <p className="text-[14px]" style={{ color: tk.text }}>{label}</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: tk.textMuted }}>{desc}</p>
+                  </div>
+                </div>
+                <Toggle value={val} onToggle={setter} />
+              </div>
+            ))}
+          </div>
+
+          {/* Frequency */}
+          <Section title={t.notifFrequency} />
+          <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+            <div className="p-4 flex flex-col gap-2">
+              {(['immediate', 'daily', 'weekly', 'never'] as const).map(val => (
+                <button
+                  key={val}
+                  onClick={() => setNotifFreq(val)}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl active:scale-[0.98] transition-all"
+                  style={{ backgroundColor: notifFreq === val ? tk.accentSurface : tk.surfaceMuted }}
+                >
+                  <span className="text-[13px] font-medium" style={{ color: notifFreq === val ? tk.accentText : tk.text }}>
+                    {val === 'immediate' ? t.freqImmediate : val === 'daily' ? t.freqDaily : val === 'weekly' ? t.freqWeekly : t.freqNever}
+                  </span>
+                  {notifFreq === val && <Check className="w-4 h-4" style={{ color: tk.accentText }} strokeWidth={2.5} />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Quiet hours */}
+          <Section title={t.quietHours} />
+          <div className="mx-4 rounded-2xl overflow-hidden border" style={{ backgroundColor: tk.surface, borderColor: tk.border }}>
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Moon className="w-4 h-4 shrink-0" style={{ color: tk.textSub }} strokeWidth={1.8} />
+                <div>
+                  <p className="text-[14px]" style={{ color: tk.text }}>{t.quietHours}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: tk.textMuted }}>{t.quietHoursDesc}</p>
+                </div>
+              </div>
+              <Toggle value={quietHours} onToggle={() => setQuietHours(v => !v)} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>,
+    screen
+  );
+}
 
 export function Wardrobe() {
   const [openKey, setOpenKey] = useState<FilterKey | null>(null);
@@ -2051,6 +2698,19 @@ export function Wardrobe() {
   const [openOutfitId, setOpenOutfitId] = useState<number | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const detailCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Notifications & Settings state ──
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [pushNotifs, setPushNotifs] = useState(true);
+  const [lang, setLang] = useState<Lang>('es');
+  const [allSettingsOpen, setAllSettingsOpen] = useState(false);
+  const notifBtnRef = useRef<HTMLButtonElement>(null);
+  const settingsBtnRef = useRef<HTMLButtonElement>(null);
+  const [notifBtnRect, setNotifBtnRect] = useState<DOMRect | null>(null);
+  const [settingsBtnRect, setSettingsBtnRect] = useState<DOMRect | null>(null);
 
   const openDetail = (item: Item) => {
     setSelectedItem(item);
@@ -2129,6 +2789,7 @@ export function Wardrobe() {
   );
 
   return (
+    <ThemeCtx.Provider value={{ tk: darkMode ? DARK_TK : LIGHT_TK, lang }}>
     <>
     <div style={{ display: navTab === 'outfits' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
       <OutfitsView items={items} savedOutfits={savedOutfits} onDeleteOutfit={handleDeleteOutfit} onMoveOutfit={handleMoveOutfit} onSaveOutfit={handleSaveOutfit} onNavArmario={() => setNavTab('armario')} onNavExplorar={() => setNavTab('explorar')} onNavProto={() => setNavTab('pronto')} onAdd={openPick} openOutfitId={openOutfitId} onClearOpenOutfit={() => setOpenOutfitId(null)} />
@@ -2139,14 +2800,49 @@ export function Wardrobe() {
     <div style={{ display: navTab === 'pronto' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
       <SugerenciasView items={items} onSaveOutfit={handleSaveOutfit} onDeleteOutfit={handleDeleteOutfit} onMoveOutfit={handleMoveOutfit} onNavArmario={() => setNavTab('armario')} onNavExplorar={() => setNavTab('explorar')} onNavOutfits={() => setNavTab('outfits')} onAdd={openPick} />
     </div>
-    <div className="flex flex-col h-full relative" style={{ backgroundColor: '#F8F9FA', display: navTab === 'armario' ? 'flex' : 'none' }}>
+    <div className="flex flex-col h-full relative" style={{ backgroundColor: darkMode ? DARK_TK.bg : LIGHT_TK.bg, display: navTab === 'armario' ? 'flex' : 'none' }}>
 
       {/* ── Sticky header ── */}
       <div className="pt-[54px]"></div>
-      <div className="sticky top-0 z-30 pt-5 pb-3 px-5" style={{ backgroundColor: '#F8F9FA' }}>
-        <h1 className="text-[26px] font-bold tracking-tight mb-4" style={{ color: '#1C1C1C' }}>
-          Mi Armario
-        </h1>
+      <div className="sticky top-0 z-30 pt-5 pb-3 px-5" style={{ backgroundColor: darkMode ? DARK_TK.bg : LIGHT_TK.bg }}>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-[26px] font-bold tracking-tight" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }}>
+            {I18N[lang].wardrobeTitle}
+          </h1>
+          <div className="flex items-center gap-2">
+            {/* Notifications button */}
+            <button
+              ref={notifBtnRef}
+              onClick={() => {
+                const rect = notifBtnRef.current?.getBoundingClientRect() ?? null;
+                setNotifBtnRect(rect);
+                setNotifOpen(v => !v);
+                setSettingsOpen(false);
+              }}
+              className="relative w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              style={{ backgroundColor: darkMode ? DARK_TK.pillBg : LIGHT_TK.pillBg }}
+            >
+              <Bell className="w-[17px] h-[17px]" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={1.8} />
+              {notifications.some(n => n.unread) && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444', border: `2px solid ${darkMode ? DARK_TK.bg : LIGHT_TK.bg}` }} />
+              )}
+            </button>
+            {/* Settings button */}
+            <button
+              ref={settingsBtnRef}
+              onClick={() => {
+                const rect = settingsBtnRef.current?.getBoundingClientRect() ?? null;
+                setSettingsBtnRect(rect);
+                setSettingsOpen(v => !v);
+                setNotifOpen(false);
+              }}
+              className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+              style={{ backgroundColor: darkMode ? DARK_TK.pillBg : LIGHT_TK.pillBg }}
+            >
+              <Settings className="w-[17px] h-[17px]" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={1.8} />
+            </button>
+          </div>
+        </div>
 
         {/* Dropdown filters */}
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -2168,8 +2864,8 @@ export function Wardrobe() {
         <div className="grid grid-cols-2 gap-2">
           {filtered.length === 0 && (
             <div className="col-span-2 flex flex-col items-center justify-center py-16 gap-2">
-              <Shirt className="w-10 h-10" style={{ color: '#C4B8B0' }} strokeWidth={1.5} />
-              <p className="text-[13px]" style={{ color: '#6B7280' }}>Sin prendas con estos filtros</p>
+              <Shirt className="w-10 h-10" style={{ color: darkMode ? DARK_TK.iconMuted : LIGHT_TK.iconMuted }} strokeWidth={1.5} />
+              <p className="text-[13px]" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }}>{I18N[lang].noItems}</p>
             </div>
           )}
           {(() => {
@@ -2181,13 +2877,13 @@ export function Wardrobe() {
                   onClick={() => openDetail(item)}
                   className="rounded-lg overflow-hidden active:scale-[0.97] transition-transform cursor-pointer"
                 >
-                  <div className="w-full aspect-[3/4] relative overflow-hidden" style={{ backgroundColor: '#F0ECE8' }}>
+                  <div className="w-full aspect-[3/4] relative overflow-hidden" style={{ backgroundColor: darkMode ? DARK_TK.surfaceMuted : LIGHT_TK.surfaceMuted }}>
                     {item.img ? (
                       <img src={item.img} alt={item.name} className="w-full h-full object-cover"
                         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Shirt className="w-10 h-10" style={{ color: '#C4B8B0' }} strokeWidth={1.5} />
+                        <Shirt className="w-10 h-10" style={{ color: darkMode ? DARK_TK.iconMuted : LIGHT_TK.iconMuted }} strokeWidth={1.5} />
                       </div>
                     )}
                   </div>
@@ -2240,39 +2936,39 @@ export function Wardrobe() {
       {/* ── Bottom Navigation ── */}
       <div
         className="h-[70px] flex items-center justify-around px-4 z-40 border-t shrink-0"
-        style={{ backgroundColor: '#FFFFFF', borderColor: '#E6DFD7' }}
+        style={{ backgroundColor: darkMode ? DARK_TK.navBg : LIGHT_TK.navBg, borderColor: darkMode ? DARK_TK.border : LIGHT_TK.border }}
       >
         {/* Armario (active) */}
         <button className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Shirt className="w-6 h-6" style={{ color: '#1C1C1C' }} strokeWidth={2} />
-          <span className="text-[10px] font-semibold" style={{ color: '#1C1C1C' }}>Armario</span>
+          <Shirt className="w-6 h-6" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }} strokeWidth={2} />
+          <span className="text-[10px] font-semibold" style={{ color: darkMode ? DARK_TK.text : LIGHT_TK.text }}>{I18N[lang].wardrobe}</span>
         </button>
 
         {/* Explorar */}
         <button onClick={() => setNavTab('explorar')} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Search className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Explorar</span>
+          <Search className="w-6 h-6" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }}>{I18N[lang].explore}</span>
         </button>
 
         {/* Add (floating) */}
         <button
           onClick={openPick}
           className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform -mt-5"
-          style={{ backgroundColor: '#1C1C1C' }}
+          style={{ backgroundColor: darkMode ? DARK_TK.invertedBg : LIGHT_TK.invertedBg }}
         >
-          <Plus className="w-7 h-7 text-white" strokeWidth={2.5} />
+          <Plus className="w-7 h-7" style={{ color: darkMode ? DARK_TK.invertedText : LIGHT_TK.invertedText }} strokeWidth={2.5} />
         </button>
 
         {/* Sugerencias */}
         <button onClick={() => setNavTab('pronto')} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Wand2 className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Sugerencias</span>
+          <Wand2 className="w-6 h-6" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }}>{I18N[lang].suggestions}</span>
         </button>
 
         {/* Outfits */}
         <button onClick={() => setNavTab('outfits')} className="flex flex-col items-center gap-1 active:scale-90 transition-transform">
-          <Layers className="w-6 h-6" style={{ color: '#6B7280' }} strokeWidth={1.8} />
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>Outfits</span>
+          <Layers className="w-6 h-6" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }} strokeWidth={1.8} />
+          <span className="text-[10px] font-medium" style={{ color: darkMode ? DARK_TK.textSub : LIGHT_TK.textSub }}>{I18N[lang].outfits}</span>
         </button>
       </div>
     </div>
@@ -2412,6 +3108,38 @@ export function Wardrobe() {
           />
         </div>
       )}
+
+      {/* ── Notifications & Settings portals ── */}
+      <NotificationsPanel
+        open={notifOpen}
+        anchorRect={notifBtnRect}
+        onClose={() => setNotifOpen(false)}
+        notifications={notifications}
+        onMarkAllRead={() => setNotifications(prev => prev.map(n => ({ ...n, unread: false })))}
+      />
+      <SettingsPanel
+        open={settingsOpen}
+        anchorRect={settingsBtnRect}
+        onClose={() => setSettingsOpen(false)}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode(v => !v)}
+        pushNotifs={pushNotifs}
+        onTogglePush={() => setPushNotifs(v => !v)}
+        lang={lang}
+        onSetLang={setLang}
+        onOpenAllSettings={() => setAllSettingsOpen(true)}
+      />
+      <AllSettingsView
+        open={allSettingsOpen}
+        onClose={() => setAllSettingsOpen(false)}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode(v => !v)}
+        pushNotifs={pushNotifs}
+        onTogglePush={() => setPushNotifs(v => !v)}
+        lang={lang}
+        onSetLang={setLang}
+      />
     </>
+    </ThemeCtx.Provider>
   );
 }
