@@ -8,7 +8,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 
-import es.uib.easypick.core.usecases.UseCase;
+import es.uib.easypick.core.application.usecases.UseCase;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
@@ -49,4 +49,22 @@ public class UseCaseArchitectureTest {
                     .should().haveSimpleNameNotEndingWith("Service")
                     .allowEmptyShould(true)
                     .because("A use case is a concrete implementation of a business logic, not a global service. Naming it as a service can lead to confusion and god classes.");
+
+    // Rule to ensure use cases are in the correct package
+    @ArchTest
+    static final ArchRule useCasesShouldResideInUseCasePackage =
+            classes()
+                    .that().areAnnotatedWith(UseCase.class)
+                    .should().resideInAPackage("..application.usecases..")
+                    .allowEmptyShould(true)
+                    .because("Use cases should be organized within the application.usecases package to maintain a clear architecture and separation of concerns.");
+
+    // Rule to ensure use cases end with "UseCase" in their name
+    @ArchTest
+    static final ArchRule useCasesShouldHaveProperNaming =
+            classes()
+                    .that().areAnnotatedWith(UseCase.class)
+                    .should().haveSimpleNameEndingWith("UseCase")
+                    .allowEmptyShould(true)
+                    .because("Use cases should have a clear and consistent naming convention, ending with 'Use Case' to indicate their role in the architecture.");
 }

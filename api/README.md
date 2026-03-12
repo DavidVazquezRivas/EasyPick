@@ -4,38 +4,13 @@
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
-```
-es.uib.easypick
-├── core/                          # Núcleo compartido (cross-cutting concerns)
-│   ├── entities/                  # BaseEntity (id, createdAt)
-│   ├── exceptions/                # AppException + ErrorCode (enum centralizado)
-│   ├── usecases/                  # @UseCase (anotación) + UseCaseLoggingAspect (AOP)
-│   └── web/
-│       ├── config/                # WebConfig (prefijo global /api/v1, CORS, ObjectMapper)
-│       │                          # SwaggerConfig
-│       ├── resolvers/             # @AuthenticatedUserId + Resolver
-│       ├── response/              # ApiResponse<T>, ErrorDetails, GlobalExceptionHandler
-│       └── security/              # SecurityConfig, JwtService, JwtAuthenticationFilter,
-│                                  # CustomAuthenticationEntryPoint
-├── auth/                          # Módulo de autenticación
-│   ├── controllers/               # AuthController
-│   ├── dtos/requests/             # RefreshTokenRequest (record)
-│   ├── dtos/responses/            # TokenResponse (record)
-│   ├── entities/                  # RefreshTokenEntity
-│   ├── repositories/              # RefreshTokenRepository
-│   └── usecases/                  # RefreshTokensUseCase
-├── garment/                       # Módulo de prendas
-│   ├── controllers/               # GarmentController
-│   ├── dtos/responses/            # SimpleGarmentResponse (record)
-│   ├── entities/                  # GarmentEntity
-│   ├── repositories/              # GarmentRepository
-│   └── usecases/                  # GetUserGarmentsUseCase
-└── user/                          # Módulo de usuarios
-    ├── entities/                  # UserEntity
-    └── repositories/              # UserRepository
-```
+El proyecto sigue una arquitectura de **Vertical Slices** combinada con separación en capas dentro de cada módulo. Cada módulo de dominio (`auth`, `garment`, `user`) se divide en tres capas:
+
+- **`application/`** — lógica de negocio: entidades JPA y casos de uso.
+- **`infrastructure/`** — detalles de implementación: repositorios JPA y clientes HTTP.
+- **`presentation/`** — interfaz HTTP: controladores y DTOs.
 
 Cada módulo de dominio (`auth`, `garment`, `user`) sigue la misma estructura de carpetas: `controllers → dtos → entities → repositories → usecases`. El paquete `core` contiene todo lo transversal.
 
@@ -406,7 +381,7 @@ class RefreshTokensUseCaseTest {
 Para crear entidades de test se usa el **patrón Test Data Builder**, implementado en la carpeta `helpers/` de cada módulo:
 
 ```java
-// Ubicación: src/test/java/es/uib/easypick/{modulo}/helpers/{Entidad}TestBuilder.java
+// Ubicación: src/test/java/es/uib/easypick/{modulo}/application/helpers/{Entidad}TestBuilder.java
 
 GarmentEntity garment = GarmentTestBuilder
         .aGarment()
@@ -459,16 +434,16 @@ public class GarmentTestBuilder {
 | Constructor privado | Solo se instancia mediante `aXxx()` (factory method). |
 | Valores por defecto válidos | `build()` sin ningún `withXxx()` debe generar una entidad completamente válida. |
 | API fluida | Cada `withXxx()` retorna `this` para encadenar. |
-| Ubicación | `src/test/java/es/uib/easypick/{modulo}/helpers/{Entidad}TestBuilder.java` |
+| Ubicación | `src/test/java/es/uib/easypick/{modulo}/application/helpers/{Entidad}TestBuilder.java` |
 | Naming | `{Entidad}TestBuilder` con método estático `a{Entidad}()` o `an{Entidad}()`. |
 
 **Builders existentes:**
 
 | Builder | Módulo |
 |---|---|
-| `UserTestBuilder` | `user/helpers/` |
-| `GarmentTestBuilder` | `garment/helpers/` |
-| `RefreshTokenTestBuilder` | `auth/helpers/` |
+| `UserTestBuilder` | `user/application/helpers/` |
+| `GarmentTestBuilder` | `garment/application/helpers/` |
+| `RefreshTokenTestBuilder` | `auth/application/helpers/` |
 
 > Siempre que se cree una nueva entidad, **crear su TestBuilder correspondiente**.
 
@@ -537,6 +512,8 @@ verify(refreshTokenRepository, never()).save(any());
 
 1. Toda clase `@UseCase` debe tener un método `execute()`.
 2. Ninguna clase `@UseCase` puede terminar en "Service".
+3. Toda clase `@UseCase` debe residir en un paquete `..application.usecases..`.
+4. Toda clase `@UseCase` debe terminar en "UseCase".
 
 Estos tests evitan que las convenciones se degraden con el tiempo.
 
@@ -558,12 +535,12 @@ Al implementar una nueva funcionalidad, seguir este checklist:
 
 ### Código de producción
 
-- [ ] **Entidad**: extender `BaseEntity`, usar `@Getter @Setter @NoArgsConstructor`, relaciones `LAZY` por defecto.
-- [ ] **Repositorio**: interfaz que extiende `JpaRepository<Entidad, UUID>`.
-- [ ] **DTOs**: records. Requests con validación `@NotNull`/`@NotBlank`/etc. Responses con `@Builder` y `fromEntity()`.
-- [ ] **UseCase**: anotar con `@UseCase`, inyección por constructor (`@RequiredArgsConstructor`), método `execute()`.
+- [ ] **Entidad** (`{modulo}/application/entities/`): extender `BaseEntity`, usar `@Getter @Setter @NoArgsConstructor`, relaciones `LAZY` por defecto.
+- [ ] **Repositorio** (`{modulo}/infrastructure/repositories/`): interfaz que extiende `JpaRepository<Entidad, UUID>`.
+- [ ] **DTOs** (`{modulo}/presentation/dtos/requests/` y `dtos/responses/`): records. Requests con validación `@NotNull`/`@NotBlank`/etc. Responses con `@Builder` y `fromEntity()`.
+- [ ] **UseCase** (`{modulo}/application/usecases/`): anotar con `@UseCase`, inyección por constructor (`@RequiredArgsConstructor`), método `execute()`.
 - [ ] **`@Transactional`**: `readOnly = true` para consultas, sin `readOnly` para escrituras.
-- [ ] **Controller**: `@RestController`, delegar al UseCase, devolver `ApiResponse.success(data)`.
+- [ ] **Controller** (`{modulo}/presentation/controllers/`): `@RestController`, delegar al UseCase, devolver `ApiResponse.success(data)`.
 - [ ] **Errores**: lanzar `AppException(ErrorCode.XXX)`. Si se necesita un nuevo código, añadirlo al enum `ErrorCode`.
 - [ ] **Si hay relaciones que deben cargarse juntas**: usar `@EntityGraph` o `@NamedEntityGraph` para evitar N+1.
 - [ ] **Migración SQL**: crear `V{N}__descripcion.sql` en `db/migration/`.
@@ -571,8 +548,8 @@ Al implementar una nueva funcionalidad, seguir este checklist:
 
 ### Tests
 
-- [ ] **TestBuilder** para cada nueva entidad en `{modulo}/helpers/{Entidad}TestBuilder.java`.
-- [ ] **Test del UseCase** en `{modulo}/usecases/{NombreUseCase}Test.java`.
+- [ ] **TestBuilder** para cada nueva entidad en `{modulo}/application/helpers/{Entidad}TestBuilder.java`.
+- [ ] **Test del UseCase** en `{modulo}/application/usecases/{NombreUseCase}Test.java`.
 - [ ] Usar `@ExtendWith(MockitoExtension.class)` + `@Mock` + `@InjectMocks`.
 - [ ] Cubrir **todos los caminos**: caso feliz, entidad no encontrada, validaciones de negocio, edge cases.
 - [ ] Usar `ArgumentCaptor` para verificar datos guardados.
