@@ -2,6 +2,7 @@ package es.uib.easypick.auth.application.usecases;
 
 import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.auth.application.entities.RefreshTokenEntity;
+import es.uib.easypick.auth.application.factories.RefreshTokenFactory;
 import es.uib.easypick.auth.application.helpers.RefreshTokenTestBuilder;
 import es.uib.easypick.auth.infrastructure.repositories.RefreshTokenRepository;
 import es.uib.easypick.core.application.exceptions.AppException;
@@ -12,8 +13,6 @@ import es.uib.easypick.user.application.helpers.UserTestBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,13 +31,13 @@ class RefreshTokensUseCaseTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
+    private RefreshTokenFactory refreshTokenFactory;
+
+    @Mock
     private JwtService jwtService;
 
     @InjectMocks
     private RefreshTokensUseCase refreshTokensUseCase;
-
-    @Captor
-    private ArgumentCaptor<RefreshTokenEntity> refreshTokenCaptor;
 
     private UUID tokenId;
     private UserEntity mockUser;
@@ -59,9 +58,14 @@ class RefreshTokensUseCaseTest {
                 .withUser(mockUser)
                 .build();
 
+        RefreshTokenEntity newToken = RefreshTokenTestBuilder.aRefreshToken()
+                .withUser(mockUser)
+                .build();
+
         String generatedAccessToken = "new.jwt.token";
         when(refreshTokenRepository.findById(tokenId)).thenReturn(Optional.of(validToken));
         when(jwtService.generateToken(mockUser)).thenReturn(generatedAccessToken);
+        when(refreshTokenFactory.createForUser(mockUser)).thenReturn(newToken);
 
         // Act
         TokenResponse response = refreshTokensUseCase.execute(tokenId);
@@ -69,12 +73,10 @@ class RefreshTokensUseCaseTest {
         // Assert
         assertNotNull(response);
         assertEquals(generatedAccessToken, response.accessToken());
+        assertEquals(newToken.getToken(), response.refreshToken());
         verify(refreshTokenRepository).delete(validToken);
-
-        verify(refreshTokenRepository).save(refreshTokenCaptor.capture());
-        RefreshTokenEntity savedToken = refreshTokenCaptor.getValue();
-        assertEquals(mockUser, savedToken.getUser());
-        assertTrue(savedToken.getExpiresAt().isAfter(OffsetDateTime.now().plusDays(29)));
+        verify(refreshTokenFactory).createForUser(mockUser);
+        verify(refreshTokenRepository).save(newToken);
     }
 
     @Test

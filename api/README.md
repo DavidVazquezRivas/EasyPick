@@ -164,7 +164,154 @@ public TokenResponse execute(UUID oldRefreshTokenId) { ... }
 
 ---
 
-## 4. Entity Graphs / Evitar N+1 (Estrategia de Fetching)
+## 4. Patrón Factory para la Creación de Entidades
+
+### ¿Por qué usar el patrón Factory?
+
+Las **entidades JPA** (`@Entity`) no pueden ni deben ser beans de Spring. Sin embargo, su creación a menudo requiere:
+- **Valores de configuración** (ej. `application.yml`)
+- **Lógica de inicialización** (fechas de expiración, valores por defecto)
+- **Validaciones de negocio**
+
+Delegar esta responsabilidad a los casos de uso viola el **Principio de Responsabilidad Única**. Los Use Cases deben orquestar la lógica de negocio, no conocer los detalles de construcción de entidades.
+
+### La interfaz `EntityFactory<T>`
+
+En el paquete `core.application.entities` se define una interfaz genérica que todos los factories deben implementar:
+
+```java
+/**
+ * Factory interface for creating entities.
+ * <p>
+ * This interface defines a contract for factory classes that encapsulate the creation logic
+ * of domain entities. Factories are responsible for initializing entities with proper defaults,
+ * configuration values, and business rules, keeping this logic out of Use Cases and Entities.
+ * </p>
+ */
+public interface EntityFactory<T> {
+    
+    /**
+     * Creates a new instance of the entity with proper initialization.
+     * 
+     * @return A new entity instance
+     */
+    T create();
+}
+```
+
+**Convenciones:**
+- Todas las factories implementan `EntityFactory<T>` donde `T` es la entidad que crean.
+- Se registran como beans de Spring (`@Component`) para aprovechar inyección de dependencias.
+- Contienen la lógica de creación, liberando a los Use Cases de esta responsabilidad.
+- **Se ubican en `<modulo>/application/factories/`** dentro del módulo correspondiente.
+
+### Ejemplo: `RefreshTokenFactory`
+
+```java
+@Component
+@RequiredArgsConstructor
+public class RefreshTokenFactory implements EntityFactory<RefreshTokenEntity> {
+
+    @Value("${application.security.refresh-token.expiration-days}")
+    private int expirationDays;
+
+    @Override
+    public RefreshTokenEntity create() {
+        RefreshTokenEntity token = new RefreshTokenEntity();
+        token.setExpiresAt(OffsetDateTime.now().plusDays(expirationDays));
+        return token;
+    }
+
+    public RefreshTokenEntity createForUser(UserEntity user) {
+        RefreshTokenEntity token = create();
+        token.setUser(user);
+        return token;
+    }
+}
+```
+
+**Responsabilidades del Factory:**
+- ✅ Inyectar valores de configuración desde `application.yml` (`@Value`)
+- ✅ Calcular fechas de expiración según reglas de negocio
+- ✅ Inicializar relaciones (ej. `setUser()`)
+- ✅ Garantizar que la entidad se crea en un estado válido
+
+### Configuración requerida
+
+En `application.yml` se define el tiempo de expiración de los refresh tokens:
+
+```yaml
+application:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:...}
+      expiration: 3600000 # 1 hour in milliseconds
+    refresh-token:
+      expiration-days: 30 # Refresh token validity in days
+```
+
+**Ventajas:**
+- ✅ El Use Case no conoce cómo se crea un `RefreshTokenEntity`
+- ✅ Los valores de configuración están centralizados en `application.yml`
+- ✅ Cambiar la lógica de expiración no requiere modificar el Use Case
+- ✅ Fácil de testear: se puede mockear el factory en los tests
+
+### Testing de Factories
+
+**Los factories contienen lógica de negocio y DEBEN tener tests unitarios.** Ejemplo de `RefreshTokenFactoryTest`:
+
+```java
+class RefreshTokenFactoryTest {
+
+    private RefreshTokenFactory factory;
+    private static final int EXPIRATION_DAYS = 30;
+
+    @BeforeEach
+    void setUp() {
+        factory = new RefreshTokenFactory();
+        // Inject the configuration value that would normally come from @Value
+        ReflectionTestUtils.setField(factory, "expirationDays", EXPIRATION_DAYS);
+    }
+
+    @Test
+    void create_ShouldReturnTokenWithExpirationDate() {
+        RefreshTokenEntity token = factory.create();
+        
+        assertNotNull(token.getExpiresAt());
+        OffsetDateTime expectedExpiration = OffsetDateTime.now().plusDays(EXPIRATION_DAYS);
+        assertTrue(token.getExpiresAt().isAfter(expectedExpiration.minusSeconds(5)));
+        assertTrue(token.getExpiresAt().isBefore(expectedExpiration.plusSeconds(5)));
+    }
+
+    @Test
+    void createForUser_ShouldReturnTokenWithUser() {
+        UserEntity user = UserTestBuilder.aUser().build();
+        
+        RefreshTokenEntity token = factory.createForUser(user);
+        
+        assertEquals(user, token.getUser());
+    }
+}
+```
+
+**Aspectos a testear en un factory:**
+- ✅ La entidad se crea correctamente
+- ✅ Los valores calculados (fechas, etc.) son correctos
+- ✅ Las relaciones se inicializan correctamente
+- ✅ Diferentes configuraciones producen resultados diferentes
+- ✅ Cada llamada crea una nueva instancia
+
+### Cuándo crear un Factory
+
+Crea un factory cuando la entidad cumple **al menos una** de estas condiciones:
+- Necesita valores de configuración externa (`@Value`, `@ConfigurationProperties`)
+- Tiene lógica de inicialización compleja (cálculos de fechas, valores derivados)
+- Se crea en múltiples Use Cases con la misma lógica
+- La construcción puede evolucionar independientemente de los Use Cases
+
+---
+
+## 5. Entity Graphs / Evitar N+1 (Estrategia de Fetching)
 
 ### Decisiones de Lazy vs Eager Loading
 
@@ -231,9 +378,9 @@ private void preRemove() {
 
 ---
 
-## 5. Otras Decisiones de Diseño Importantes
+## 6. Otras Decisiones de Diseño Importantes
 
-### 5.1 BaseEntity
+### 6.1 BaseEntity
 
 ```java
 @MappedSuperclass
@@ -253,7 +400,7 @@ public abstract class BaseEntity {
 - **`OffsetDateTime`**: incluye zona horaria (vs `LocalDateTime`), requerido para APIs con clientes en distintos husos horarios.
 - **Nota**: `RefreshTokenEntity` **no** extiende `BaseEntity` porque su PK es el propio `token` UUID, no un `id` autogenerado aparte.
 
-### 5.2 Manejo Centralizado de Errores
+### 6.2 Manejo Centralizado de Errores
 
 `GlobalExceptionHandler` captura **7 tipos de excepción**, cada uno mapeado a un `ErrorCode`:
 
@@ -280,7 +427,7 @@ public abstract class BaseEntity {
 
 Campos nulos se omiten gracias a `@JsonInclude(JsonInclude.Include.NON_NULL)`.
 
-### 5.3 Prefijo Global `/api/v1`
+### 6.3 Prefijo Global `/api/v1`
 
 Configurado en `WebConfig` con `configurePathMatch`, aplica automáticamente a todos los `@RestController`:
 
@@ -294,7 +441,7 @@ public void configurePathMatch(PathMatchConfigurer configurer) {
 
 No hace falta repetir `/api/v1` en cada `@RequestMapping`.
 
-### 5.4 `@AuthenticatedUserId` — Resolver Personalizado
+### 6.4 `@AuthenticatedUserId` — Resolver Personalizado
 
 En vez de recibir el `userId` como path/query param (lo cual permitiría al cliente acceder a recursos de otros usuarios), se extrae del JWT mediante un `HandlerMethodArgumentResolver`:
 

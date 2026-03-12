@@ -2,6 +2,7 @@ package es.uib.easypick.auth.application.usecases;
 
 import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.auth.application.entities.RefreshTokenEntity;
+import es.uib.easypick.auth.application.factories.RefreshTokenFactory;
 import es.uib.easypick.auth.infrastructure.repositories.RefreshTokenRepository;
 import es.uib.easypick.core.application.exceptions.AppException;
 import es.uib.easypick.core.application.exceptions.ErrorCode;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class RefreshTokensUseCase {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenFactory refreshTokenFactory;
     private final JwtService jwtService;
 
     // As it is an atomic operation, writing to the database, we need to make it transactional
@@ -36,9 +38,7 @@ public class RefreshTokensUseCase {
 
         String newAccessToken = jwtService.generateToken(user);
 
-        RefreshTokenEntity newRefreshToken = new RefreshTokenEntity();
-        newRefreshToken.setUser(user);
-        newRefreshToken.setExpiresAt(OffsetDateTime.now().plusDays(30));
+        RefreshTokenEntity newRefreshToken = refreshTokenFactory.createForUser(user);
         refreshTokenRepository.save(newRefreshToken);
 
         refreshTokenRepository.delete(oldToken);
