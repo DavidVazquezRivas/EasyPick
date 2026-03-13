@@ -14,6 +14,7 @@ import java.util.UUID;
 @Setter
 public class RefreshTokenEntity {
 
+    //<editor-fold desc="JPA">
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID token;
@@ -36,4 +37,15 @@ public class RefreshTokenEntity {
     protected void onCreate() {
         this.createdAt = OffsetDateTime.now();
     }
+    //</editor-fold>
+
+    //<editor-fold desc="Business Logic">
+
+    public boolean isExpired() {
+        return expiresAt.isBefore(OffsetDateTime.now());
+    }
+
+    //</editor-fold>
+
+
 }

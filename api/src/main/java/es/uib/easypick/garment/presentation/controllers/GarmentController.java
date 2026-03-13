@@ -22,7 +22,7 @@ public class GarmentController {
 
     private final GetUserGarmentsUseCase getUserGarmentsUseCase;
 
-    @GetMapping("/me")
+    @GetMapping()
     public ResponseEntity<ApiResponse<List<SimpleGarmentResponse>>> getUserGarments(
             @AuthenticatedUserId UUID userId
     ) {

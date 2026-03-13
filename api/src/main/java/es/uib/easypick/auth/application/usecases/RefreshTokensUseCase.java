@@ -12,7 +12,6 @@ import es.uib.easypick.user.application.entities.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @UseCase
@@ -29,7 +28,7 @@ public class RefreshTokensUseCase {
         RefreshTokenEntity oldToken = refreshTokenRepository.findById(oldRefreshTokenId)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED, "Refresh token not found"));
 
-        if (oldToken.isRevoked() || oldToken.getExpiresAt().isBefore(OffsetDateTime.now())) {
+        if (oldToken.isRevoked() || oldToken.isExpired()) {
             refreshTokenRepository.delete(oldToken);
             throw new AppException(ErrorCode.UNAUTHORIZED, "Expired or invalid refresh token");
         }
