@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (refreshToken: string) => {
     const normalizedRefreshToken = refreshToken.trim()
     if (!normalizedRefreshToken) {
-      throw new Error('Refresh token is required')
+      throw new Error('auth.errors.refreshTokenRequired')
     }
 
     tokenManager.setAccessToken(null)
@@ -68,6 +68,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (context === undefined) throw new Error('useAuth must be used within AuthProvider')
+  if (context === undefined) throw new Error('auth.errors.authProviderMissing')
   return context
 }

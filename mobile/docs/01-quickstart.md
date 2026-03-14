@@ -1,37 +1,31 @@
 # Quickstart
 
-Esta guía cubre el arranque mínimo del proyecto. Para entender cómo se organiza el frontend, continúa después con [02-frontend-guide.md](d:/Workspace/EasyPick/mobile/docs/02-frontend-guide.md) y [03-architecture.md](d:/Workspace/EasyPick/mobile/docs/03-architecture.md).
+Esta guia cubre el arranque minimo del proyecto. Para entender como se organiza el frontend, continua despues con [02-frontend-guide.md](d:/Workspace/EasyPick/mobile/docs/02-frontend-guide.md) y [03-architecture.md](d:/Workspace/EasyPick/mobile/docs/03-architecture.md).
 
 ## Stack actual
 
-Versiones relevantes del proyecto según `package.json`:
+Versiones relevantes segun package.json:
 
-- `expo`: `~54.0.33`
-- `react`: `19.1.0`
-- `react-native`: `0.81.5`
-- `expo-router`: `~6.0.23`
-- `@tanstack/react-query`: `^5.90.21`
-- `nativewind`: `^4.2.2`
+- expo: ~54.0.33
+- react: 19.1.0
+- react-native: 0.81.5
+- expo-router: ~6.0.23
+- @tanstack/react-query: ^5.90.21
+- nativewind: ^4.2.2
 
-## Instalación
-
-Desde la raíz del proyecto:
+## Instalacion
 
 ```bash
 npm install
 ```
 
-No hace falta instalar `expo-status-bar` por separado: ya está declarada en `package.json`.
-
 ## Arranque en desarrollo
-
-Servidor Expo:
 
 ```bash
 npm run start
 ```
 
-Atajos disponibles:
+Atajos:
 
 ```bash
 npm run android
@@ -39,26 +33,23 @@ npm run ios
 npm run web
 ```
 
-## Requisitos prácticos para desarrollar
+## Requisitos practicos
 
-- El backend debe estar accesible desde la URL definida en `src/shared/constants/ApiRoutes.ts`.
-- El login actual usa un `DEV_REFRESH_TOKEN` temporal en `src/app/(public)/login.tsx`.
-- El flujo de auth real hoy depende de SecureStore para persistir el refresh token.
+- Backend accesible desde src/shared/constants/ApiRoutes.ts.
+- Login actual usa DEV_REFRESH_TOKEN temporal.
+- Auth depende de refresh token en SecureStore.
 
 ## Primer arranque esperado
 
-El comportamiento actual de autenticación es intencional:
+1. App revisa refresh token en SecureStore.
+2. Si existe, marca sesion autenticada.
+3. Access token aun no esta en memoria.
+4. Primera request privada puede devolver 401.
+5. httpClient hace refresh y reintenta.
 
-1. La app arranca y revisa si existe refresh token en SecureStore.
-2. Si existe, marca la sesión como autenticada.
-3. El access token todavía no está en memoria.
-4. La primera petición protegida puede devolver `401`.
-5. `httpClient` hace refresh, obtiene nuevos tokens y reintenta la petición original.
-
-Ese primer `401` no es un bug; forma parte del flujo actual documentado.
-
-## Siguientes lecturas recomendadas
+## Siguientes lecturas
 
 1. [03-architecture.md](d:/Workspace/EasyPick/mobile/docs/03-architecture.md)
 2. [04-auth-routing.md](d:/Workspace/EasyPick/mobile/docs/04-auth-routing.md)
 3. [05-data-layer.md](d:/Workspace/EasyPick/mobile/docs/05-data-layer.md)
+4. [08-i18n.md](d:/Workspace/EasyPick/mobile/docs/08-i18n.md)

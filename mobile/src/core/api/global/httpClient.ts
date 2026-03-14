@@ -5,6 +5,7 @@ import { eventEmitter } from '@/shared/utils/eventEmitter'
 import { Events } from '@/shared/constants/Events'
 import { ApiResponse } from '@/core/api/global/ApiResponse'
 import { AuthTokens } from '@/core/auth/models/AuthTokens'
+import { mapApiErrorToDisplayError } from '@/core/api/global/mapApiError'
 
 // Extends the Axios config type to carry the retry flag used by the 401 interceptor.
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean }
@@ -24,7 +25,7 @@ const refreshTokens = async (): Promise<AuthTokens> => {
       const refreshToken = await tokenManager.getRefreshToken()
 
       if (!refreshToken) {
-        throw new Error('No refresh token available')
+        throw new Error('common.api.errors.noRefreshToken')
       }
 
       // Native axios call avoids entering httpClient interceptors during refresh.
@@ -35,7 +36,7 @@ const refreshTokens = async (): Promise<AuthTokens> => {
       )
 
       const tokens = refreshResponse.data.data
-      if (!tokens) throw new Error('Auth refresh returned empty data')
+      if (!tokens) throw new Error('common.api.errors.emptyRefreshData')
 
       return tokens
     })().finally(() => {
@@ -84,10 +85,10 @@ httpClient.interceptors.response.use(
         // Refresh failed (e.g. refresh token expired) — clear tokens and notify the app
         await tokenManager.clearTokens()
         eventEmitter.emit(Events.TokenExpired)
-        return Promise.reject(refreshError)
+        return Promise.reject(mapApiErrorToDisplayError(refreshError))
       }
     }
 
-    return Promise.reject(error)
+    return Promise.reject(mapApiErrorToDisplayError(error))
   },
 )

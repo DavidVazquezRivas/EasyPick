@@ -30,6 +30,6 @@ export const googleProvider: OAuthProvider = {
   id: 'google',
   displayName: 'Google',
   signIn: async () => {
-    throw new Error('Google OAuth is not yet implemented')
+    throw new Error('auth.errors.googleNotImplemented')
   },
 }

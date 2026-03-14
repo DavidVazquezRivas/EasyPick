@@ -1,140 +1,54 @@
 # Frontend Architecture
 
-Esta guía describe la arquitectura actual del frontend y sirve como referencia para mantener consistencia al añadir nuevas features.
+Resumen operativo de arquitectura para desarrollo diario.
 
-## Capas del proyecto
+## Capas
 
 ```txt
 src/
-  app/        rutas Expo Router
-  core/       infraestructura global
-  modules/    pantallas y UI por dominio
-  shared/     piezas reutilizables transversales
+  app/
+  core/
+  modules/
+  shared/
 ```
 
-## Responsabilidad de cada capa
+## Responsabilidades
 
-### `src/app/`
+1. src/app: rutas Expo Router y guards.
+2. src/modules: pantallas y componentes de dominio.
+3. src/core: infraestructura transversal (api, auth, query, providers, i18n).
+4. src/shared: utilidades, constantes y componentes base reutilizables.
 
-Contiene únicamente rutas de Expo Router y composición mínima para navegar.
-
-Regla:
-
-- Los archivos de `app/` no deben contener lógica de negocio ni llamadas API directas.
-- Su trabajo es resolver la ruta y delegar en una pantalla o módulo.
-
-Ejemplo actual:
-
-- `src/app/_layout.tsx` monta `AppProvider`, consulta `useAuth()` y aplica la guarda entre grupos `(public)` y `(private)`.
-- `src/app/(private)/home/index.tsx` reexporta la pantalla real del módulo garments.
-
-### `src/core/`
-
-Contiene infraestructura compartida entre dominios:
-
-- `core/api/`: cliente HTTP, gateways, models y facade pública.
-- `core/auth/`: contexto de autenticación, modelos y proveedores OAuth.
-- `core/query/`: query keys, query hooks y mutations compartidas.
-- `core/providers/`: composición de providers globales.
-- `core/theme/`: tokens de diseño y base CSS para NativeWind.
-
-Regla:
-
-- `core/` no debe contener UI de dominio.
-- `core/` sí puede ser consumido por `modules/` y por `app/`.
-
-### `src/modules/`
-
-Aquí vive la UI del dominio. En el estado actual, el módulo `garments` contiene la pantalla [HomeScreen.tsx](d:/Workspace/EasyPick/mobile/src/modules/garments/pages/HomeScreen.tsx).
-
-Regla:
-
-- Las pantallas del módulo consumen hooks listos desde `core/query/` y utilidades desde `shared/`.
-- No importan `httpClient` ni SecureStore directamente.
-
-### `src/shared/`
-
-Contiene piezas reutilizables y neutrales al dominio:
-
-- `shared/components/ui/`: componentes base reutilizables.
-- `shared/constants/`: rutas, eventos, claves de SecureStore, endpoints.
-- `shared/utils/`: helpers puros como `cn()` y el event emitter.
-
-Regla:
-
-- `shared/` no debe depender de módulos de dominio.
-
-## Regla principal de imports
-
-El flujo permitido es el siguiente:
+## Flujo de imports permitido
 
 ```txt
-app/ -> modules/ o core/
-modules/ -> core/ y shared/
-core/ -> shared/
-shared/ -> sin dependencias de dominio
+app -> modules o core
+modules -> core y shared
+core -> shared
+shared -> sin dependencias de dominio
 ```
 
 Evitar:
 
-- pantallas importando `httpClient` directamente
-- rutas Expo Router con lógica de negocio embebida
-- componentes de `shared/` dependiendo de `modules/`
+- pantallas importando httpClient directo
+- logica de negocio en archivos de app
+- shared importando modules
 
-## Mapa del frontend actual
+## Patron obligatorio de datos
 
-```txt
-RootLayout
-  -> AppProvider
-    -> QueryClientProvider
-    -> AuthProvider
-      -> InitialLayout
-        -> Slot
-          -> (public)/login
-          -> (private)/home/index -> modules/garments/pages/HomeScreen
-```
+1. Pantalla -> hook query.
+2. Hook -> apiClient.
+3. apiClient -> gateway.
+4. gateway -> httpClient.
 
-## API y query como infraestructura
+## Como anadir una feature
 
-La capa de datos está en `core/` porque sus decisiones afectan a toda la app:
+1. Crear modelos API en core/api/{domain}/models.
+2. Crear gateway de dominio.
+3. Exportar en core/api/index.
+4. Crear keys en core/query/QueryKeys.
+5. Crear queries/mutations en core/query/{domain}.
+6. Crear UI en modules/{domain}.
+7. Exponer ruta fina desde app.
 
-- interceptores HTTP
-- refresh de tokens
-- retries de TanStack Query
-- query keys centralizadas
-- invalidación y cache futura
-
-Por eso la regla es:
-
-- Las pantallas consumen hooks de `core/query/`.
-- Los hooks consumen `apiClient`.
-- `apiClient` expone gateways por dominio.
-- Los gateways usan `httpClient`.
-
-## Estado actual que debemos respetar
-
-- El refresh token persiste en SecureStore.
-- El access token vive solo en memoria.
-- Al arrancar la app no se hace refresh preventivo.
-- El primer `401` tras abrir la app es parte del flujo esperado.
-- OAuth todavía no está implementado y existe un dev login temporal.
-
-## Cómo añadir una nueva feature
-
-Tomando garments como patrón actual:
-
-1. Crear el modelo API en `core/api/{domain}/models/` si hace falta.
-2. Crear el gateway en `core/api/{domain}/{Domain}Gateway.ts`.
-3. Exportarlo en `core/api/index.ts`.
-4. Añadir `QueryKeys` en `core/query/QueryKeys.ts`.
-5. Crear `queries.ts` y, si aplica, `mutations.ts` en `core/query/{domain}/`.
-6. Crear la pantalla y componentes del dominio en `modules/{domain}/`.
-7. Exponer la ruta desde `app/` con un wrapper fino.
-
-## Roadmap ya conocido
-
-- Sustituir el dev login actual por login clásico.
-- Completar proveedores OAuth.
-- Formalizar más piezas de UI compartidas para loading, error y empty states.
-
-Lee [04-auth-routing.md](d:/Workspace/EasyPick/mobile/docs/04-auth-routing.md), [05-data-layer.md](d:/Workspace/EasyPick/mobile/docs/05-data-layer.md) y [06-ui-system.md](d:/Workspace/EasyPick/mobile/docs/06-ui-system.md) para el detalle operativo de cada capa.
+Ver detalle por tema en [04-auth-routing.md](d:/Workspace/EasyPick/mobile/docs/04-auth-routing.md), [05-data-layer.md](d:/Workspace/EasyPick/mobile/docs/05-data-layer.md), [06-ui-system.md](d:/Workspace/EasyPick/mobile/docs/06-ui-system.md) y [08-i18n.md](d:/Workspace/EasyPick/mobile/docs/08-i18n.md).
