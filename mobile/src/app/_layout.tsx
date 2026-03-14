@@ -1,3 +1,4 @@
+import '@/core/theme/global.css'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { useEffect } from 'react'
 import { AppProvider } from '@/core/providers/AppProvider'

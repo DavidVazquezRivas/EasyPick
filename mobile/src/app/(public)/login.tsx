@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { View, Text, Button, ActivityIndicator } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { useAuth } from '@/core/auth/AuthContext'
 import { googleProvider } from '@/core/auth/providers/google'
+import { Button, Card, CardContent, CardHeader, Text } from '@/shared/components/ui'
 
 // TODO: Remove once Google OAuth is implemented
 const DEV_REFRESH_TOKEN = '11111111-1111-1111-1111-111111111111'
@@ -38,23 +39,29 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>EasyPick</Text>
-      <Text style={{ fontSize: 16, marginBottom: 30, color: '#666' }}>Sign in to continue</Text>
+    <View className='flex-1 justify-center bg-background p-5'>
+      <Card>
+        <CardHeader>
+          <Text variant='h3'>EasyPick</Text>
+          <Text className='mt-2 text-muted-foreground'>Sign in to continue</Text>
+        </CardHeader>
 
-      {error ?
-        <Text style={{ color: 'red', marginBottom: 12 }}>{error}</Text>
-      : null}
+        <CardContent>
+          {error ?
+            <Text className='mb-3 text-destructive'>{error}</Text>
+          : null}
 
-      {isSubmitting ?
-        <ActivityIndicator size='small' color='blue' />
-      : <>
-          {/* TODO: Replace with provider buttons once OAuth is implemented
-          <Button title='Sign in with Google' onPress={handleGoogleLogin} />
-          */}
-          <Button title='Dev Login' onPress={handleDevLogin} />
-        </>
-      }
+          {isSubmitting ?
+            <ActivityIndicator size='small' color='#795548' />
+          : <>
+              {/* TODO: Replace with provider buttons once OAuth is implemented
+              <Button onPress={handleGoogleLogin}>Sign in with Google</Button>
+              */}
+              <Button onPress={handleDevLogin}>Dev Login</Button>
+            </>
+          }
+        </CardContent>
+      </Card>
     </View>
   )
 }
