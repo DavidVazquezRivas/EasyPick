@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: easpick-db
+    environment:
+      POSTGRES_DB: easpick
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgpassword123
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./api
+    container_name: easpick-api
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+    environment:
+      # This overrides the application.yml to connect the API container with the DB container
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easpick
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=pgpassword123 # Must match the password set for the DB service
+
+volumes:
+  pgdata:
