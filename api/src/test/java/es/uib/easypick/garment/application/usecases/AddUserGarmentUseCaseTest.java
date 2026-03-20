@@ -2,26 +2,33 @@ package es.uib.easypick.garment.application.usecases;
 
 import es.uib.easypick.core.application.exceptions.AppException;
 import es.uib.easypick.core.application.exceptions.ErrorCode;
-import es.uib.easypick.core.infrastructure.gateway.storage.StorageGateway;
+import es.uib.easypick.core.infrastructure.gateways.storage.StorageGateway;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
+import es.uib.easypick.garment.application.helpers.GarmentTestBuilder;
+import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorGateway;
+import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorResponse;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
-import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
+import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import es.uib.easypick.user.application.entities.UserEntity;
 import es.uib.easypick.user.infrastructure.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.time.OffsetDateTime;
+import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,14 +41,21 @@ class AddUserGarmentUseCaseTest {
     private UserRepository userRepository;
 
     @Mock
+    private GarmentProcessorGateway garmentProcessorGateway;
+
+    @Mock
     private StorageGateway storageGateway;
 
     @InjectMocks
     private AddUserGarmentUseCase useCase;
 
+    @Captor
+    private ArgumentCaptor<List<GarmentEntity>> garmentListCaptor;
+
     private UUID userId;
     private UserEntity mockUser;
     private MockMultipartFile mockFile;
+    private String base64EncodedImage;
 
     @BeforeEach
     void setUp() {
@@ -49,39 +63,68 @@ class AddUserGarmentUseCaseTest {
         mockUser = new UserEntity();
         mockUser.setId(userId);
 
+        byte[] rawImageBytes = "dummy image content".getBytes();
         mockFile = new MockMultipartFile(
-                "file", "tshirt.jpg", "image/jpeg", "dummy image content".getBytes()
+                "file", "outfit.jpg", "image/jpeg", rawImageBytes
         );
+
+        // Simulate the base64 payload returned by the processor
+        base64EncodedImage = Base64.getEncoder().encodeToString(rawImageBytes);
     }
 
     @Test
-    void execute_ShouldUploadImageAndSaveGarment_WhenUserExists() {
+    void execute_ShouldProcessUploadAndSaveGarments_WhenValidDataProvided() {
         // Arrange
-        String MOCK_IMAGE_URL = "https://s3.amazonaws.com/bucket/image.jpg";
-        GarmentEntity savedGarment = new GarmentEntity();
-        savedGarment.setId(UUID.randomUUID());
-        savedGarment.setName("Prenda por clasificar");
-        savedGarment.setImageUrl(MOCK_IMAGE_URL);
-        savedGarment.setCreatedAt(OffsetDateTime.now());
+        String mockImageUrl1 = "https://s3.amazonaws.com/bucket/garment_1.jpg";
+        String mockImageUrl2 = "https://s3.amazonaws.com/bucket/garment_2.jpg";
+
+        GarmentProcessorResponse aiResponse1 = new GarmentProcessorResponse(base64EncodedImage);
+        GarmentProcessorResponse aiResponse2 = new GarmentProcessorResponse(base64EncodedImage);
+
+        // Utilize the Test Data Builder for cleaner instantiation
+        GarmentEntity savedGarment1 = GarmentTestBuilder.aGarment()
+                .withName("Pending Classification")
+                .withImageUrl(mockImageUrl1)
+                .withUser(mockUser)
+                .build();
+
+        GarmentEntity savedGarment2 = GarmentTestBuilder.aGarment()
+                .withName("Pending Classification")
+                .withImageUrl(mockImageUrl2)
+                .withUser(mockUser)
+                .build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
-        when(storageGateway.uploadImage(mockFile)).thenReturn(MOCK_IMAGE_URL);
+        when(garmentProcessorGateway.processImage(mockFile)).thenReturn(List.of(aiResponse1, aiResponse2));
 
-        // Mock the save method
-        when(garmentRepository.save(any(GarmentEntity.class))).thenReturn(savedGarment);
+        // Simulate StorageGateway returning different URLs for consecutive calls
+        when(storageGateway.uploadFile(any(byte[].class), anyString(), eq("image/jpeg")))
+                .thenReturn(mockImageUrl1)
+                .thenReturn(mockImageUrl2);
+
+        // Mock saveAll to return the builder-generated entities
+        when(garmentRepository.saveAll(anyList())).thenReturn(List.of(savedGarment1, savedGarment2));
 
         // Act
-        SimpleGarmentResponse response = useCase.execute(userId, mockFile);
+        List<CompleteGarmentResponse> response = useCase.execute(userId, mockFile);
 
         // Assert
-        assertNotNull(response, "The response should not be null");
-        assertEquals("Prenda por clasificar", response.name());
-        assertEquals(MOCK_IMAGE_URL, response.imageUrl());
+        assertNotNull(response);
+        assertEquals(2, response.size(), "Should return exactly two mapped garments");
 
-        // Verify interactions
+        assertEquals(mockImageUrl1, response.get(0).imageUrl());
+        assertEquals("Pending Classification", response.get(0).name());
+        assertEquals(mockImageUrl2, response.get(1).imageUrl());
+
+        // Verify interactions and capture the list sent to the database
         verify(userRepository, times(1)).findById(userId);
-        verify(storageGateway, times(1)).uploadImage(mockFile);
-        verify(garmentRepository, times(1)).save(any(GarmentEntity.class));
+        verify(garmentProcessorGateway, times(1)).processImage(mockFile);
+        verify(storageGateway, times(2)).uploadFile(any(byte[].class), anyString(), eq("image/jpeg"));
+        verify(garmentRepository, times(1)).saveAll(garmentListCaptor.capture());
+
+        List<GarmentEntity> capturedGarments = garmentListCaptor.getValue();
+        assertEquals(2, capturedGarments.size(), "Should save exactly two entities in batch");
+        assertEquals(mockUser, capturedGarments.get(0).getUser(), "The user should be assigned correctly prior to saving");
     }
 
     @Test
@@ -96,8 +139,29 @@ class AddUserGarmentUseCaseTest {
 
         assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
 
-        // Verify that we NEVER upload the image or save the garment if user is invalid
-        verify(storageGateway, never()).uploadImage(any());
-        verify(garmentRepository, never()).save(any());
+        // Verify that we NEVER process the image, upload, or save if user is invalid
+        verify(garmentProcessorGateway, never()).processImage(any());
+        verify(storageGateway, never()).uploadFile(any(), anyString(), anyString());
+        verify(garmentRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void execute_ShouldThrowAppException_WhenNoGarmentsDetected() {
+        // Arrange
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        // The processor returns an empty list (no garments found in the photo)
+        when(garmentProcessorGateway.processImage(mockFile)).thenReturn(List.of());
+
+        // Act & Assert
+        AppException exception = assertThrows(AppException.class, () -> {
+            useCase.execute(userId, mockFile);
+        });
+
+        assertEquals(ErrorCode.NO_GARMENT_DETECTED, exception.getErrorCode());
+
+        // Verify that we NEVER try to upload empty data or save to DB
+        verify(storageGateway, never()).uploadFile(any(), anyString(), anyString());
+        verify(garmentRepository, never()).saveAll(anyList());
     }
 }

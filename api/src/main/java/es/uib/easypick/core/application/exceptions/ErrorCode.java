@@ -24,6 +24,8 @@ public enum ErrorCode {
     // --- Garment Module Logic Errors ---
     UPLOAD_IMAGE_ERROR(3100, "Failed to upload the image. Please check the file is not corrupted.",
             HttpStatus.INTERNAL_SERVER_ERROR),
+    NO_GARMENT_DETECTED(3101, "No garment could be detected in the uploaded image. Please try with a different image.",
+            HttpStatus.BAD_REQUEST)
     ;
 
     private final Integer errorCode;

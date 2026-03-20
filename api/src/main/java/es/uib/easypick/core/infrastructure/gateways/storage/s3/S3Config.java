@@ -1,4 +1,4 @@
-package es.uib.easypick.core.infrastructure.gateway.storage.s3;
+package es.uib.easypick.core.infrastructure.gateways.storage.s3;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

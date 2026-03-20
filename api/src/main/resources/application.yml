@@ -54,7 +54,11 @@ application:
     refresh-token:
       expiration-days: 30 # Refresh token validity in days
 
-# Cloud configuration
+  modules:
+    gateway:
+      processor:
+        mode: mock
+
 cloud:
   aws:
     credentials:
@@ -66,3 +70,5 @@ cloud:
       endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
       public-url: ${AWS_S3_PUBLIC_URL:http://localhost:9000}
       bucket-name: ${AWS_S3_BUCKET_NAME:easypick-images}
+
+

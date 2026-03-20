@@ -3,6 +3,7 @@ package es.uib.easypick.garment.presentation.controllers;
 import es.uib.easypick.core.presentation.web.response.ApiResponse;
 import es.uib.easypick.core.presentation.web.resolvers.AuthenticatedUserId;
 import es.uib.easypick.garment.application.usecases.AddUserGarmentUseCase;
+import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
 import es.uib.easypick.garment.application.usecases.GetUserGarmentsUseCase;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,11 +35,11 @@ public class GarmentController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<SimpleGarmentResponse>> createGarment(
+    public ResponseEntity<ApiResponse<List<CompleteGarmentResponse>>> createGarment(
             @AuthenticatedUserId UUID userId,
             @RequestParam("image") MultipartFile image
     ) {
-        SimpleGarmentResponse response = addUserGarmentUseCase.execute(userId, image);
+        List<CompleteGarmentResponse> response = addUserGarmentUseCase.execute(userId, image);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

@@ -12,6 +12,7 @@ public record SimpleGarmentResponse(
         String name,
         String description,
         String imageUrl,
+        OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
     public static SimpleGarmentResponse fromEntity(GarmentEntity entity) {
@@ -20,6 +21,7 @@ public record SimpleGarmentResponse(
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .imageUrl(entity.getImageUrl())
+                .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
