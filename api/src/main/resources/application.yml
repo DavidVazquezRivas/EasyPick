@@ -14,6 +14,7 @@ spring:
     password: ${DB_PASSWORD:uQFPS^axE88w!x4T%keL}
     driver-class-name: org.postgresql.Driver
 
+
   # Seed data configuration
   sql:
     init:
@@ -52,3 +53,16 @@ application:
       expiration: 3600000 # 1 hour in milliseconds
     refresh-token:
       expiration-days: 30 # Refresh token validity in days
+
+# Cloud configuration
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:admin}
+      secret-key: ${AWS_SECRET_KEY:password123}
+    region:
+      static: ${AWS_REGION:eu-west-1}
+    s3:
+      endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
+      public-url: ${AWS_S3_PUBLIC_URL:http://localhost:9000}
+      bucket-name: ${AWS_S3_BUCKET_NAME:easypick-images}
