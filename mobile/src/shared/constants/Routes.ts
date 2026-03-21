@@ -2,6 +2,7 @@ export const Routes = {
   Public: {
     Base: '/(public)',
     Login: '/(public)/login',
+    DevErrorPlayground: '/(public)/dev-error-playground',
   },
   Private: {
     Base: '/(private)',

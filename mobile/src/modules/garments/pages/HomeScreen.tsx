@@ -3,17 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/core/auth/AuthContext'
 import { useGetMyGarments } from '@/core/query/garment'
 import { getThemeColor } from '@/core/theme/themeColors'
-import { Button, Card, CardContent, CardHeader, Text } from '@/shared/components/ui'
+import { Button, Card, CardContent, CardHeader, Text, QueryErrorDisplay } from '@/shared/components'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 
 export const HomePage = () => {
   const { t } = useTranslation()
   const { signOut } = useAuth()
   const colorScheme = useColorScheme()
-  const { data, isLoading, isError, error } = useGetMyGarments()
+  const { data, isLoading, error, refetch } = useGetMyGarments()
   const loaderColor = getThemeColor('primary', colorScheme)
-  const translatedErrorMessage =
-    error instanceof Error ? t(error.message, { defaultValue: error.message }) : t('common.global.error.unknown')
 
   return (
     <ScrollView className='flex-1 bg-background'>
@@ -30,11 +28,7 @@ export const HomePage = () => {
           <CardContent>
             {isLoading && <ActivityIndicator size='large' color={loaderColor} />}
 
-            {isError && (
-              <Text className='text-destructive'>
-                {t('common.global.error.prefix')}: {translatedErrorMessage}
-              </Text>
-            )}
+            <QueryErrorDisplay error={error} onRetry={() => refetch()} />
 
             {data && <Text className='text-muted-foreground'>{JSON.stringify(data, null, 2)}</Text>}
           </CardContent>

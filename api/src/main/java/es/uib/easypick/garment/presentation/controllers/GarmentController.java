@@ -1,13 +1,14 @@
 package es.uib.easypick.garment.presentation.controllers;
 
-import es.uib.easypick.core.presentation.web.response.ApiResponse;
 import es.uib.easypick.core.presentation.web.resolvers.AuthenticatedUserId;
+import es.uib.easypick.core.presentation.web.response.ApiResponse;
 import es.uib.easypick.garment.application.usecases.AddUserGarmentUseCase;
+import es.uib.easypick.garment.application.usecases.GetUserGarmentsUseCase;
 import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
-import es.uib.easypick.garment.application.usecases.GetUserGarmentsUseCase;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,6 @@ public class GarmentController {
     ) {
         List<CompleteGarmentResponse> response = addUserGarmentUseCase.execute(userId, image);
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 }
