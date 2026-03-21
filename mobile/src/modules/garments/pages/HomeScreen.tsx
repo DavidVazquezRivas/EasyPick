@@ -1,14 +1,17 @@
-import { ActivityIndicator, ScrollView, View } from 'react-native'
+import { ActivityIndicator, ScrollView, View, useColorScheme } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/core/auth/AuthContext'
 import { useGetMyGarments } from '@/core/query/garment'
+import { getThemeColor } from '@/core/theme/themeColors'
 import { Button, Card, CardContent, CardHeader, Text } from '@/shared/components/ui'
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher'
 
 export const HomePage = () => {
   const { t } = useTranslation()
   const { signOut } = useAuth()
+  const colorScheme = useColorScheme()
   const { data, isLoading, isError, error } = useGetMyGarments()
+  const loaderColor = getThemeColor('primary', colorScheme)
   const translatedErrorMessage =
     error instanceof Error ? t(error.message, { defaultValue: error.message }) : t('common.global.error.unknown')
 
@@ -25,7 +28,7 @@ export const HomePage = () => {
           </CardHeader>
 
           <CardContent>
-            {isLoading && <ActivityIndicator size='large' color='#795548' />}
+            {isLoading && <ActivityIndicator size='large' color={loaderColor} />}
 
             {isError && (
               <Text className='text-destructive'>

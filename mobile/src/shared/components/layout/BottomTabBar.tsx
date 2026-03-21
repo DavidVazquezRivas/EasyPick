@@ -1,9 +1,10 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { Link } from 'expo-router'
 import type { ReactNode } from 'react'
-import { Pressable, View } from 'react-native'
+import { Pressable, View, useColorScheme } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { getThemeColor } from '@/core/theme/themeColors'
 import type { BottomTabItem, BottomTabKey } from '@/shared/constants/BottomTabs'
 import { cn } from '@/shared/utils/tailwind.utils'
 import { Text } from '@/shared/components/ui/text'
@@ -14,29 +15,29 @@ type BottomTabBarProps = {
   onCenterPress: () => void
 }
 
-const ACTIVE_ICON_COLOR = '#3e2723'
-const INACTIVE_ICON_COLOR = '#8d6e63'
+const MIN_BOTTOM_PADDING = 8
 const REGULAR_ICON_SIZE = 20
 
 // TODO: Style the bar and icons according to the design, probably using a custom SVG for controlling the stroke and fill of the icons,
 // and adding the animation for the center button when it's active. Otherwise, explore different icon libraries
 
-const getIconColor = (active: boolean) => (active ? ACTIVE_ICON_COLOR : INACTIVE_ICON_COLOR)
+const getIconColor = (active: boolean, colorScheme: 'light' | 'dark') =>
+  active ? getThemeColor('primary', colorScheme) : getThemeColor('iconInactive', colorScheme)
 
-const IconCloset = ({ active }: { active: boolean }) => (
-  <MaterialCommunityIcons name='tshirt-crew-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active)} />
+const IconCloset = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
+  <MaterialCommunityIcons name='tshirt-crew-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
 )
 
-const IconExplore = ({ active }: { active: boolean }) => (
-  <Ionicons name='search-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active)} />
+const IconExplore = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
+  <Ionicons name='search-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
 )
 
-const IconSuggestions = ({ active }: { active: boolean }) => (
-  <MaterialCommunityIcons name='magic-staff' size={REGULAR_ICON_SIZE} color={getIconColor(active)} />
+const IconSuggestions = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
+  <MaterialCommunityIcons name='magic-staff' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
 )
 
-const IconOutfits = ({ active }: { active: boolean }) => (
-  <Ionicons name='layers-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active)} />
+const IconOutfits = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
+  <Ionicons name='layers-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
 )
 
 const CenterPlus = () => (
@@ -46,16 +47,16 @@ const CenterPlus = () => (
   </View>
 )
 
-const getRegularIcon = (key: BottomTabKey, active: boolean): ReactNode => {
+const getRegularIcon = (key: BottomTabKey, active: boolean, colorScheme: 'light' | 'dark'): ReactNode => {
   switch (key) {
     case 'closet':
-      return <IconCloset active={active} />
+      return <IconCloset active={active} colorScheme={colorScheme} />
     case 'explore':
-      return <IconExplore active={active} />
+      return <IconExplore active={active} colorScheme={colorScheme} />
     case 'suggestions':
-      return <IconSuggestions active={active} />
+      return <IconSuggestions active={active} colorScheme={colorScheme} />
     case 'outfits':
-      return <IconOutfits active={active} />
+      return <IconOutfits active={active} colorScheme={colorScheme} />
     default:
       return null
   }
@@ -72,25 +73,25 @@ const getIsActive = (item: BottomTabItem, pathname: string): boolean =>
   item.activeOn.some((route) => pathname.startsWith(route))
 
 const renderCenterTab = (item: BottomTabItem, onPress: () => void) => (
-  <View key={item.key} className='min-w-[72px] items-center'>
+  <View key={item.key} className='min-w-20 items-center'>
     <Pressable className='-mt-7 items-center justify-center' hitSlop={12} onPress={onPress}>
       <CenterPlus />
     </Pressable>
   </View>
 )
 
-const renderRegularTab = (item: BottomTabItem, pathname: string, label: string) => {
+const renderRegularTab = (item: BottomTabItem, pathname: string, label: string, colorScheme: 'light' | 'dark') => {
   const isActive = getIsActive(item, pathname)
-  const icon = getRegularIcon(item.key, isActive)
+  const icon = getRegularIcon(item.key, isActive, colorScheme)
 
   return (
-    <View key={item.key} className='min-w-[72px] items-center'>
+    <View key={item.key} className='min-w-20 items-center'>
       <Link href={item.href} asChild>
         <Pressable className='items-center justify-center px-2 py-1.5'>
           {icon}
           <Text
             className={cn(
-              'mt-1 text-[11px] leading-4',
+              'mt-1 text-xxs',
               isActive ? 'font-semibold text-foreground' : 'text-muted-foreground',
             )}>
             {label}
@@ -104,6 +105,7 @@ const renderRegularTab = (item: BottomTabItem, pathname: string, label: string) 
 export const BottomTabBar = ({ items, pathname, onCenterPress }: BottomTabBarProps) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
+  const colorScheme = useColorScheme() === 'dark' ? 'dark' : 'light'
 
   const closetTab = getTabByKey(items, 'closet')
   const exploreTab = getTabByKey(items, 'explore')
@@ -116,14 +118,16 @@ export const BottomTabBar = ({ items, pathname, onCenterPress }: BottomTabBarPro
   const suggestionsLabel = t(suggestionsTab.labelKey)
   const outfitsLabel = t(outfitsTab.labelKey)
 
-  const closetNode = renderRegularTab(closetTab, pathname, closetLabel)
-  const exploreNode = renderRegularTab(exploreTab, pathname, exploreLabel)
+  const closetNode = renderRegularTab(closetTab, pathname, closetLabel, colorScheme)
+  const exploreNode = renderRegularTab(exploreTab, pathname, exploreLabel, colorScheme)
   const createNode = renderCenterTab(createTab, onCenterPress)
-  const suggestionsNode = renderRegularTab(suggestionsTab, pathname, suggestionsLabel)
-  const outfitsNode = renderRegularTab(outfitsTab, pathname, outfitsLabel)
+  const suggestionsNode = renderRegularTab(suggestionsTab, pathname, suggestionsLabel, colorScheme)
+  const outfitsNode = renderRegularTab(outfitsTab, pathname, outfitsLabel, colorScheme)
 
   return (
-    <View className='border-border bg-card border-t px-1 pt-2' style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
+    <View
+      className='border-border bg-card border-t px-1 pt-2 pb-2'
+      style={{ paddingBottom: insets.bottom > MIN_BOTTOM_PADDING ? insets.bottom : undefined }}>
       <View className='flex-row items-end justify-between'>
         {closetNode}
         {exploreNode}

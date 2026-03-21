@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import type { ReactNode } from 'react'
-import { Pressable, View } from 'react-native'
+import { Pressable, View, useColorScheme } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { getThemeColor } from '@/core/theme/themeColors'
 import { Text } from '@/shared/components/ui'
 import { cn } from '@/shared/utils/tailwind.utils'
 
@@ -11,8 +12,6 @@ type UploadSourceSheetProps = {
   onCancelPress: () => void
 }
 
-const CAMERA_ICON_COLOR = '#795548'
-const GALLERY_ICON_COLOR = '#795548'
 const ICON_SIZE = 20
 
 const ActionRow = ({
@@ -37,6 +36,8 @@ const ActionRow = ({
 
 export const UploadSourceSheet = ({ onCameraPress, onGalleryPress, onCancelPress }: UploadSourceSheetProps) => {
   const { t } = useTranslation()
+  const colorScheme = useColorScheme()
+  const iconColor = getThemeColor('primary', colorScheme)
 
   const title = t('garment.uploadSourceSheet.title')
   const subtitle = t('garment.uploadSourceSheet.subtitle')
@@ -49,8 +50,8 @@ export const UploadSourceSheet = ({ onCameraPress, onGalleryPress, onCancelPress
 
   const cancelLabel = t('garment.uploadSourceSheet.cancel')
 
-  const cameraIcon = <Ionicons name='camera-outline' size={ICON_SIZE} color={CAMERA_ICON_COLOR} />
-  const galleryIcon = <Ionicons name='images-outline' size={ICON_SIZE} color={GALLERY_ICON_COLOR} />
+  const cameraIcon = <Ionicons name='camera-outline' size={ICON_SIZE} color={iconColor} />
+  const galleryIcon = <Ionicons name='images-outline' size={ICON_SIZE} color={iconColor} />
 
   const cameraRow = (
     <ActionRow icon={cameraIcon} title={cameraTitle} description={cameraDescription} onPress={onCameraPress} />

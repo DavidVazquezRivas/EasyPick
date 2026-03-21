@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, View, useColorScheme } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/core/auth/AuthContext'
 import { googleProvider } from '@/core/auth/providers/google'
+import { getThemeColor } from '@/core/theme/themeColors'
 import { Button, Card, CardContent, CardHeader, Text } from '@/shared/components/ui'
 
 // TODO: Remove once Google OAuth is implemented
@@ -11,10 +12,12 @@ const DEV_REFRESH_TOKEN = '11111111-1111-1111-1111-111111111111'
 export default function LoginScreen() {
   const { t } = useTranslation()
   const { signIn, signInWithProvider } = useAuth()
+  const colorScheme = useColorScheme()
   const [errorKey, setErrorKey] = useState<
     'auth.login.errors.signInFailed' | 'auth.login.errors.devLoginFailed' | null
   >(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const loaderColor = getThemeColor('primary', colorScheme)
 
   // TODO: Wire up once googleProvider.signIn() is implemented
   const handleGoogleLogin = async () => {
@@ -56,7 +59,7 @@ export default function LoginScreen() {
           : null}
 
           {isSubmitting ?
-            <ActivityIndicator size='small' color='#795548' />
+            <ActivityIndicator size='small' color={loaderColor} />
           : <>
               {/* TODO: Replace with provider buttons once OAuth is implemented
               <Button onPress={handleGoogleLogin}>{t('auth.login.actions.googleLogin')}</Button>
