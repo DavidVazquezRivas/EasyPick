@@ -11,6 +11,7 @@ import { Text } from '@/shared/components/ui/text'
 type BottomTabBarProps = {
   items: ReadonlyArray<BottomTabItem>
   pathname: string
+  onCenterPress: () => void
 }
 
 const ACTIVE_ICON_COLOR = '#3e2723'
@@ -70,13 +71,11 @@ const getTabByKey = (items: ReadonlyArray<BottomTabItem>, key: BottomTabKey): Bo
 const getIsActive = (item: BottomTabItem, pathname: string): boolean =>
   item.activeOn.some((route) => pathname.startsWith(route))
 
-const renderCenterTab = (item: BottomTabItem) => (
+const renderCenterTab = (item: BottomTabItem, onPress: () => void) => (
   <View key={item.key} className='min-w-[72px] items-center'>
-    <Link href={item.href} asChild>
-      <Pressable className='-mt-7 items-center justify-center' hitSlop={12}>
-        <CenterPlus />
-      </Pressable>
-    </Link>
+    <Pressable className='-mt-7 items-center justify-center' hitSlop={12} onPress={onPress}>
+      <CenterPlus />
+    </Pressable>
   </View>
 )
 
@@ -102,7 +101,7 @@ const renderRegularTab = (item: BottomTabItem, pathname: string, label: string) 
   )
 }
 
-export const BottomTabBar = ({ items, pathname }: BottomTabBarProps) => {
+export const BottomTabBar = ({ items, pathname, onCenterPress }: BottomTabBarProps) => {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
 
@@ -119,7 +118,7 @@ export const BottomTabBar = ({ items, pathname }: BottomTabBarProps) => {
 
   const closetNode = renderRegularTab(closetTab, pathname, closetLabel)
   const exploreNode = renderRegularTab(exploreTab, pathname, exploreLabel)
-  const createNode = renderCenterTab(createTab)
+  const createNode = renderCenterTab(createTab, onCenterPress)
   const suggestionsNode = renderRegularTab(suggestionsTab, pathname, suggestionsLabel)
   const outfitsNode = renderRegularTab(outfitsTab, pathname, outfitsLabel)
 

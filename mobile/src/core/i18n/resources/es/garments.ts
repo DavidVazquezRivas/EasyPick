@@ -10,6 +10,19 @@ const garments = {
       },
     },
   },
+  uploadSourceSheet: {
+    title: 'Añadir prenda',
+    subtitle: 'Elige como subir la imagen',
+    camera: {
+      title: 'Camara',
+      description: 'Toma una foto ahora',
+    },
+    gallery: {
+      title: 'Galeria',
+      description: 'Elige desde tus fotos',
+    },
+    cancel: 'Cancelar',
+  },
 }
 
 export default garments
