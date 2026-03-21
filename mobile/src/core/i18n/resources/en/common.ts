@@ -18,6 +18,16 @@ const common = {
   actions: {
     signOut: 'Sign Out',
   },
+  navigation: {
+    tabs: {
+      closet: 'Closet',
+      explore: 'Explore',
+      create: 'Add',
+      suggestions: 'Suggestions',
+      outfits: 'Outfits',
+    },
+    placeholder: 'Placeholder screen',
+  },
   api: {
     errors: {
       noRefreshToken: 'No refresh token available',
