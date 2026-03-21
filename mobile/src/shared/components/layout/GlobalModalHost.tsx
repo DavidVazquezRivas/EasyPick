@@ -1,8 +1,8 @@
 import { BlurView } from 'expo-blur'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Animated, Modal, Platform, Pressable, View } from 'react-native'
+import { Animated, Modal, Platform, Pressable, View, useColorScheme } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { cn } from '@/shared/utils/tailwind.utils'
+import { getThemeColor } from '@/core/theme/themeColors'
 
 type GlobalModalHostProps = {
   visible: boolean
@@ -25,12 +25,26 @@ const DEFAULT_INITIAL_TRANSLATE_Y = 320
 const DEFAULT_FINAL_TRANSLATE_Y = 0
 const DEFAULT_BACKDROP_OPACITY_HIDDEN = 0
 const DEFAULT_BACKDROP_OPACITY_VISIBLE = 1
-const DEFAULT_BLUR_INTENSITY = 80
+const DEFAULT_BLUR_INTENSITY = 25
 const DEFAULT_BLUR_TINT = 'default' as const
 const DEFAULT_MIN_BOTTOM_PADDING = 12
 const DEFAULT_ANDROID_EXTRA_BOTTOM_PADDING = 14
 
 const withNumberFallback = (value: number | null | undefined, fallback: number) => value ?? fallback
+
+const withAlpha = (hexColor: string, alpha: number) => {
+  const sanitized = hexColor.replace('#', '')
+  if (sanitized.length !== 6) return hexColor
+
+  const red = Number.parseInt(sanitized.slice(0, 2), 16)
+  const green = Number.parseInt(sanitized.slice(2, 4), 16)
+  const blue = Number.parseInt(sanitized.slice(4, 6), 16)
+
+  if ([red, green, blue].some((channel) => Number.isNaN(channel))) return hexColor
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+}
+
 const withBlurTintFallback = (value: 'light' | 'dark' | 'default' | null | undefined): 'light' | 'dark' | 'default' =>
   value ?? DEFAULT_BLUR_TINT
 
@@ -49,6 +63,7 @@ export const GlobalModalHost = ({
   minBottomPadding,
   androidExtraBottomPadding,
 }: GlobalModalHostProps) => {
+  const colorScheme = useColorScheme()
   const insets = useSafeAreaInsets()
   const [isMounted, setIsMounted] = useState(visible)
 
@@ -57,7 +72,8 @@ export const GlobalModalHost = ({
   const resolvedFinalTranslateY = withNumberFallback(finalTranslateY, DEFAULT_FINAL_TRANSLATE_Y)
   const resolvedHiddenBackdropOpacity = withNumberFallback(hiddenBackdropOpacity, DEFAULT_BACKDROP_OPACITY_HIDDEN)
   const resolvedVisibleBackdropOpacity = withNumberFallback(visibleBackdropOpacity, DEFAULT_BACKDROP_OPACITY_VISIBLE)
-  const hasCustomBackdropTint = typeof backdropTint === 'string' && backdropTint.length > 0
+  const defaultBackdropTint = withAlpha(getThemeColor('foreground', colorScheme), 0.35)
+  const resolvedBackdropTint = backdropTint ?? defaultBackdropTint
   const resolvedBlurIntensity = withNumberFallback(blurIntensity, DEFAULT_BLUR_INTENSITY)
   const resolvedBlurTint = withBlurTintFallback(blurTint)
   const resolvedMinBottomPadding = withNumberFallback(minBottomPadding, DEFAULT_MIN_BOTTOM_PADDING)
@@ -131,12 +147,13 @@ export const GlobalModalHost = ({
     <Modal transparent animationType='none' onRequestClose={onClose} visible statusBarTranslucent>
       <View className='flex-1 justify-end'>
         <Animated.View className='absolute inset-0' style={{ opacity: backdropOpacity }}>
-          <BlurView className='absolute inset-0' intensity={resolvedBlurIntensity} tint={resolvedBlurTint} />
-          <Pressable
-            className={cn('absolute inset-0 bg-foreground/80', hasCustomBackdropTint && 'bg-transparent')}
-            onPress={onClose}
-            style={hasCustomBackdropTint ? { backgroundColor: backdropTint } : undefined}
+          <BlurView
+            className='absolute inset-0'
+            experimentalBlurMethod={Platform.OS === 'android' ? 'dimezisBlurView' : undefined}
+            intensity={resolvedBlurIntensity}
+            tint={resolvedBlurTint}
           />
+          <Pressable className='absolute inset-0' onPress={onClose} style={{ backgroundColor: resolvedBackdropTint }} />
         </Animated.View>
 
         <Animated.View style={{ transform: [{ translateY }], paddingBottom: modalBottomPadding }}>
