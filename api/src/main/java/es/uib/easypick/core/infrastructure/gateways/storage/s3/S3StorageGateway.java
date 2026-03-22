@@ -39,7 +39,9 @@ public class S3StorageGateway implements StorageGateway {
     public String uploadFile(byte[] content, String originalFilename, String contentType) {
         String extension = FilenameUtils.getExtension(originalFilename);
 
-        String fileName = "%s.%s".formatted(UUID.randomUUID(), extension);
+        String fileName = (extension != null && !extension.isEmpty())
+                ? "%s.%s".formatted(UUID.randomUUID(), extension)
+                : UUID.randomUUID().toString();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
