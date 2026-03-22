@@ -1,8 +1,9 @@
 package es.uib.easypick.garment.application.usecases;
 
 import es.uib.easypick.core.application.usecases.UseCase;
-import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
+import es.uib.easypick.garment.application.entities.GarmentStatus;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
+import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +18,7 @@ public class GetUserGarmentsUseCase {
 
     @Transactional(readOnly = true)
     public List<SimpleGarmentResponse> execute(UUID userId) {
-        return repository.findByUserIdOrderByUpdatedAtDesc(userId)
+        return repository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED)
                 .stream()
                 .map(SimpleGarmentResponse::fromEntity)
                 .toList();

@@ -51,6 +51,10 @@ public class GarmentEntity extends BaseEntity {
     @Column(name = "preference_score", columnDefinition = "integer default 0")
     private Integer preferenceScore = 0;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20, nullable = false)
+    private GarmentStatus status = GarmentStatus.PENDING;
+
     // Lazy loading to avoid unnecessary data retrieval when fetching garments
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -105,6 +109,15 @@ public class GarmentEntity extends BaseEntity {
 
         this.colors.remove(color);
         color.getGarments().remove(this);
+    }
+
+    public void delete() {
+        this.status = GarmentStatus.DELETED;
+        this.imageUrl = null;
+    }
+
+    public void confirm() {
+        this.status = GarmentStatus.CONFIRMED;
     }
 
     public static GarmentEntity createPendingClassification(UserEntity user, String imageUrl) {

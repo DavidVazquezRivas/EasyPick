@@ -22,6 +22,7 @@ public class GarmentTestBuilder {
     private OffsetDateTime updatedAt;
     private Integer warmthIndex;
     private Integer preferenceScore;
+    private GarmentStatus status;
 
     // Relationships
     private UserEntity user;
@@ -40,6 +41,8 @@ public class GarmentTestBuilder {
 
         this.warmthIndex = 0;
         this.preferenceScore = 0;
+
+        this.status = GarmentStatus.CONFIRMED;
 
         this.user = null; // Can be set explicitly if needed
         this.brand = null;
@@ -92,6 +95,11 @@ public class GarmentTestBuilder {
         return this;
     }
 
+    public GarmentTestBuilder withStatus(GarmentStatus status) {
+        this.status = status;
+        return this;
+    }
+
     public GarmentTestBuilder withUser(UserEntity user) {
         this.user = user;
         return this;
@@ -135,12 +143,16 @@ public class GarmentTestBuilder {
         garment.setUpdatedAt(this.updatedAt);
         garment.setWarmthIndex(this.warmthIndex);
         garment.setPreferenceScore(this.preferenceScore);
+        garment.setStatus(this.status);
 
         garment.setUser(this.user);
         garment.setBrand(this.brand);
         garment.setStyle(this.style);
         garment.setCategory(this.category);
-        garment.setColors(this.colors);
+
+        for (ColorEntity color : this.colors) {
+            garment.addColor(color);
+        }
 
         return garment;
     }

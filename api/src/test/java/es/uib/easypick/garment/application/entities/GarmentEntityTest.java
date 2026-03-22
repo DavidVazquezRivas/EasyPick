@@ -75,6 +75,40 @@ class GarmentEntityTest {
 
     //endregion
 
+    //region --- delete() Tests ---
+
+    @Test
+    void delete_ShouldSetStatusToDeletedAndImageUrlToNull() {
+        // Arrange
+        garment.setStatus(GarmentStatus.PENDING);
+        garment.setImageUrl("https://example.com/jacket.jpg");
+
+        // Act
+        garment.delete();
+
+        // Assert
+        assertEquals(GarmentStatus.DELETED, garment.getStatus(), "The garment status should be updated to DELETED");
+        assertNull(garment.getImageUrl(), "The image URL should be set to null to free up storage references");
+    }
+
+    //endregion
+
+    //region --- confirm() Tests ---
+
+    @Test
+    void confirm_ShouldSetStatusToConfirmed() {
+        // Arrange
+        garment.setStatus(GarmentStatus.PENDING);
+
+        // Act
+        garment.confirm();
+
+        // Assert
+        assertEquals(GarmentStatus.CONFIRMED, garment.getStatus(), "The garment status should be updated to CONFIRMED");
+    }
+
+    //endregion
+
     //region --- createPendingClassification() Tests ---
 
     @Test

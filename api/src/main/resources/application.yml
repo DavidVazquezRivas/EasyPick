@@ -59,9 +59,15 @@ application:
       expiration-days: 30 # Refresh token validity in days
 
   modules:
-    gateway:
+    garment:
       processor:
         mode: mock
+      cleaner:
+        pending-retention-time: 1h
+        scheduler:
+          enabled: true
+          cron: "*/10 * * * *" # Every 10 minutes
+
 
 cloud:
   aws:

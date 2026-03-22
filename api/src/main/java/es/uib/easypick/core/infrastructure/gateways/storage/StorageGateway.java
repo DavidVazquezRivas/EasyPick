@@ -2,6 +2,8 @@ package es.uib.easypick.core.infrastructure.gateways.storage;
 
 import es.uib.easypick.core.application.exceptions.AppException;
 
+import java.util.List;
+
 public interface StorageGateway {
     /**
      * Uploads an image file to a storage service and returns the public URL of the uploaded image.
@@ -14,4 +16,12 @@ public interface StorageGateway {
      *                      to indicate the failure of the upload process.
      */
     String uploadFile(byte[] content, String originalFilename, String contentType);
+
+    /**
+     * Deletes a batch of files from the storage service based on their public URLs.
+     *
+     * @param fileUrls A list of public URLs corresponding to the files that need to be deleted from the storage
+     *                 service.
+     */
+    void deleteFilesBatch(List<String> fileUrls);
 }

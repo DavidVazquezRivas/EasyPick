@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(name = "application.modules.gateway.processor.mode", havingValue = "mock", matchIfMissing = true)
+@ConditionalOnProperty(name = "application.modules.garment.processor.mode", havingValue = "mock", matchIfMissing = true)
 public class MockGarmentProcessorGateway implements GarmentProcessorGateway {
     @Override
     public List<GarmentProcessorResponse> processImage(MultipartFile file) {

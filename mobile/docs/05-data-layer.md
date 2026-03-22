@@ -117,7 +117,7 @@ Reglas:
 
 - Garments es el modulo de referencia.
 - mutations.ts aun es placeholder.
-- API_BASE_URL sigue hardcodeado con TODO a env.
+- API_BASE_URL definido en .env
 - Error handling robusto implementado (ApiError, error boundary, QueryErrorDisplay).
 
 ## Upload de imagen (frontend)
