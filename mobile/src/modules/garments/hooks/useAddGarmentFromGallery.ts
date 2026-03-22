@@ -7,27 +7,41 @@ import { showGlobalApiError } from '@/shared/components/layout/ErrorBoundary'
 export const useAddGarmentFromGallery = () => {
   const { mutateAsync, isPending } = useAddGarment()
 
-  const addGarmentFromGallery = async (): Promise<boolean> => {
+  const selectImageFromGallery = async (): Promise<ImagePicker.ImagePickerAsset | null> => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
     if (!permissionResult.granted) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryPermissionDenied'))
-      return false
+      return null
     }
 
-    const galleryResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      quality: 1,
-    })
+    try {
+      const galleryResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 1,
+      })
 
-    if (galleryResult.canceled) {
-      return false
+      if (galleryResult.canceled) {
+        return null
+      }
+
+      const asset = galleryResult.assets?.[0]
+
+      if (!asset?.uri) {
+        showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryAssetMissing'))
+        return null
+      }
+
+      return asset
+    } catch {
+      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryUploadFailed'))
+      return null
     }
+  }
 
-    const asset = galleryResult.assets?.[0]
-
-    if (!asset?.uri) {
+  const uploadGarmentFromGalleryAsset = async (asset: ImagePicker.ImagePickerAsset): Promise<boolean> => {
+    if (!asset.uri) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryAssetMissing'))
       return false
     }
@@ -49,7 +63,8 @@ export const useAddGarmentFromGallery = () => {
   }
 
   return {
-    addGarmentFromGallery,
+    selectImageFromGallery,
+    uploadGarmentFromGalleryAsset,
     isUploadingFromGallery: isPending,
   }
 }

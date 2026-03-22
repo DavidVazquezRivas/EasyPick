@@ -4,8 +4,9 @@ const garments = {
     apiState: 'API state',
   },
   uploadingScreen: {
-    title: 'Uploading Garment',
-    description: 'Please wait while we process your image.',
+    title: 'Analyzing Garment',
+    status: 'Identifying type, color, and occasion...',
+    description: 'We are processing your image details.',
   },
   confirmationScreen: {
     title: 'Confirm Detected Garments',

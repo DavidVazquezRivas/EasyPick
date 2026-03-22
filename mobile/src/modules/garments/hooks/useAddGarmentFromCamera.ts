@@ -7,27 +7,41 @@ import { prepareImageForUpload } from '@/modules/garments/utils/prepareImageForU
 export const useAddGarmentFromCamera = () => {
   const { mutateAsync, isPending } = useAddGarment()
 
-  const addGarmentFromCamera = async (): Promise<boolean> => {
+  const selectImageFromCamera = async (): Promise<ImagePicker.ImagePickerAsset | null> => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
 
     if (!permissionResult.granted) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraPermissionDenied'))
-      return false
+      return null
     }
 
-    const cameraResult = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: false,
-      quality: 1,
-    })
+    try {
+      const cameraResult = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 1,
+      })
 
-    if (cameraResult.canceled) {
-      return false
+      if (cameraResult.canceled) {
+        return null
+      }
+
+      const asset = cameraResult.assets?.[0]
+
+      if (!asset?.uri) {
+        showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraAssetMissing'))
+        return null
+      }
+
+      return asset
+    } catch {
+      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraUploadFailed'))
+      return null
     }
+  }
 
-    const asset = cameraResult.assets?.[0]
-
-    if (!asset?.uri) {
+  const uploadGarmentFromCameraAsset = async (asset: ImagePicker.ImagePickerAsset): Promise<boolean> => {
+    if (!asset.uri) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraAssetMissing'))
       return false
     }
@@ -49,7 +63,8 @@ export const useAddGarmentFromCamera = () => {
   }
 
   return {
-    addGarmentFromCamera,
+    selectImageFromCamera,
+    uploadGarmentFromCameraAsset,
     isUploadingFromCamera: isPending,
   }
 }

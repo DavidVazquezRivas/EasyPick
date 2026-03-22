@@ -11,40 +11,59 @@ export default function PrivateLayout() {
   const router = useRouter()
   const pathname = usePathname()
   const [isUploadSourceOpen, setIsUploadSourceOpen] = useState(false)
-  const { addGarmentFromCamera, isUploadingFromCamera } = useAddGarmentFromCamera()
-  const { addGarmentFromGallery, isUploadingFromGallery } = useAddGarmentFromGallery()
+  const { selectImageFromCamera, uploadGarmentFromCameraAsset, isUploadingFromCamera } = useAddGarmentFromCamera()
+  const { selectImageFromGallery, uploadGarmentFromGalleryAsset, isUploadingFromGallery } = useAddGarmentFromGallery()
   const isUploading = isUploadingFromCamera || isUploadingFromGallery
 
   const openUploadSource = () => setIsUploadSourceOpen(true)
   const closeUploadSource = () => setIsUploadSourceOpen(false)
 
+  const navigateToUploading = (previewUri: string) => {
+    router.push({
+      pathname: Routes.Private.Garments.Uploading,
+      params: { previewUri },
+    })
+  }
+
+  const finishUploadingFlow = () => {
+    if (router.canGoBack()) {
+      router.back()
+    } else {
+      router.replace(Routes.Private.Home)
+    }
+  }
+
   const handleCameraPress = async () => {
     closeUploadSource()
-    router.push(Routes.Private.Garments.Uploading)
+    const selectedAsset = await selectImageFromCamera()
+
+    if (!selectedAsset?.uri) {
+      return
+    }
+
+    navigateToUploading(selectedAsset.uri)
 
     try {
-      await addGarmentFromCamera()
+      await uploadGarmentFromCameraAsset(selectedAsset)
     } finally {
-      if (router.canGoBack()) {
-        router.back()
-      } else {
-        router.replace(Routes.Private.Home)
-      }
+      finishUploadingFlow()
     }
   }
 
   const handleGalleryPress = async () => {
     closeUploadSource()
-    router.push(Routes.Private.Garments.Uploading)
+    const selectedAsset = await selectImageFromGallery()
+
+    if (!selectedAsset?.uri) {
+      return
+    }
+
+    navigateToUploading(selectedAsset.uri)
 
     try {
-      await addGarmentFromGallery()
+      await uploadGarmentFromGalleryAsset(selectedAsset)
     } finally {
-      if (router.canGoBack()) {
-        router.back()
-      } else {
-        router.replace(Routes.Private.Home)
-      }
+      finishUploadingFlow()
     }
   }
 

@@ -17,10 +17,8 @@ public class MockGarmentProcessorGateway implements GarmentProcessorGateway {
         try {
             String base64Image = java.util.Base64.getEncoder().encodeToString(file.getBytes());
             try {
-                Thread.sleep(3000); // Simulate processing delay
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new AppException(ErrorCode.UPLOAD_IMAGE_ERROR, "Image processing was interrupted");
+                Thread.sleep(5000);
+            } catch (InterruptedException ignored) {
             }
             GarmentProcessorResponse mockedResponse1 = new GarmentProcessorResponse(base64Image);
             GarmentProcessorResponse mockedResponse2 = new GarmentProcessorResponse(base64Image);
