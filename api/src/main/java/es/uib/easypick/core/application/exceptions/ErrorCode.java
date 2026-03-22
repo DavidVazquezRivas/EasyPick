@@ -25,8 +25,9 @@ public enum ErrorCode {
     UPLOAD_IMAGE_ERROR(3100, "Failed to upload the image. Please check the file is not corrupted.",
             HttpStatus.INTERNAL_SERVER_ERROR),
     NO_GARMENT_DETECTED(3101, "No garment could be detected in the uploaded image. Please try with a different image.",
-            HttpStatus.BAD_REQUEST)
-    ;
+            HttpStatus.BAD_REQUEST),
+    INVALID_GARMENT_STATUS(3102, "The provided garment status is invalid.", HttpStatus.BAD_REQUEST),
+    GARMENT_NOT_FOUND(3103, "The specified garment was not found.", HttpStatus.NOT_FOUND);
 
     private final Integer errorCode;
     private final String defaultMessage;

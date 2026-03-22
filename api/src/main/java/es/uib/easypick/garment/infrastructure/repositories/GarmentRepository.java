@@ -17,4 +17,6 @@ public interface GarmentRepository extends JpaRepository<GarmentEntity, UUID> {
 
     @EntityGraph(value = "Garment.withAllDetails", type = EntityGraph.EntityGraphType.FETCH)
     List<GarmentEntity> findWithDetailsByUserIdAndStatusOrderByUpdatedAtDesc(UUID id, GarmentStatus status);
+
+    boolean existsByIdAndUserId(UUID garmentId, UUID userId);
 }
