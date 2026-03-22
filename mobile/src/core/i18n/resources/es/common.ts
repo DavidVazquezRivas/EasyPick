@@ -24,7 +24,7 @@ const common = {
     tabs: {
       closet: 'Armario',
       explore: 'Explorar',
-      create: 'Anadir',
+      create: 'Añadir',
       suggestions: 'Sugerencias',
       outfits: 'Outfits',
     },
