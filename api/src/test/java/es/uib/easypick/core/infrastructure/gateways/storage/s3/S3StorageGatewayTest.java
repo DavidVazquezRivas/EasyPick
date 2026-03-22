@@ -70,7 +70,7 @@ class S3StorageGatewayTest {
     @Test
     void uploadFile_ShouldHandleFilesWithoutExtension() {
         // Arrange
-        String originalFilename = "my-shirt"; // sin extensión
+        String originalFilename = "my-shirt"; // no extension
         String contentType = "application/octet-stream";
 
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
@@ -83,14 +83,56 @@ class S3StorageGatewayTest {
         assertNotNull(resultUrl);
         assertTrue(resultUrl.startsWith(PUBLIC_URL + "/" + BUCKET_NAME + "/"));
 
-        // Verify that the S3 request works with the current formatting implementation
         ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client).putObject(requestCaptor.capture(), any(RequestBody.class));
 
         PutObjectRequest capturedRequest = requestCaptor.getValue();
-        // Nota: Como en tu código haces "%s.%s".formatted(uuid, ""), el archivo terminará con un punto "uuid."
-        assertTrue(capturedRequest.key().endsWith("."), "S3 key will end with a dot due to the current string formatting");
+        assertFalse(capturedRequest.key().endsWith("."), "S3 key should not end with a trailing dot when there is no extension");
         assertEquals("application/octet-stream", capturedRequest.contentType());
+    }
+
+    @Test
+    void uploadFile_ShouldHandleNullFilename() {
+        // Arrange
+        String contentType = "application/octet-stream";
+
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+                .thenReturn(PutObjectResponse.builder().build());
+
+        // Act
+        String resultUrl = gateway.uploadFile(DUMMY_CONTENT, null, contentType);
+
+        // Assert
+        assertNotNull(resultUrl);
+        assertTrue(resultUrl.startsWith(PUBLIC_URL + "/" + BUCKET_NAME + "/"));
+
+        ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(s3Client).putObject(requestCaptor.capture(), any(RequestBody.class));
+
+        PutObjectRequest capturedRequest = requestCaptor.getValue();
+        assertFalse(capturedRequest.key().endsWith("."), "S3 key should not end with a trailing dot when filename is null");
+    }
+
+    @Test
+    void uploadFile_ShouldHandleBlankFilename() {
+        // Arrange
+        String contentType = "application/octet-stream";
+
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+                .thenReturn(PutObjectResponse.builder().build());
+
+        // Act
+        String resultUrl = gateway.uploadFile(DUMMY_CONTENT, "   ", contentType);
+
+        // Assert
+        assertNotNull(resultUrl);
+        assertTrue(resultUrl.startsWith(PUBLIC_URL + "/" + BUCKET_NAME + "/"));
+
+        ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        verify(s3Client).putObject(requestCaptor.capture(), any(RequestBody.class));
+
+        PutObjectRequest capturedRequest = requestCaptor.getValue();
+        assertFalse(capturedRequest.key().endsWith("."), "S3 key should not end with a trailing dot when filename is blank");
     }
     //endregion
 
