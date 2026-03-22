@@ -1,2 +1,2 @@
 export { useGetMyGarments, getMyGarmentsQueryOptions } from './queries'
-export { useAddGarment } from './mutations'
+export { useAddGarment, usePatchGarment } from './mutations'

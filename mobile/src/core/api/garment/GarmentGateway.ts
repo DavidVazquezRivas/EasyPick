@@ -4,6 +4,7 @@ import { ApiResponse } from '@/core/api/global/ApiResponse'
 import { ApiError } from '@/core/api/global/errors'
 import { SimpleGarment } from '@/core/api/garment/models/SimpleGarment'
 import { CompleteGarment } from './models/CompleteGarment'
+import { PatchGarmentRequest } from '@/core/api/garment/models/PatchGarmentRequest'
 
 export type UploadImageFile = {
   uri: string
@@ -47,5 +48,21 @@ export const GarmentGateway = {
     }
 
     return response.data.data ?? []
+  },
+
+  /**
+   * Patches a garment by id.
+   */
+  patchGarment: async (id: string, patch: PatchGarmentRequest): Promise<CompleteGarment | null> => {
+    const route = ApiRoutes.Garments.Patch.replace(':id', id)
+    const response = await httpClient.patch<ApiResponse<CompleteGarment>>(route, patch)
+
+    if (!response.data.success) {
+      const code = response.data.message?.code ?? 0
+      const message = response.data.message?.message ?? 'Failed to patch garment'
+      throw new ApiError(code, message, response.data.path ?? undefined, response.data.timestamp ?? undefined)
+    }
+
+    return response.data.data ?? null
   },
 }

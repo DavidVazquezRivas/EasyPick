@@ -8,5 +8,6 @@ export const ApiRoutes = {
   Garments: {
     GetAll: `${API_BASE_URL}/garments`,
     Add: `${API_BASE_URL}/garments`,
+    Patch: `${API_BASE_URL}/garments/:id`,
   },
 }

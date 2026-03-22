@@ -11,6 +11,25 @@ const garments = {
   confirmationScreen: {
     title: 'Confirm Detected Garments',
     description: 'Review and confirm detected attributes before saving.',
+    headerTitle: 'New Garment',
+    discard: 'Discard',
+    create: 'Add garment',
+    progress: '{{current}} of {{total}}',
+    attributes: {
+      title: 'Garment information',
+      name: 'Name',
+      category: 'Category',
+      brand: 'Brand',
+      style: 'Style',
+      colors: 'Colors',
+    },
+    todo: {
+      attributes: 'TODO: allow manual attribute editing.',
+    },
+    fallback: {
+      noName: 'Unnamed garment',
+      pending: 'Pending',
+    },
   },
   detail: {
     form: {

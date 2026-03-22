@@ -1,71 +1,21 @@
-import { Slot, usePathname, useRouter } from 'expo-router'
-import { useState } from 'react'
+import { Slot, usePathname } from 'expo-router'
 import { View } from 'react-native'
 import { UploadSourceSheet } from '@/modules/garments/components'
-import { useAddGarmentFromCamera, useAddGarmentFromGallery } from '@/modules/garments/hooks'
+import { useGarmentUploadFlow } from '@/modules/garments/hooks'
+import { ConfirmationFlowProvider } from '@/modules/garments/context/ConfirmationFlowContext'
 import { BottomTabBar, GlobalModalHost } from '@/shared/components/layout'
 import { PRIVATE_BOTTOM_TABS } from '@/shared/constants/BottomTabs'
-import { Routes } from '@/shared/constants/Routes'
 
-export default function PrivateLayout() {
-  const router = useRouter()
+function PrivateLayoutContent() {
   const pathname = usePathname()
-  const [isUploadSourceOpen, setIsUploadSourceOpen] = useState(false)
-  const { selectImageFromCamera, uploadGarmentFromCameraAsset, isUploadingFromCamera } = useAddGarmentFromCamera()
-  const { selectImageFromGallery, uploadGarmentFromGalleryAsset, isUploadingFromGallery } = useAddGarmentFromGallery()
-  const isUploading = isUploadingFromCamera || isUploadingFromGallery
-
-  const openUploadSource = () => setIsUploadSourceOpen(true)
-  const closeUploadSource = () => setIsUploadSourceOpen(false)
-
-  const navigateToUploading = (previewUri: string) => {
-    router.push({
-      pathname: Routes.Private.Garments.Uploading,
-      params: { previewUri },
-    })
-  }
-
-  const finishUploadingFlow = () => {
-    if (router.canGoBack()) {
-      router.back()
-    } else {
-      router.replace(Routes.Private.Home)
-    }
-  }
-
-  const handleCameraPress = async () => {
-    closeUploadSource()
-    const selectedAsset = await selectImageFromCamera()
-
-    if (!selectedAsset?.uri) {
-      return
-    }
-
-    navigateToUploading(selectedAsset.uri)
-
-    try {
-      await uploadGarmentFromCameraAsset(selectedAsset)
-    } finally {
-      finishUploadingFlow()
-    }
-  }
-
-  const handleGalleryPress = async () => {
-    closeUploadSource()
-    const selectedAsset = await selectImageFromGallery()
-
-    if (!selectedAsset?.uri) {
-      return
-    }
-
-    navigateToUploading(selectedAsset.uri)
-
-    try {
-      await uploadGarmentFromGalleryAsset(selectedAsset)
-    } finally {
-      finishUploadingFlow()
-    }
-  }
+  const {
+    isUploadSourceOpen,
+    isUploading,
+    openUploadSource,
+    closeUploadSource,
+    handleCameraPress,
+    handleGalleryPress,
+  } = useGarmentUploadFlow()
 
   const uploadSourceSheet = (
     <UploadSourceSheet
@@ -88,5 +38,13 @@ export default function PrivateLayout() {
         {uploadSourceSheet}
       </GlobalModalHost>
     </View>
+  )
+}
+
+export default function PrivateLayout() {
+  return (
+    <ConfirmationFlowProvider>
+      <PrivateLayoutContent />
+    </ConfirmationFlowProvider>
   )
 }

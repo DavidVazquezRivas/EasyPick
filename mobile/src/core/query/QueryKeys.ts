@@ -17,6 +17,6 @@ export const QueryKeys = {
     /** GET /garments — list of garments */
     list: ['garments', 'list'] as const,
     /** GET /garments/<id> — detail of a specific garment */
-    detail: (id: number) => ['garments', 'detail', id] as const,
+    detail: (id: string) => ['garments', 'detail', id] as const,
   },
 } as const

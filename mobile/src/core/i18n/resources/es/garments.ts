@@ -11,6 +11,25 @@ const garments = {
   confirmationScreen: {
     title: 'Confirmar prendas detectadas',
     description: 'Revisa y confirma los atributos detectados antes de guardar.',
+    headerTitle: 'Nueva prenda',
+    discard: 'Descartar',
+    create: 'Añadir prenda',
+    progress: '{{current}} de {{total}}',
+    attributes: {
+      title: 'Informacion de prenda',
+      name: 'Nombre',
+      category: 'Categoria',
+      brand: 'Marca',
+      style: 'Estilo',
+      colors: 'Colores',
+    },
+    todo: {
+      attributes: 'TODO: permitir edicion manual de atributos.',
+    },
+    fallback: {
+      noName: 'Prenda sin nombre',
+      pending: 'Pendiente',
+    },
   },
   detail: {
     form: {

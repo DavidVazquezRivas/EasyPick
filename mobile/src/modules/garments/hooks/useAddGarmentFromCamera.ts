@@ -1,4 +1,5 @@
 import * as ImagePicker from 'expo-image-picker'
+import { CompleteGarment } from '@/core/api/garment/models/CompleteGarment'
 import { AppError } from '@/core/api/global/errors'
 import { useAddGarment } from '@/core/query/garment'
 import { showGlobalApiError } from '@/shared/components/layout/ErrorBoundary'
@@ -40,10 +41,12 @@ export const useAddGarmentFromCamera = () => {
     }
   }
 
-  const uploadGarmentFromCameraAsset = async (asset: ImagePicker.ImagePickerAsset): Promise<boolean> => {
+  const uploadGarmentFromCameraAsset = async (
+    asset: ImagePicker.ImagePickerAsset,
+  ): Promise<CompleteGarment[] | null> => {
     if (!asset.uri) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraAssetMissing'))
-      return false
+      return null
     }
 
     try {
@@ -51,14 +54,14 @@ export const useAddGarmentFromCamera = () => {
 
       if (!preparedImage.ok) {
         showGlobalApiError(new AppError(preparedImage.errorKey))
-        return false
+        return null
       }
 
-      await mutateAsync(preparedImage.imageFile)
-      return true
+      const createdGarments = await mutateAsync(preparedImage.imageFile)
+      return createdGarments
     } catch {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraUploadFailed'))
-      return false
+      return null
     }
   }
 
