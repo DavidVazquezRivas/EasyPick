@@ -1,4 +1,5 @@
 import '@/core/theme/global.css'
+import '@/core/theme/custom.css'
 import { Slot, useRouter, useSegments } from 'expo-router'
 import { useEffect } from 'react'
 import { AppProvider } from '@/core/providers/AppProvider'
