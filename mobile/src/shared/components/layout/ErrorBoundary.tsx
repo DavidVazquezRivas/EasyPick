@@ -3,13 +3,13 @@ import { View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { GlobalModalHost } from '@/shared/components/layout/GlobalModalHost'
 import { Button, Card, CardContent, CardHeader, Text } from '@/shared/components/ui'
-import { ApiError } from '@/core/api/global/errors'
+import { ApiError, AppError } from '@/core/api/global/errors'
 
-interface ApiErrorBoundaryProps {
+interface ErrorBoundaryProps {
   children: ReactNode
 }
 
-interface ApiErrorBoundaryState {
+interface ErrorBoundaryState {
   fatalError: Error | null
   overlayError: Error | null
 }
@@ -17,23 +17,24 @@ interface ApiErrorBoundaryState {
 let externalGlobalErrorHandler: ((error: Error) => void) | null = null
 
 /**
- * Opens the global API error modal without crashing the render tree.
- * Useful for manual tests and non-rendering error flows.
+ * Opens the global error modal without crashing the render tree.
+ * Useful for manual tests and non-rendering error flows (mutations, permissions, etc.).
  */
 export const showGlobalApiError = (error: Error) => {
   externalGlobalErrorHandler?.(error)
 }
 
 /**
- * Global error boundary for API errors from TanStack Query.
+ * Global error boundary for API and application errors.
  *
- * Catches ApiError instances and displays them in a modal with proper i18n translation.
- * Attempts to map error.code to i18n key format: common.api.errors.backendCodes.{code}
+ * Catches ApiError and AppError instances and displays them in a modal with proper i18n translation.
+ * - ApiError: Maps error.code to i18n key format: common.api.errors.backendCodes.{code}
+ * - AppError: Translates error.translationKey directly
  *
- * Usage: Wrap AppProvider/AuthProvider with this component to handle API errors globally.
+ * Usage: Wrap AppProvider/AuthProvider with this component to handle errors globally.
  */
-export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, ApiErrorBoundaryState> {
-  constructor(props: ApiErrorBoundaryProps) {
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = {
       fatalError: null,
@@ -41,7 +42,7 @@ export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, Api
     }
   }
 
-  static getDerivedStateFromError(error: Error): ApiErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       fatalError: error,
       overlayError: null,
@@ -60,7 +61,7 @@ export class ApiErrorBoundary extends React.Component<ApiErrorBoundaryProps, Api
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error for debugging
-    console.error('[ApiErrorBoundary] Caught error:', error, errorInfo.componentStack)
+    console.error('[ErrorBoundary] Caught error:', error, errorInfo.componentStack)
   }
 
   handleExternalError = (error: Error) => {
@@ -101,7 +102,10 @@ const ApiErrorModal: React.FC<ApiErrorModalProps> = ({ error, onDismiss }) => {
   let displayMessage = error.message
   let errorCode: number | null = null
 
-  if (error instanceof ApiError) {
+  if (error instanceof AppError) {
+    // Translate the i18n key
+    displayMessage = t(error.translationKey)
+  } else if (error instanceof ApiError) {
     errorCode = error.code
     // Try to get i18n translation for the backend error code
     const i18nKey = `common.api.errors.backendCodes.${errorCode}`

@@ -25,3 +25,27 @@ export class ApiError extends Error {
     Object.setPrototypeOf(this, ApiError.prototype)
   }
 }
+
+/**
+ * Error class for application errors with translation keys.
+ *
+ * Use this when you want to show an error message that's defined as a translation key,
+ * rather than a plain text message. Works with both API and non-API application errors.
+ *
+ * Example:
+ *   throw new AppError('garment.uploadSourceSheet.errors.cameraUploadFailed')
+ *
+ * The key will be automatically translated via i18n in the error boundary modal.
+ */
+export class AppError extends Error {
+  readonly translationKey: string
+
+  constructor(translationKey: string) {
+    super(translationKey)
+    this.name = 'AppError'
+    this.translationKey = translationKey
+
+    // Maintain proper prototype chain for instanceof checks
+    Object.setPrototypeOf(this, AppError.prototype)
+  }
+}

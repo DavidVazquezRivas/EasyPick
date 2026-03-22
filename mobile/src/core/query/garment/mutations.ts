@@ -1,5 +1,19 @@
-// TODO: Add garment mutations here as endpoints become available.
-// Example naming: useCreateGarment, useUpdateGarment, useDeleteGarment.
-// This file is intentionally in core/query so modules consume ready-made hooks.
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiClient } from '@/core/api'
+import { QueryKeys } from '@/core/query/QueryKeys'
 
-export {}
+/**
+ * Mutation hook for POST /garments.
+ *
+ * Uploads an image and invalidates garments cache so list queries refresh.
+ */
+export const useAddGarment = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: apiClient.garment.addGarments,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QueryKeys.garments.list })
+    },
+  })
+}

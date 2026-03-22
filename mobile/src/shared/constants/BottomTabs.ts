@@ -15,8 +15,8 @@ export const PRIVATE_BOTTOM_TABS: ReadonlyArray<BottomTabItem> = [
   {
     key: 'closet',
     labelKey: 'common.navigation.tabs.closet',
-    href: Routes.Private.Closet,
-    activeOn: [Routes.Private.Closet],
+    href: Routes.Private.Garments.Closet,
+    activeOn: [Routes.Private.Garments.Closet, Routes.Private.Garments.Uploading, Routes.Private.Garments.Confirmation],
   },
   {
     key: 'explore',

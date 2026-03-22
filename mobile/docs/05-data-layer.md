@@ -39,11 +39,13 @@ Nunca retornar datos vacíos (ej: `[] ?? []`) que silencien errores.
 
 ### Error Boundary Global
 
-`ApiErrorBoundary` envuelve `AppProvider` y captura errores de TanStack Query:
+`ErrorBoundary` envuelve `AppProvider` y captura errores de la aplicación:
 
 - Renderiza modal con el error
-- Mapea `error.code` a i18n key: `common.api.errors.backendCodes.{code}`
+- Mapea `ApiError.code` a i18n key: `common.api.errors.backendCodes.{code}`
+- Mapea `AppError.translationKey` directamente a i18n key
 - Muestra mensaje traducido al usuario
+- Visible en contextos no-render via `showGlobalApiError()`
 
 ### Error Handling por Pantalla (Override)
 

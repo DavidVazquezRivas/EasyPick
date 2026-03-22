@@ -48,7 +48,7 @@ const common = {
     title: 'Error Handling Playground',
     description: 'Temporary page to force handled and generic errors for UI validation.',
     sectionInline: 'Inline error (QueryErrorDisplay)',
-    sectionGlobal: 'Global boundary error (ApiErrorBoundary)',
+    sectionGlobal: 'Global error boundary (ErrorBoundary)',
     globalHint: 'Tap to throw a runtime error and verify the global modal behavior.',
     handledFallbackMessage: 'Handled error fallback message',
     genericInlineMessage: 'Generic inline error without backend code',

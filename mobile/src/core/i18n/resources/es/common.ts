@@ -48,7 +48,7 @@ const common = {
     title: 'Playground de Errores',
     description: 'Pantalla temporal para forzar errores manejados y genericos.',
     sectionInline: 'Error inline (QueryErrorDisplay)',
-    sectionGlobal: 'Error global (ApiErrorBoundary)',
+    sectionGlobal: 'Error global (ErrorBoundary)',
     globalHint: 'Pulsa para lanzar un error runtime y validar la modal global.',
     handledFallbackMessage: 'Mensaje fallback de error manejado',
     genericInlineMessage: 'Error inline generico sin codigo de backend',

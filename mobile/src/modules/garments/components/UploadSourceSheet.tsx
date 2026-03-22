@@ -10,6 +10,7 @@ type UploadSourceSheetProps = {
   onCameraPress: () => void
   onGalleryPress: () => void
   onCancelPress: () => void
+  isUploadingFromCamera?: boolean
 }
 
 const ICON_SIZE = 20
@@ -19,13 +20,18 @@ const ActionRow = ({
   title,
   description,
   onPress,
+  disabled,
 }: {
   icon: ReactNode
   title: string
   description: string
   onPress: () => void
+  disabled?: boolean
 }) => (
-  <Pressable className='flex-row items-center gap-3 px-4 py-3' onPress={onPress}>
+  <Pressable
+    className={cn('flex-row items-center gap-3 px-4 py-3', disabled && 'opacity-60')}
+    onPress={onPress}
+    disabled={disabled}>
     <View className='bg-secondary h-11 w-11 items-center justify-center rounded-full'>{icon}</View>
     <View className='flex-1'>
       <Text className='text-base font-semibold text-foreground'>{title}</Text>
@@ -34,7 +40,12 @@ const ActionRow = ({
   </Pressable>
 )
 
-export const UploadSourceSheet = ({ onCameraPress, onGalleryPress, onCancelPress }: UploadSourceSheetProps) => {
+export const UploadSourceSheet = ({
+  onCameraPress,
+  onGalleryPress,
+  onCancelPress,
+  isUploadingFromCamera = false,
+}: UploadSourceSheetProps) => {
   const { t } = useTranslation()
   const colorScheme = useColorScheme()
   const iconColor = getThemeColor('primary', colorScheme)
@@ -43,7 +54,10 @@ export const UploadSourceSheet = ({ onCameraPress, onGalleryPress, onCancelPress
   const subtitle = t('garment.uploadSourceSheet.subtitle')
 
   const cameraTitle = t('garment.uploadSourceSheet.camera.title')
-  const cameraDescription = t('garment.uploadSourceSheet.camera.description')
+  const cameraDescription =
+    isUploadingFromCamera ?
+      t('garment.uploadSourceSheet.camera.uploadingDescription')
+    : t('garment.uploadSourceSheet.camera.description')
 
   const galleryTitle = t('garment.uploadSourceSheet.gallery.title')
   const galleryDescription = t('garment.uploadSourceSheet.gallery.description')
@@ -54,11 +68,23 @@ export const UploadSourceSheet = ({ onCameraPress, onGalleryPress, onCancelPress
   const galleryIcon = <Ionicons name='images-outline' size={ICON_SIZE} color={iconColor} />
 
   const cameraRow = (
-    <ActionRow icon={cameraIcon} title={cameraTitle} description={cameraDescription} onPress={onCameraPress} />
+    <ActionRow
+      icon={cameraIcon}
+      title={cameraTitle}
+      description={cameraDescription}
+      onPress={onCameraPress}
+      disabled={isUploadingFromCamera}
+    />
   )
 
   const galleryRow = (
-    <ActionRow icon={galleryIcon} title={galleryTitle} description={galleryDescription} onPress={onGalleryPress} />
+    <ActionRow
+      icon={galleryIcon}
+      title={galleryTitle}
+      description={galleryDescription}
+      onPress={onGalleryPress}
+      disabled={isUploadingFromCamera}
+    />
   )
 
   return (
@@ -76,8 +102,12 @@ export const UploadSourceSheet = ({ onCameraPress, onGalleryPress, onCancelPress
       </View>
 
       <Pressable
-        className={cn('bg-card mt-4 items-center justify-center rounded-2xl px-4 py-4')}
-        onPress={onCancelPress}>
+        className={cn(
+          'bg-card mt-4 items-center justify-center rounded-2xl px-4 py-4',
+          isUploadingFromCamera && 'opacity-60',
+        )}
+        onPress={onCancelPress}
+        disabled={isUploadingFromCamera}>
         <Text className='text-lg font-semibold text-foreground'>{cancelLabel}</Text>
       </Pressable>
     </View>
