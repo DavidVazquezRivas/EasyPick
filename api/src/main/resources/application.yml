@@ -66,7 +66,7 @@ application:
         pending-retention-time: 1h
         scheduler:
           enabled: true
-          cron: "*/10 * * * *" # Every 10 minutes
+          cron: "0 */10 * * * *" # Every 10 minutes
 
 
 cloud:
