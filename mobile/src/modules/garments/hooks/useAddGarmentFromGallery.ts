@@ -1,34 +1,34 @@
 import * as ImagePicker from 'expo-image-picker'
 import { AppError } from '@/core/api/global/errors'
 import { useAddGarment } from '@/core/query/garment'
-import { showGlobalApiError } from '@/shared/components/layout/ErrorBoundary'
 import { prepareImageForUpload } from '@/modules/garments/utils/prepareImageForUpload'
+import { showGlobalApiError } from '@/shared/components/layout/ErrorBoundary'
 
-export const useAddGarmentFromCamera = () => {
+export const useAddGarmentFromGallery = () => {
   const { mutateAsync, isPending } = useAddGarment()
 
-  const addGarmentFromCamera = async (): Promise<boolean> => {
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
+  const addGarmentFromGallery = async (): Promise<boolean> => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
     if (!permissionResult.granted) {
-      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraPermissionDenied'))
+      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryPermissionDenied'))
       return false
     }
 
-    const cameraResult = await ImagePicker.launchCameraAsync({
+    const galleryResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
       quality: 1,
     })
 
-    if (cameraResult.canceled) {
+    if (galleryResult.canceled) {
       return false
     }
 
-    const asset = cameraResult.assets?.[0]
+    const asset = galleryResult.assets?.[0]
 
     if (!asset?.uri) {
-      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraAssetMissing'))
+      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryAssetMissing'))
       return false
     }
 
@@ -43,13 +43,13 @@ export const useAddGarmentFromCamera = () => {
       await mutateAsync(preparedImage.imageFile)
       return true
     } catch {
-      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraUploadFailed'))
+      showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryUploadFailed'))
       return false
     }
   }
 
   return {
-    addGarmentFromCamera,
-    isUploadingFromCamera: isPending,
+    addGarmentFromGallery,
+    isUploadingFromGallery: isPending,
   }
 }

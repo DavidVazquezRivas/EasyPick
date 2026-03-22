@@ -119,3 +119,14 @@ Reglas:
 - mutations.ts aun es placeholder.
 - API_BASE_URL sigue hardcodeado con TODO a env.
 - Error handling robusto implementado (ApiError, error boundary, QueryErrorDisplay).
+
+## Upload de imagen (frontend)
+
+Regla cliente para evitar rechazos por limite de servidor (15MB):
+
+1. Camara y galeria usan el mismo pipeline antes de subir.
+2. La imagen se optimiza (reescalado + compresion JPEG) en cliente.
+3. Se valida tamano final con margen de seguridad (`14MB`) antes de hacer request.
+4. Si sigue superando el limite, no se envia request y se muestra error traducido.
+
+Objetivo: evitar intentos de upload inviables, mejorar UX y reducir carga innecesaria al backend.

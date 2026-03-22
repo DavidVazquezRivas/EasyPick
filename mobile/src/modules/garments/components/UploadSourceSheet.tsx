@@ -10,7 +10,7 @@ type UploadSourceSheetProps = {
   onCameraPress: () => void
   onGalleryPress: () => void
   onCancelPress: () => void
-  isUploadingFromCamera?: boolean
+  isUploading?: boolean
 }
 
 const ICON_SIZE = 20
@@ -44,7 +44,7 @@ export const UploadSourceSheet = ({
   onCameraPress,
   onGalleryPress,
   onCancelPress,
-  isUploadingFromCamera = false,
+  isUploading = false,
 }: UploadSourceSheetProps) => {
   const { t } = useTranslation()
   const colorScheme = useColorScheme()
@@ -52,15 +52,13 @@ export const UploadSourceSheet = ({
 
   const title = t('garment.uploadSourceSheet.title')
   const subtitle = t('garment.uploadSourceSheet.subtitle')
+  const uploadingDescription = t('garment.uploadSourceSheet.uploadingDescription')
 
   const cameraTitle = t('garment.uploadSourceSheet.camera.title')
-  const cameraDescription =
-    isUploadingFromCamera ?
-      t('garment.uploadSourceSheet.camera.uploadingDescription')
-    : t('garment.uploadSourceSheet.camera.description')
+  const cameraDescription = isUploading ? uploadingDescription : t('garment.uploadSourceSheet.camera.description')
 
   const galleryTitle = t('garment.uploadSourceSheet.gallery.title')
-  const galleryDescription = t('garment.uploadSourceSheet.gallery.description')
+  const galleryDescription = isUploading ? uploadingDescription : t('garment.uploadSourceSheet.gallery.description')
 
   const cancelLabel = t('garment.uploadSourceSheet.cancel')
 
@@ -73,7 +71,7 @@ export const UploadSourceSheet = ({
       title={cameraTitle}
       description={cameraDescription}
       onPress={onCameraPress}
-      disabled={isUploadingFromCamera}
+      disabled={isUploading}
     />
   )
 
@@ -83,7 +81,7 @@ export const UploadSourceSheet = ({
       title={galleryTitle}
       description={galleryDescription}
       onPress={onGalleryPress}
-      disabled={isUploadingFromCamera}
+      disabled={isUploading}
     />
   )
 
@@ -102,12 +100,9 @@ export const UploadSourceSheet = ({
       </View>
 
       <Pressable
-        className={cn(
-          'bg-card mt-4 items-center justify-center rounded-2xl px-4 py-4',
-          isUploadingFromCamera && 'opacity-60',
-        )}
+        className={cn('bg-card mt-4 items-center justify-center rounded-2xl px-4 py-4', isUploading && 'opacity-60')}
         onPress={onCancelPress}
-        disabled={isUploadingFromCamera}>
+        disabled={isUploading}>
         <Text className='text-lg font-semibold text-foreground'>{cancelLabel}</Text>
       </Pressable>
     </View>
