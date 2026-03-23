@@ -8,6 +8,7 @@ const auth = {
     subtitle: 'Sign in to continue',
     actions: {
       devLogin: 'Dev Login',
+      openDevErrorPlayground: 'Open Error Playground',
       googleLogin: 'Sign in with Google',
     },
     errors: {

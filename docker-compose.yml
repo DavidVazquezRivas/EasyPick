@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: easypick-db
+    environment:
+      POSTGRES_DB: easypick
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgpassword123
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # AWS S3 compatible storage using MinIO
+  minio:
+    image: minio/minio:latest
+    container_name: easypick-minio
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    ports:
+      - '9000:9000' # Port for  API (Where Spring Boot connects)
+      - '9001:9001' # Port for the web console (Accessible at http://localhost:9001)
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  # Temporal container to set up the bucket and make it public automatically
+  minio-setup:
+    image: minio/mc:latest
+    container_name: easypick-minio-setup
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set myminio http://minio:9000 admin password123;
+      /usr/bin/mc mb myminio/easypick-images --ignore-existing;
+      /usr/bin/mc anonymous set public myminio/easypick-images;
+      exit 0;
+      "
+
+  api:
+    build:
+      context: ./api
+    container_name: easypick-api
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+      - minio
+    environment:
+      # Database connections overrides
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easypick
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=pgpassword123
+
+      # AWS S3 overrides for MinIO
+      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=admin
+      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=password123
+      - CLOUD_AWS_S3_ENDPOINT=http://minio:9000
+      - CLOUD_AWS_S3_BUCKET_NAME=easypick-images
+      - CLOUD_AWS_REGION_STATIC=eu-west-1
+
+volumes:
+  pgdata:
+  minio_data:

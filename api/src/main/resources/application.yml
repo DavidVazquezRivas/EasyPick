@@ -6,6 +6,10 @@ spring:
     name: easypick-api
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 20MB
 
   # Database configuration
   datasource:
@@ -13,6 +17,7 @@ spring:
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:uQFPS^axE88w!x4T%keL}
     driver-class-name: org.postgresql.Driver
+
 
   # Seed data configuration
   sql:
@@ -52,3 +57,28 @@ application:
       expiration: 3600000 # 1 hour in milliseconds
     refresh-token:
       expiration-days: 30 # Refresh token validity in days
+
+  modules:
+    garment:
+      processor:
+        mode: mock
+      cleaner:
+        pending-retention-time: 1h
+        scheduler:
+          enabled: true
+          cron: "0 */10 * * * *" # Every 10 minutes
+
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:admin}
+      secret-key: ${AWS_SECRET_KEY:password123}
+    region:
+      static: ${AWS_REGION:eu-west-1}
+    s3:
+      endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
+      public-url: ${AWS_S3_PUBLIC_URL:http://192.168.1.132:9000}
+      bucket-name: ${AWS_S3_BUCKET_NAME:easypick-images}
+
+

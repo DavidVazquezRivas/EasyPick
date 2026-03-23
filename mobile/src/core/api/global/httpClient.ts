@@ -13,7 +13,7 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean }
 export const httpClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    Accept: 'application/json',
   },
 })
 
@@ -34,6 +34,12 @@ const refreshTokens = async (): Promise<AuthTokens> => {
         { refreshToken },
         { headers: { Authorization: undefined } },
       )
+
+      // Validate success before accessing data (per ApiResponse contract)
+      if (!refreshResponse.data.success) {
+        const message = refreshResponse.data.message?.message ?? 'Token refresh failed'
+        throw new Error(message)
+      }
 
       const tokens = refreshResponse.data.data
       if (!tokens) throw new Error('common.api.errors.emptyRefreshData')

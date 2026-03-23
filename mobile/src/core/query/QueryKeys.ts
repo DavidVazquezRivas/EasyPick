@@ -14,7 +14,9 @@ export const QueryKeys = {
   garments: {
     /** All garments queries — use to invalidate the entire module's cache */
     all: ['garments'] as const,
-    /** GET /garments/me — authenticated user's garments */
-    me: ['garments', 'me'] as const,
+    /** GET /garments — list of garments */
+    list: ['garments', 'list'] as const,
+    /** GET /garments/<id> — detail of a specific garment */
+    detail: (id: string) => ['garments', 'detail', id] as const,
   },
 } as const

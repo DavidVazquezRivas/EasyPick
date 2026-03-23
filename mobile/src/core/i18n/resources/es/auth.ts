@@ -8,6 +8,7 @@ const auth = {
     subtitle: 'Inicia sesion para continuar',
     actions: {
       devLogin: 'Acceso Dev',
+      openDevErrorPlayground: 'Abrir Playground de Errores',
       googleLogin: 'Iniciar sesion con Google',
     },
     errors: {
