@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:latest
+    image: postgres:16
     container_name: easypick-db
     environment:
       POSTGRES_DB: easypick
@@ -11,7 +11,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
 
   # AWS S3 compatible storage using MinIO
   minio:
