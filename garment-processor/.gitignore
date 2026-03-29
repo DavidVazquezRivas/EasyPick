@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+.venv/
+
+# Local model artifacts and caches
+yolov8n.pt
+
+# Debug and generated artifacts
+debug_output/

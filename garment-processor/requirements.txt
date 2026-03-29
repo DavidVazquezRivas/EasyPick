@@ -16,6 +16,7 @@ ultralytics>=8.1.0
 
 # 4. Eliminación de Fondo (U-2-Net)
 rembg>=2.0.50
+onnxruntime>=1.18.0
 
 # 5. Etiquetado Automático / Zero-Shot (CLIP)
 torch>=2.2.0

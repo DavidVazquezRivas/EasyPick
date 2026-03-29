@@ -1,28 +1,47 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 from transformers import CLIPModel, CLIPProcessor
 from ultralytics import YOLO
 
 from app.config import SETTINGS
-from app.pipeline import GarmentProcessingPipeline
+from app.processing import GarmentProcessingOrchestrator, ProcessedGarmentResponseBuilder
 from app.services.background_service import BackgroundRemover
 from app.services.clip_service import ClipTagger
+from app.services.garment_filter_service import ClipGarmentFilter
+from app.services.segmentation_service import SamSegmentationService
 from app.services.yolo_service import YoloGarmentDetector
+
+LOGGER = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def app_lifespan(application: FastAPI):
+    LOGGER.info("Loading YOLO and CLIP models")
     yolo_model = YOLO(SETTINGS.yolo_model_name)
     clip_model = CLIPModel.from_pretrained(SETTINGS.clip_model_name)
     clip_model.eval()
     clip_processor = CLIPProcessor.from_pretrained(SETTINGS.clip_model_name)
 
-    application.state.pipeline = GarmentProcessingPipeline(
+    segmenter = None
+    if SETTINGS.segmentation_enabled:
+        try:
+            segmenter = SamSegmentationService.create_default()
+            LOGGER.info("SAM segmentation model initialized")
+        except Exception as exc:
+            segmenter = None
+            LOGGER.warning("SAM initialization failed; YOLO fallback will be used: %s", exc)
+
+    application.state.orchestrator = GarmentProcessingOrchestrator(
         detector=YoloGarmentDetector(yolo_model),
         background_remover=BackgroundRemover(),
         clip_tagger=ClipTagger(model=clip_model, processor=clip_processor),
+        garment_filter=ClipGarmentFilter(model=clip_model, processor=clip_processor),
+        segmenter=segmenter,
     )
+    application.state.response_builder = ProcessedGarmentResponseBuilder()
+    LOGGER.info("Models loaded and processing components initialized")
     yield

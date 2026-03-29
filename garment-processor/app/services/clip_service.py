@@ -7,12 +7,14 @@ from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 
 from app.config import (
+    SETTINGS,
     CATEGORY_LABELS,
     COLOR_LABELS,
     MATERIAL_LABELS,
     SEASON_LABELS,
     STYLE_LABELS,
 )
+from app.exceptions import ClipClassificationError
 
 
 @dataclass
@@ -38,12 +40,24 @@ class ClipTagger:
 
     def _infer_dimension(self, image: Image.Image, labels: tuple[str, ...], prompt_template: str) -> ClipResult:
         prompts = [prompt_template.format(label=label) for label in labels]
-        inputs = self._processor(text=prompts, images=image, return_tensors="pt", padding=True)
+        try:
+            inputs = self._processor(text=prompts, images=image, return_tensors="pt", padding=True)
 
-        with torch.no_grad():
-            outputs = self._model(**inputs)
-            logits = outputs.logits_per_image
-            probs = torch.softmax(logits, dim=1)[0]
+            with torch.no_grad():
+                outputs = self._model(**inputs)
+                logits = outputs.logits_per_image
+                probs = torch.softmax(logits, dim=1)[0]
 
-        best_index = int(torch.argmax(probs).item())
-        return ClipResult(label=labels[best_index], score=float(probs[best_index].item()))
+            best_index = int(torch.argmax(probs).item())
+            best_score = float(probs[best_index].item())
+
+            if best_score < SETTINGS.clip_min_confidence:
+                raise ClipClassificationError(
+                    f"Low CLIP confidence ({best_score:.3f}) for dimension inference"
+                )
+
+            return ClipResult(label=labels[best_index], score=best_score)
+        except ClipClassificationError:
+            raise
+        except Exception as exc:
+            raise ClipClassificationError("CLIP classification failed") from exc

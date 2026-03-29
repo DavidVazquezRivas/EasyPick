@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
 from PIL import Image
 from ultralytics import YOLO
 
 from app.config import SETTINGS
+from app.exceptions import YoloDetectionError
 
 
 @dataclass
@@ -20,12 +20,14 @@ class YoloGarmentDetector:
         self._model = model
 
     def detect_and_crop(self, image: Image.Image) -> list[DetectedCrop]:
-        np_image = np.array(image)
-        results = self._model.predict(
-            source=np_image,
-            conf=SETTINGS.yolo_confidence_threshold,
-            verbose=False,
-        )
+        try:
+            results = self._model.predict(
+                source=image,
+                conf=SETTINGS.yolo_confidence_threshold,
+                verbose=False,
+            )
+        except Exception as exc:
+            raise YoloDetectionError("YOLO detection failed") from exc
 
         if not results:
             return []

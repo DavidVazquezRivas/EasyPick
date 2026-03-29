@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
-from app.config import SETTINGS
+from app.api import InputValidator
+from app.exceptions import (
+    BackgroundRemovalError,
+    ClipClassificationError,
+    InvalidInputError,
+    YoloDetectionError,
+)
 from app.models.process_garments_response import ProcessGarmentsResponse
-from app.utils.image_io import InvalidImageError, load_image_from_bytes
 
 router = APIRouter(tags=["garment-processing"])
 
@@ -16,26 +21,22 @@ def health_check() -> dict[str, str]:
 
 @router.post("/process-garments", response_model=ProcessGarmentsResponse)
 async def process_garments(request: Request, image: UploadFile = File(...)) -> ProcessGarmentsResponse:
-    if not image.content_type or not image.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
-
-    content = await image.read()
-    if len(content) == 0:
-        raise HTTPException(status_code=400, detail="Image file is empty")
-    if len(content) > SETTINGS.max_upload_size_bytes:
-        raise HTTPException(status_code=400, detail="Image exceeds max upload size")
-
     try:
-        pil_image = load_image_from_bytes(content)
-    except InvalidImageError as exc:
+        validated_image = await InputValidator.validate_upload(image)
+    except InvalidInputError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     try:
-        garments = request.app.state.pipeline.process(pil_image)
+        raw_garments = request.app.state.orchestrator.process(validated_image.image)
+        garments = request.app.state.response_builder.build_many(raw_garments)
+    except InvalidInputError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (YoloDetectionError, BackgroundRemovalError, ClipClassificationError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Processing failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="Processing failed") from exc
 
     if not garments:
         raise HTTPException(status_code=422, detail="No garments detected in image")
