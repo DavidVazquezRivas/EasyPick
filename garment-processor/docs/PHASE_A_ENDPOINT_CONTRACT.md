@@ -29,6 +29,7 @@ Freeze the endpoint contract to ensure backward compatibility:
 
 ```json
 {
+  "garment_pngs_base64": ["(PNG bytes in base64)"],
   "garments": [
     {
       "temp_id": "uuid-string",
@@ -55,22 +56,26 @@ Freeze the endpoint contract to ensure backward compatibility:
           "score": 0.79
         }
       },
+      "image_index": 0,
       "image_base64": "(PNG bytes in base64)",
       "mime_type": "image/png"
     }
-  ]
+  ],
+  "mime_type": "image/png"
 }
 ```
 
 **Field Definitions**:
 - `garments[]`: Array of detected garments (can be empty if HTTP 422)
+- `garment_pngs_base64`: Array with PNG payloads in base64 for all detected garments
 - `temp_id`: Unique identifier (UUID v4) for this garment in this batch
 - `detection_confidence`: Float [0.0, 1.0]; source depends on internal path (YOLO or SAM)
 - `labels`: 5 fixed classification attributes, each with:
   - `label`: String; category value (e.g., "t-shirt", "blue", "casual", "cotton", "summer")
   - `score`: Float [0.0, 1.0]; CLIP confidence for this prediction
+- `image_index`: Position of the garment image in `garment_pngs_base64`
 - `image_base64`: PNG-encoded image as base64 string (no newlines)
-- `mime_type`: Always "image/png" (rembg output format)
+- `mime_type`: Always "image/png" (at garment level and top-level)
 
 ### Error Responses
 

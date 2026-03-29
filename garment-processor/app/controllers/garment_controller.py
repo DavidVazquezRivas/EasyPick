@@ -37,7 +37,7 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
         LOGGER.info(f"Orchestrator returned {len(raw_garments)} garments")
         
         LOGGER.info("Building response")
-        garments = request.app.state.response_builder.build_many(raw_garments)
+        garment_pngs_base64, garments = request.app.state.response_builder.build_many(raw_garments)
         LOGGER.info(f"Response built: {len(garments)} garments")
     except InvalidInputError as exc:
         LOGGER.warning(f"Invalid input: {exc}")
@@ -56,4 +56,8 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
         raise HTTPException(status_code=422, detail="No garments detected in image")
 
     LOGGER.info(f"Returning response with {len(garments)} garments")
-    return ProcessGarmentsResponse(garments=garments)
+    return ProcessGarmentsResponse(
+        garment_pngs_base64=garment_pngs_base64,
+        garments=garments,
+        mime_type="image/png",
+    )

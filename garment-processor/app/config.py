@@ -13,11 +13,11 @@ class Settings:
     yolo_model_name: str = "yolov8n.pt"
     yolo_confidence_threshold: float = 0.25
     use_gpu: bool = False
-    segmentation_enabled: bool = False
+    segmentation_enabled: bool = True
     segmentation_fallback_to_yolo: bool = True
     segmentation_model_name: str = "facebook/sam-vit-base"
     segmentation_top_k_masks: int = 30
-    segmentation_min_mask_area_px: int = 3500
+    segmentation_min_mask_area_px: int = 50000
     segmentation_max_mask_area_ratio: float = 0.7
     segmentation_max_bbox_area_ratio: float = 0.6
     segmentation_min_mask_fill_ratio: float = 0.45

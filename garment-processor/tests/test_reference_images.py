@@ -55,6 +55,7 @@ def test_image(client, image_path: Path):
         else:
             payload = resp.json()
             garments = payload.get('garments', [])
+            garment_pngs = payload.get('garment_pngs_base64', [])
             result['garments_count'] = len(garments)
             
             for i, garment in enumerate(garments):
@@ -62,7 +63,10 @@ def test_image(client, image_path: Path):
                 category = labels.get('category', {}).get('label', 'unknown')
                 color = labels.get('color', {}).get('label', 'unknown')
                 conf = garment.get('detection_confidence', 0)
-                img_b64 = garment.get('image_base64', '')
+                image_index = garment.get('image_index', i)
+                img_b64 = ''
+                if isinstance(image_index, int) and 0 <= image_index < len(garment_pngs):
+                    img_b64 = garment_pngs[image_index]
                 
                 img_info = decode_image_info(img_b64)
                 
