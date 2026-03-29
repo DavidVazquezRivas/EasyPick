@@ -31,6 +31,11 @@ class ClipGarmentFilter:
         split_index = len(GARMENT_FILTER_POSITIVE_PROMPTS)
 
         inputs = self._processor(text=prompts, images=rgb_image, return_tensors="pt", padding=True)
+        
+        # Move inputs to same device as model
+        device = next(self._model.parameters()).device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        
         with torch.no_grad():
             outputs = self._model(**inputs)
             probs = torch.softmax(outputs.logits_per_image, dim=1)[0]

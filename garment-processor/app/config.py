@@ -12,7 +12,8 @@ class Settings:
     max_image_height: int = 8192
     yolo_model_name: str = "yolov8n.pt"
     yolo_confidence_threshold: float = 0.25
-    segmentation_enabled: bool = True
+    use_gpu: bool = False
+    segmentation_enabled: bool = False
     segmentation_fallback_to_yolo: bool = True
     segmentation_model_name: str = "facebook/sam-vit-base"
     segmentation_top_k_masks: int = 30
