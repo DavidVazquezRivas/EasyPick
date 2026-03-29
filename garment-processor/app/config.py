@@ -121,6 +121,24 @@ SEASON_LABELS: tuple[str, ...] = (
     "winter",
 )
 
+BRAND_LABELS: tuple[str, ...] = (
+    "Nike",
+    "Adidas",
+    "Puma",
+    "Reebok",
+    "Gucci",
+    "Prada",
+    "Zara",
+    "H&M",
+    "Forever 21",
+    "ASOS",
+    "Levis",
+    "Tommy Hilfiger",
+    "Calvin Klein",
+    "Ralph Lauren",
+    "Unknown",
+)
+
 GARMENT_FILTER_POSITIVE_PROMPTS: tuple[str, ...] = (
     "a garment",
     "a piece of clothing",

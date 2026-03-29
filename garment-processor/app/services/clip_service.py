@@ -13,6 +13,7 @@ from app.config import (
     MATERIAL_LABELS,
     SEASON_LABELS,
     STYLE_LABELS,
+    BRAND_LABELS,
 )
 from app.exceptions import ClipClassificationError
 
@@ -36,6 +37,7 @@ class ClipTagger:
             "style": self._infer_dimension(rgb_image, STYLE_LABELS, "a {label} style outfit"),
             "material": self._infer_dimension(rgb_image, MATERIAL_LABELS, "a garment made of {label}"),
             "season": self._infer_dimension(rgb_image, SEASON_LABELS, "a garment for {label}"),
+            "brand": self._infer_dimension(rgb_image, BRAND_LABELS, "a {label} brand garment"),
         }
 
     def _infer_dimension(self, image: Image.Image, labels: tuple[str, ...], prompt_template: str) -> ClipResult:

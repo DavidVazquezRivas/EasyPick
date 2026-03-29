@@ -11,3 +11,4 @@ class GarmentLabels(BaseModel):
     style: LabelScore
     material: LabelScore
     season: LabelScore
+    brand: LabelScore
