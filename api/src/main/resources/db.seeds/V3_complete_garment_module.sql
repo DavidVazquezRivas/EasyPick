@@ -126,7 +126,22 @@ VALUES ('Casual'),
 
 -- Insert Categories (We let the database generate the UUIDs automatically)
 INSERT INTO categories (name, description)
-VALUES ('Camisetas', 'Prendas ligeras para la parte superior, manga corta o larga'),
-       ('Pantalones', 'Prendas para cubrir la parte inferior del cuerpo'),
-       ('Chaquetas', 'Prendas de abrigo para la capa exterior'),
-       ('Calzado', 'Zapatos, zapatillas, botas y sandalias');
+VALUES ('Sudaderas', 'Prendas cómodas de manga larga, con o sin capucha'),
+       ('Ropa interior', 'Prendas básicas como calzoncillos, bragas y sujetadores'),
+       ('Deporte', 'Ropa y accesorios diseñados para actividad física'),
+       ('Accesorios', 'Complementos como cinturones, gorras, bufandas o guantes'),
+       ('Vestidos', 'Prendas de una sola pieza'),
+       ('Faldas', 'Prendas que cubren desde la cintura hacia abajo sin dividir las piernas'),
+       ('Trajes', 'Conjuntos formales de chaqueta y pantalón o falda'),
+       ('Ropa de baño', 'Bañadores, bikinis y prendas para piscina o playa'),
+       ('Pijamas', 'Prendas para dormir'),
+       ('Abrigos', 'Prendas gruesas para proteger del frío'),
+       ('Tops', 'Prendas ligeras para la parte superior como crop tops o sin mangas'),
+       ('Camisas', 'Prendas con botones y cuello, de estilo formal o casual'),
+       ('Blusas', 'Prendas similares a camisas, generalmente más ligeras y femeninas'),
+       ('Polos', 'Prendas de manga corta con cuello y botones en la parte superior'),
+       ('Chándales', 'Conjuntos deportivos de sudadera y pantalón'),
+       ('Leggings', 'Prendas ajustadas y elásticas para la parte inferior'),
+       ('Shorts', 'Pantalones cortos para clima cálido o deporte'),
+       ('Vaqueros', 'Pantalones de tejido denim'),
+       ('Jerséis', 'Prendas de punto para abrigo ligero o medio');
