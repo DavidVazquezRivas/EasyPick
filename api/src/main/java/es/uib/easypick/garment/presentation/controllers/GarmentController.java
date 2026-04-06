@@ -53,7 +53,7 @@ public class GarmentController {
     @PreAuthorize("@garmentSecurity.isOwner(#userId, #id)")
     public ResponseEntity<ApiResponse<CompleteGarmentResponse>> patchGarment(
             @PathVariable UUID id,
-            @AuthenticatedUserId UUID userId,
+            @AuthenticatedUserId UUID userId, // Needed for the preauthorize check
             @RequestBody Map<String, Object> patchInstructions
     ) {
         CompleteGarmentResponse response = patchGarmentUseCase.execute(id, patchInstructions);
