@@ -19,7 +19,7 @@ export const ClosetScreen = () => {
     <View className='flex-1 bg-background pt-[10%]'>
       <View className='px-6 pb-[5%]'>
         <Text className="text-5xl font-bold tracking-tight text-primary">
-          {t('garment.home.title')}
+          {t('garment.closetScreen.title')}
         </Text>
       </View>
 

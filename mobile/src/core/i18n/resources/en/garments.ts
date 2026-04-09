@@ -31,6 +31,9 @@ const garments = {
       pending: 'Pending',
     },
   },
+  closetScreen: {
+    title: 'My Closet',
+  },
   detail: {
     form: {
       name: {
