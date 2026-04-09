@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface GarmentRepository extends JpaRepository<GarmentEntity, UUID> {
@@ -17,6 +18,9 @@ public interface GarmentRepository extends JpaRepository<GarmentEntity, UUID> {
 
     @EntityGraph(value = "Garment.withAllDetails", type = EntityGraph.EntityGraphType.FETCH)
     List<GarmentEntity> findWithDetailsByUserIdAndStatusOrderByUpdatedAtDesc(UUID id, GarmentStatus status);
+
+    @EntityGraph(value = "Garment.withAllDetails", type = EntityGraph.EntityGraphType.FETCH)
+    Optional<GarmentEntity> findWithDetailsById(UUID id);
 
     boolean existsByIdAndUserId(UUID garmentId, UUID userId);
 }
