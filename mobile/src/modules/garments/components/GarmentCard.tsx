@@ -43,7 +43,7 @@ export const GarmentCard = ({ garment }: { garment: SimpleGarment }) => {
           </View>
           <View className="mb-4 px-2">
             <CardTitle className="text-sm" numberOfLines={3}>
-              {garment.name || t('garment.confirmationScreen.fallback.noName')}
+              {garment.name || t('garment.closetScreen.fallback.noName')}
             </CardTitle>
           </View>
         </Card>
