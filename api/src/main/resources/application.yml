@@ -61,7 +61,9 @@ application:
   modules:
     garment:
       processor:
-        mode: mock
+        base-url: ${GARMENT_PROCESSOR_BASE_URL:http://localhost:8081}
+        process-endpoint: ${GARMENT_PROCESSOR_PROCESS_ENDPOINT:/process-garments}
+        timeout-seconds: ${GARMENT_PROCESSOR_TIMEOUT_SECONDS:30}
       cleaner:
         pending-retention-time: 1h
         scheduler:
@@ -78,7 +80,7 @@ cloud:
       static: ${AWS_REGION:eu-west-1}
     s3:
       endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
-      public-url: ${AWS_S3_PUBLIC_URL:http://192.168.1.132:9000}
+      public-url: ${AWS_S3_PUBLIC_URL:http://192.168.1.57:9000}
       bucket-name: ${AWS_S3_BUCKET_NAME:easypick-images}
 
 

@@ -1,65 +1,61 @@
-# Guia de Configuracion
+# Guia de Configuracion (Practica)
 
-La configuracion principal esta en app/config.py, clase Settings.
+Este documento resume los parametros activos en la arquitectura DINO-only.
 
-## Validacion de entrada
-- max_upload_size_bytes: tamano maximo de archivo
-- min_image_width, min_image_height: limites minimos
-- max_image_width, max_image_height: limites maximos
+## Parametros clave de deteccion
 
-## Deteccion YOLO
-- yolo_model_name: archivo/modelo YOLO (actual: yolov8n.pt)
-- yolo_confidence_threshold: umbral minimo de deteccion
-- yolo_allowed_class_names: clases YOLO candidatas para recorte
+- segmentation_backend
+	- Valor esperado: grounding_dino
 
-## Ejecucion CPU/GPU
-- use_gpu:
-  - False: fuerza CPU
-  - True: usa CUDA si disponible; si no, fallback a CPU
+- segmentation_dino_model_id
+	- Modelo Grounding DINO de Hugging Face.
 
-## Segmentacion (SAM)
-- segmentation_enabled: activa/desactiva ruta SAM
-- segmentation_fallback_to_yolo: fallback a YOLO si SAM falla o no devuelve candidatos
-- segmentation_model_name: modelo SAM
-- segmentation_top_k_masks: numero de mascaras consideradas
-- segmentation_min_mask_area_px: descarta regiones pequenas
-- segmentation_max_mask_area_ratio: descarta regiones demasiado grandes
-- segmentation_max_bbox_area_ratio: controla cajas muy grandes
-- segmentation_min_mask_fill_ratio: calidad minima de mascara
-- segmentation_bbox_iou_dedup_threshold: deduplicacion por IoU
-- segmentation_containment_threshold: deduplicacion por contencion
+- segmentation_dino_text_prompt
+	- Prompt de deteccion textual.
+	- Conviene mantener labels concretas y evitar ruido generico.
 
-## CLIP y filtro de prenda
-- clip_model_name: modelo CLIP
-- clip_top_k: top-k interno para clasificacion
-- clip_min_confidence: umbral minimo de confianza
+- segmentation_dino_box_threshold y segmentation_dino_text_threshold
+	- Controlan precision base del detector.
 
-Filtro binario de prenda:
-- garment_filter_enabled: activa filtro prenda/no-prenda
-- garment_filter_min_score: score minimo para aceptar prenda
-- garment_filter_margin: margen frente a clase no-prenda
+- segmentation_dino_nms_iou_threshold
+	- Deduplicacion por superposicion.
 
-## Etiquetas disponibles
-- CATEGORY_LABELS
-- COLOR_LABELS
-- STYLE_LABELS
-- MATERIAL_LABELS
-- SEASON_LABELS
+- segmentation_dino_single_box_containment_threshold
+	- Descarta caja si esta mayormente dentro de otra caja individual.
 
-## Operacion sin internet (offline)
-Si los modelos ya estan cacheados localmente, el servicio funciona sin Wi-Fi.
+- segmentation_dino_max_generic_clothes_area_ratio
+	- Evita cajas gigantes de escena completa.
 
-Recomendado para forzar modo offline:
-- HF_HUB_OFFLINE=1
-- TRANSFORMERS_OFFLINE=1
+- segmentation_dino_bbox_padding_ratio
+	- Agrega contexto al crop antes del pipeline de clasificacion.
 
-En PowerShell (sesion actual):
-- $env:HF_HUB_OFFLINE='1'
-- $env:TRANSFORMERS_OFFLINE='1'
+## Parametros de clasificacion posterior
 
-Importante:
-- Primer arranque en una maquina nueva puede requerir internet para descargar modelos de Hugging Face (CLIP y SAM).
-- YOLO local (yolov8n.pt) no requiere descarga adicional si el archivo ya existe.
+- garment_filter_enabled
+- garment_filter_min_score
+- garment_filter_margin
+- clip_min_confidence
 
-## Estado verificado
-Se ejecuto test_phase_b.py en modo offline forzado (HF_HUB_OFFLINE + TRANSFORMERS_OFFLINE) con exit code 0.
+## Orden recomendado para ajustar
+
+1. Deteccion DINO (boxes).
+2. Filtro de prenda.
+3. Remocion de fondo.
+4. CLIP final.
+
+Evita ajustar varias etapas a la vez.
+
+## Regla de oro para experimentos
+
+1. Un cambio por corrida.
+2. Misma bateria de imagenes.
+3. Guardar salida JSON comparativa.
+4. Si no mejora en conjunto, rollback.
+
+## Operacion offline
+
+Cuando los modelos ya estan cacheados localmente:
+- `HF_HUB_OFFLINE=1`
+- `TRANSFORMERS_OFFLINE=1`
+
+Esto evita variaciones por red y hace las pruebas mas repetibles.

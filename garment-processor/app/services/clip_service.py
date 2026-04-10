@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import torch
 from PIL import Image
@@ -8,12 +9,6 @@ from transformers import CLIPModel, CLIPProcessor
 
 from app.config import (
     SETTINGS,
-    CATEGORY_LABELS,
-    COLOR_LABELS,
-    MATERIAL_LABELS,
-    SEASON_LABELS,
-    STYLE_LABELS,
-    BRAND_LABELS,
 )
 from app.exceptions import ClipClassificationError
 
@@ -25,19 +20,19 @@ class ClipResult:
 
 
 class ClipTagger:
-    def __init__(self, model: CLIPModel, processor: CLIPProcessor) -> None:
+    def __init__(self, model: CLIPModel, processor: Any) -> None:
         self._model = model
         self._processor = processor
 
     def classify(self, image: Image.Image) -> dict[str, ClipResult]:
         rgb_image = image if image.mode == "RGB" else image.convert("RGB")
         return {
-            "category": self._infer_dimension(rgb_image, CATEGORY_LABELS, "a photo of a {label} garment"),
-            "color": self._infer_dimension(rgb_image, COLOR_LABELS, "a {label} colored garment"),
-            "style": self._infer_dimension(rgb_image, STYLE_LABELS, "a {label} style outfit"),
-            "material": self._infer_dimension(rgb_image, MATERIAL_LABELS, "a garment made of {label}"),
-            "season": self._infer_dimension(rgb_image, SEASON_LABELS, "a garment for {label}"),
-            "brand": self._infer_dimension(rgb_image, BRAND_LABELS, "a {label} brand garment"),
+            "category": self._infer_dimension(rgb_image, SETTINGS.category_labels, "a photo of a {label} garment"),
+            "color": self._infer_dimension(rgb_image, SETTINGS.color_labels, "a {label} colored garment"),
+            "style": self._infer_dimension(rgb_image, SETTINGS.style_labels, "a {label} style outfit"),
+            "material": self._infer_dimension(rgb_image, SETTINGS.material_labels, "a garment made of {label}"),
+            "season": self._infer_dimension(rgb_image, SETTINGS.season_labels, "a garment for {label}"),
+            "brand": self._infer_dimension(rgb_image, SETTINGS.brand_labels, "a {label} brand garment"),
         }
 
     def _infer_dimension(self, image: Image.Image, labels: tuple[str, ...], prompt_template: str) -> ClipResult:
@@ -45,7 +40,6 @@ class ClipTagger:
         try:
             inputs = self._processor(text=prompts, images=image, return_tensors="pt", padding=True)
             
-            # Move inputs to same device as model
             device = next(self._model.parameters()).device
             inputs = {k: v.to(device) for k, v in inputs.items()}
 

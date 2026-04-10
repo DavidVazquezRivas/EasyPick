@@ -1,66 +1,76 @@
-# Flujo y Funcionamiento General
+# Flujo de Trabajo (Version Operativa)
 
-## Objetivo del servicio
-El servicio recibe una imagen, detecta prendas, elimina fondo por prenda, clasifica atributos con CLIP y devuelve:
-- Lista de PNGs en base64
-- Lista de objetos prenda con metadatos y etiquetas
+## Para que sirve este servicio
 
-## Entrada y salida
-- Endpoint: POST /process-garments
-- Entrada: multipart/form-data con campo image (jpg/png)
-- Salida (HTTP 200):
-  - garment_pngs_base64: list[str]
-  - garments: list[ProcessedGarment]
-  - mime_type: image/png
+Tomar una imagen de prendas, separarlas lo mejor posible y devolver un resultado util para negocio:
+- imagen limpia por prenda
+- etiquetas para catalogacion
 
-Cada elemento de garments incluye:
-- temp_id
-- detection_confidence
-- labels: category, color, style, material, season
-- image_index
-- image_base64
-- mime_type
+No busca perfeccion academica. Busca consistencia y velocidad de iteracion.
 
-## Flujo interno
-1. Validacion de input
-- Se valida tamano y formato de imagen en app/api/input_validator.py.
+## Como pensar el pipeline
 
-2. Inicializacion de modelos (lifespan)
-- YOLO se carga desde yolov8n.pt.
-- CLIP se carga desde openai/clip-vit-base-patch32.
-- SAM se carga si segmentation_enabled=True.
+1. Encontrar candidatos
+- Ruta unica: Grounding DINO.
+- Se aplican filtros de deduplicacion y contencion sobre las cajas detectadas.
 
-3. Seleccion de ruta de deteccion
-- Si segmentation_enabled=True y SAM disponible:
-  - Se generan candidatos por segmentacion.
-- Si no hay candidatos y segmentation_fallback_to_yolo=True:
-  - Se usa deteccion YOLO y recorte por bbox.
+2. Evitar basura
+- Filtro de prenda/no-prenda antes de gastar tiempo en el resto.
 
-4. Filtrado de candidatos (garment_filter)
-- Se decide si cada candidato es prenda/no-prenda.
-- Si garment_filter_enabled=True, se descartan no-prendas.
+3. Limpiar y etiquetar
+- Se remueve fondo.
+- Se etiquetan atributos con CLIP.
 
-5. Limpieza de fondo
-- Se aplica BackgroundRemover por candidato aceptado.
+4. Responder estable
+- El contrato de salida se mantiene estable aunque cambien modelos internos.
 
-6. Clasificacion CLIP
-- Se etiquetan: category, color, style, material, season.
+## Salud operativa y trazabilidad
 
-7. Construccion de respuesta
-- Cada imagen de prenda se convierte a PNG y base64.
-- Se devuelve:
-  - garment_pngs_base64 (lista global)
-  - garments (cada objeto incluye image_base64 e image_index)
+- GET /health/live
+	- Liveness simple del proceso HTTP.
 
-## Errores y codigos HTTP
-- 400: validacion de input
-- 422: fallo de proceso o sin prendas detectadas
-- 500: error inesperado
+- GET /health/ready
+	- Readiness real: exige que los componentes de pipeline esten inicializados.
+	- Devuelve 503 si la app todavia no esta lista.
 
-## Prueba end-to-end recomendada
-Comando:
-- .venv/Scripts/python.exe test_phase_b.py
+- x-request-id
+	- Si el cliente envia x-request-id, el servicio lo propaga en respuesta.
+	- Si no se envia, el servicio genera uno.
+	- Se usa para correlacionar logs de adapter HTTP y use case.
 
-Resultado esperado:
-- example.jpg: 1 prenda
-- example2.jpg: 4 prendas
+## Checklist mental cuando algo sale mal
+
+1. Si faltan prendas:
+- Primero revisar candidatos iniciales, no labels.
+- Si no hay candidatos, el problema esta antes de CLIP.
+- Sin fallback runtime: si falla DINO, la respuesta puede ser 422.
+
+2. Si hay prendas pero mal clasificadas:
+- El problema suele ser de crop/calidad visual, no solo de prompts.
+
+3. Si el tiempo explota:
+- Revisar carga de modelo DINO y cantidad de candidatos procesados.
+- Revisar cantidad de candidatos que pasan al pipeline completo.
+
+4. Si da 422 seguido:
+- Validar primero el embudo: candidatos -> filtro -> rembg -> clasificacion.
+- No tocar umbrales al azar: cambiar una variable por vez.
+
+## Proceso recomendado para ajustes
+
+1. Definir objetivo de la semana (calidad o velocidad).
+2. Congelar una referencia de imagenes.
+3. Hacer un solo cambio de criterio.
+4. Medir antes/despues.
+5. Si mejora un caso y rompe otros, rollback.
+
+## Senales de que vas bien
+
+- Menos cambios impulsivos de parametros.
+- Menos sorpresas entre entornos.
+- Mismo resultado para misma entrada en corridas repetidas.
+
+## Nota de migracion
+
+La ruta activa del endpoint sigue una arquitectura hexagonal pragmatica con
+adapters HTTP, use case central y adaptadores de servicios concretos.

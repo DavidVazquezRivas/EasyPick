@@ -8,7 +8,7 @@ __pycache__/
 .venv/
 
 # Local model artifacts and caches
-yolov8n.pt
+*.pt
 
 # Debug and generated artifacts
 debug_output/

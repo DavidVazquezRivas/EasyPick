@@ -9,8 +9,8 @@ class InvalidInputError(ProcessingError):
     """Raised when an uploaded file fails input validation."""
 
 
-class YoloDetectionError(ProcessingError):
-    """Raised when YOLO inference fails."""
+class DetectionError(ProcessingError):
+    """Raised when object detection or segmentation inference fails."""
 
 
 class BackgroundRemovalError(ProcessingError):

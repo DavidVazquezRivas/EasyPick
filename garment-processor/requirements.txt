@@ -11,13 +11,10 @@ python-multipart>=0.0.9
 Pillow>=10.2.0
 numpy>=1.26.0
 
-# 3. Detección y Separación de Prendas (YOLOv8)
-ultralytics>=8.1.0
-
-# 4. Eliminación de Fondo (U-2-Net)
+# 3. Eliminación de Fondo (U-2-Net)
 rembg>=2.0.50
 onnxruntime>=1.18.0
 
-# 5. Etiquetado Automático / Zero-Shot (CLIP)
+# 4. Etiquetado Automático / Zero-Shot (CLIP + Grounding DINO)
 torch>=2.2.0
 transformers>=4.38.0

@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from uuid import uuid4
 
+from app.domain.models.garment import Garment
 from app.models.garment_labels import GarmentLabels
 from app.models.label_score import LabelScore
 from app.models.processed_garment import ProcessedGarment
-from app.processing.orchestrator import OrchestratedGarment
 from app.utils.image_io import bytes_to_base64, image_to_png_bytes
 
 
 class ProcessedGarmentResponseBuilder:
-    def _build_labels(self, garment: OrchestratedGarment) -> GarmentLabels:
+    def _build_labels(self, garment: Garment) -> GarmentLabels:
         return GarmentLabels(
             category=LabelScore(
                 label=garment.labels["category"].label,
@@ -32,9 +32,13 @@ class ProcessedGarmentResponseBuilder:
                 label=garment.labels["season"].label,
                 score=garment.labels["season"].score,
             ),
+            brand=LabelScore(
+                label=garment.labels["brand"].label,
+                score=garment.labels["brand"].score,
+            ),
         )
 
-    def build_many(self, garments: list[OrchestratedGarment]) -> tuple[list[str], list[ProcessedGarment]]:
+    def build_many(self, garments: list[Garment]) -> tuple[list[str], list[ProcessedGarment]]:
         garment_pngs_base64: list[str] = []
         processed_garments: list[ProcessedGarment] = []
 

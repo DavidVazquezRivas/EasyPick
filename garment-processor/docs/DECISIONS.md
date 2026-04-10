@@ -1,23 +1,53 @@
-# Decisions
+# Marco de Decisiones
 
-## Active Decisions
+## Que priorizamos
 
-1. Separation-first architecture
-- Decision: prioritize object separation quality before semantic class correctness.
-- Rationale: CLIP can classify separated candidates; poor separation cannot be recovered downstream.
+1. Separacion util antes que etiqueta perfecta
+- Si el recorte es malo, ninguna clasificacion lo salva.
 
-2. Two-stage CLIP usage
-- Decision: use CLIP first as garment/non-garment filter, then as attribute classifier.
-- Rationale: reduces false positives like camera/decor entering the final label pipeline.
+2. Separador unico en runtime
+- El endpoint usa Grounding DINO como separador oficial.
+- No hay fallback a YOLO.
 
-3. Backward-compatible endpoint
-- Decision: keep response schema unchanged while swapping internal detection strategy.
-- Rationale: preserve Spring Boot integration stability.
+3. Estabilidad externa antes que cambios internos
+- El contrato de salida no se negocia por experimentar modelos.
 
-4. Segmentation with fallback
-- Decision: use SAM-based candidate extraction with fallback to YOLO when segmentation is unavailable.
-- Rationale: maintain uptime and allow incremental rollout.
+## Como decidimos cambios
 
-5. Initial acceptance criterion
-- Decision: the reference image must reach 5/5 garments separated and camera discarded.
-- Rationale: scene is clear enough to require strict acceptance at this stage.
+1. Definir que dolor resolvemos
+- Falta de prendas, latencia o ruido.
+
+2. Elegir una hipotesis concreta
+- Ejemplo: ajustar umbrales DINO o garment filter.
+
+3. Medir con el mismo set
+- Nunca comparar con imagenes distintas.
+
+4. Evaluar impacto total
+- No vale mejorar un caso y romper otros dos.
+
+5. Aplicar o revertir rapido
+- Si no hay mejora clara, rollback sin drama.
+
+## Reglas para evitar autoenganarnos
+
+1. No ajustar 5 parametros juntos.
+2. No sacar conclusiones con una sola imagen.
+3. No promocionar un experimento sin benchmark reproducible.
+4. No mezclar codigo experimental con ruta principal sin aislamiento.
+
+## Estado actual de arquitectura
+
+1. Runtime del endpoint
+- Grounding DINO -> garment filter -> rembg -> CLIP.
+
+2. Contrato externo
+- Se mantiene estable: no cambia schema de respuesta por cambiar backend interno.
+
+## Criterio de aceptacion operativo
+
+Un cambio entra solo si cumple todo esto:
+- mantiene o mejora recall en las imagenes de referencia
+- no dispara tiempos de forma descontrolada
+- no aumenta fallos 422 en escenario normal
+- se puede explicar en 3 lineas de por que se hizo
