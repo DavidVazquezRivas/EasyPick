@@ -64,6 +64,9 @@ services:
       - CLOUD_AWS_S3_BUCKET_NAME=easypick-images
       - CLOUD_AWS_REGION_STATIC=eu-west-1
 
+      # Google
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+
 volumes:
   pgdata:
   minio_data:
