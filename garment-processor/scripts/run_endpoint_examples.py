@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,25 @@ from app.application import create_app
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "debug_output"
+
+
+def _detect_mime_type(image_path: Path) -> str:
+    with image_path.open("rb") as image_file:
+        signature = image_file.read(32)
+
+    if signature.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if signature.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if signature.startswith((b"GIF87a", b"GIF89a")):
+        return "image/gif"
+    if signature[0:4] == b"RIFF" and signature[8:12] == b"WEBP":
+        return "image/webp"
+    if len(signature) >= 12 and signature[4:12] == b"ftypavif":
+        return "image/avif"
+
+    guessed_mime, _ = mimetypes.guess_type(image_path.name)
+    return guessed_mime or "application/octet-stream"
 
 
 def run_examples() -> dict[str, Any]:
@@ -43,7 +63,7 @@ def run_examples() -> dict[str, Any]:
             with image_path.open("rb") as image_file:
                 response = client.post(
                     "/process-garments",
-                    files={"image": (image_path.name, image_file, "image/jpeg")},
+                    files={"image": (image_path.name, image_file, _detect_mime_type(image_path))},
                 )
 
             payload: dict[str, Any]

@@ -8,6 +8,7 @@ from PIL import Image
 from app.config import SETTINGS
 from app.domain.exceptions import DetectionFailure
 from app.domain.models.garment import Garment
+from app.domain.models.label_prediction import LabelPrediction
 from app.domain.ports.background_remover_port import BackgroundRemoverPort
 from app.domain.ports.classifier_port import ClassifierPort
 from app.domain.ports.garment_filter_port import GarmentFilterPort
@@ -16,6 +17,20 @@ from app.exceptions import BackgroundRemovalError, ClipClassificationError
 from app.utils.request_context import get_request_id
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _default_classifier_labels() -> dict[str, LabelPrediction]:
+    def _first_or_unknown(values: tuple[str, ...]) -> LabelPrediction:
+        return LabelPrediction(label=values[0] if values else "unknown", score=0.0)
+
+    return {
+        "category": _first_or_unknown(SETTINGS.category_labels),
+        "color": _first_or_unknown(SETTINGS.color_labels),
+        "style": _first_or_unknown(SETTINGS.style_labels),
+        "material": _first_or_unknown(SETTINGS.material_labels),
+        "season": _first_or_unknown(SETTINGS.season_labels),
+        "brand": _first_or_unknown(SETTINGS.brand_labels),
+    }
 
 
 class ProcessGarmentsUseCase:
@@ -76,7 +91,7 @@ class ProcessGarmentsUseCase:
                 labels = self._classifier.classify(image_no_bg)
             except ClipClassificationError:
                 failed_clip += 1
-                continue
+                labels = _default_classifier_labels()
             t_c1 = time.perf_counter()
             clip_time += t_c1 - t_c0
             passed_clip += 1

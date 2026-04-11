@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from PIL import Image
+import pytest
 
 from app.domain.exceptions import DetectionFailure
 from app.domain.models.candidate import Candidate
 from app.domain.models.label_prediction import LabelPrediction
 from app.domain.ports.garment_filter_port import GarmentFilterDecision
+from app.exceptions import ClipClassificationError
 from app.use_cases.process_garments_use_case import ProcessGarmentsUseCase
 
 
@@ -48,6 +50,11 @@ class _ClassifierFixed:
         }
 
 
+class _ClassifierFail:
+    def classify(self, image: Image.Image) -> dict[str, LabelPrediction]:
+        raise ClipClassificationError("clip failed")
+
+
 def test_use_case_returns_garment_on_happy_path() -> None:
     image = Image.new("RGB", (32, 32), color="white")
     use_case = ProcessGarmentsUseCase(
@@ -73,8 +80,21 @@ def test_use_case_wraps_segmenter_failures() -> None:
         classifier=_ClassifierFixed(),
     )
 
-    try:
+    with pytest.raises(DetectionFailure):
         use_case.execute(image)
-        assert False, "Expected DetectionFailure"
-    except DetectionFailure:
-        pass
+
+
+def test_use_case_uses_default_labels_when_classifier_fails() -> None:
+    image = Image.new("RGB", (32, 32), color="white")
+    use_case = ProcessGarmentsUseCase(
+        segmenter=_SegmenterOk(),
+        garment_filter=_FilterAlwaysGarment(),
+        background_remover=_BgPassthrough(),
+        classifier=_ClassifierFail(),
+    )
+
+    garments = use_case.execute(image)
+
+    assert len(garments) == 1
+    assert garments[0].labels["category"].label == "t-shirt"
+    assert garments[0].labels["category"].score == 0.0
