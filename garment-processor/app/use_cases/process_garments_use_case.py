@@ -89,12 +89,12 @@ class ProcessGarmentsUseCase:
             t_c0 = time.perf_counter()
             try:
                 labels = self._classifier.classify(image_no_bg)
+                passed_clip += 1
             except ClipClassificationError:
                 failed_clip += 1
                 labels = _default_classifier_labels()
             t_c1 = time.perf_counter()
             clip_time += t_c1 - t_c0
-            passed_clip += 1
 
             garments.append(
                 Garment(

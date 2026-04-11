@@ -13,6 +13,9 @@ from app.application import create_app
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = ROOT / "debug_output"
+AVIF_SIGNATURE_OFFSET = 4
+AVIF_SIGNATURE_END = 12
+AVIF_SIGNATURE = b"ftypavif"
 
 
 def _detect_mime_type(image_path: Path) -> str:
@@ -27,7 +30,7 @@ def _detect_mime_type(image_path: Path) -> str:
         return "image/gif"
     if signature[0:4] == b"RIFF" and signature[8:12] == b"WEBP":
         return "image/webp"
-    if len(signature) >= 12 and signature[4:12] == b"ftypavif":
+    if len(signature) >= AVIF_SIGNATURE_END and signature[AVIF_SIGNATURE_OFFSET:AVIF_SIGNATURE_END] == AVIF_SIGNATURE:
         return "image/avif"
 
     guessed_mime, _ = mimetypes.guess_type(image_path.name)
