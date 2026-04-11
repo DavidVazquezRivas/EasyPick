@@ -12,6 +12,8 @@ export const Routes = {
       Closet: '/(private)/garments/closet',
       Uploading: '/(private)/garments/uploading',
       Confirmation: '/(private)/garments/confirmation',
+      DetailTemplate: '/(private)/garments/[garmentId]',
+      Detail: (id: string) => `/(private)/garments/${id}`,
     },
     Explore: '/(private)/explore',
     Suggestions: '/(private)/suggestions',

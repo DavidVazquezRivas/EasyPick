@@ -18,5 +18,6 @@ export const QueryKeys = {
     list: ['garments', 'list'] as const,
     /** GET /garments/<id> — detail of a specific garment */
     detail: (id: string) => ['garments', 'detail', id] as const,
+    configs: ['garments', 'configs'] as const,
   },
 } as const

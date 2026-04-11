@@ -37,11 +37,57 @@ const garments = {
       noName: 'Prenda sin nombre',
     }
   },
-  detail: {
-    form: {
-      name: {
-        label: 'Nombre',
+  detailScreen: {
+    tabs: {
+      info: 'Información',
+      outfit: 'Outfit',
+    },
+    sectionTitle: 'Información de prenda',
+    actions: {
+      delete: 'Eliminar',
+      edit: 'Editar',
+      cancel: 'Cancelar',
+      save: 'Guardar',
+      changeImage: 'Cambiar imagen',
+    },
+    fields: {
+      name: 'Nombre',
+      category: 'Categoría',
+      color: 'Color',
+      style: 'Ocasión',
+      brand: 'Marca',
+    },
+    options: {
+      categories: {
+        tops: 'Tops',
+        pants: 'Pantalones',
+        shoes: 'Calzado',
+        accessories: 'Accesorios',
+        dresses: 'Vestidos',
+        coats: 'Abrigos',
       },
+      styles: {
+        casual: 'Casual',
+        sport: 'Sport',
+        formal: 'Formal',
+        work: 'Trabajo',
+        party: 'Fiesta',
+      },
+      colors: {
+        white: 'Blanco',
+        black: 'Negro',
+        beige: 'Beige',
+        blue: 'Azul',
+        brown: 'Marrón',
+        gray: 'Gris',
+        red: 'Rojo',
+        green: 'Verde',
+      },
+    },
+    outfitTodo: 'Aún no hay outfits con esta prenda',
+    fallback: {
+      noName: 'Prenda sin nombre',
+      pending: 'Pendiente',
     },
   },
   uploadSourceSheet: {
