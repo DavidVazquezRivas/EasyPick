@@ -21,9 +21,9 @@ Version minima para empezar rapido.
 "c:/Users/Gastón/Documents/Proyectos Prog/EasyPick/garment-processor/.venv/Scripts/python.exe" main.py
 
 API disponible en:
-- http://127.0.0.1:8081/health/live
-- http://127.0.0.1:8081/health/ready
-- http://127.0.0.1:8081/docs
+- http://127.0.0.1:8082/health/live
+- http://127.0.0.1:8082/health/ready
+- http://127.0.0.1:8082/docs
 
 ## 4) Arranque con Docker Compose (stack completo)
 
@@ -49,8 +49,8 @@ Logs del servicio:
 docker compose logs -f garment-processor --tail 100
 
 Health endpoints:
-- http://127.0.0.1:8081/health/live
-- http://127.0.0.1:8081/health/ready
+- http://127.0.0.1:8082/health/live
+- http://127.0.0.1:8082/health/ready
 
 Comprobar sincronizacion de configuraciones en startup:
 

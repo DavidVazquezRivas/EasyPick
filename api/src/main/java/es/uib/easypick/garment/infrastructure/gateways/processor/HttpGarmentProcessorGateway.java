@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,8 +28,8 @@ public class HttpGarmentProcessorGateway implements GarmentProcessorGateway {
     public HttpGarmentProcessorGateway(
             RestClient.Builder restClientBuilder,
             ObjectMapper objectMapper,
-            @Value("${application.modules.garment.processor.base-url:http://localhost:8081}") String baseUrl,
-            @Value("${application.modules.garment.processor.process-endpoint:/process-garments}") String processEndpoint
+            @Value("${application.modules.garment.processor.base-url}") String baseUrl,
+            @Value("${application.modules.garment.processor.process-endpoint}") String processEndpoint
     ) {
         this.restClientBuilder = restClientBuilder;
         this.objectMapper = objectMapper;
@@ -67,10 +66,6 @@ public class HttpGarmentProcessorGateway implements GarmentProcessorGateway {
                     ErrorCode.UPLOAD_IMAGE_ERROR,
                     resolveMessage(detail, ErrorCode.UPLOAD_IMAGE_ERROR)
             );
-        } catch (RestClientException exc) {
-            throw new AppException(ErrorCode.UPLOAD_IMAGE_ERROR);
-        } catch (IOException exc) {
-            throw new AppException(ErrorCode.UPLOAD_IMAGE_ERROR);
         } catch (Exception exc) {
             throw new AppException(ErrorCode.UPLOAD_IMAGE_ERROR);
         }
@@ -101,8 +96,34 @@ public class HttpGarmentProcessorGateway implements GarmentProcessorGateway {
 
         return response.garments().stream()
                 .filter(garment -> garment != null && garment.imageBase64() != null && !garment.imageBase64().isBlank())
-                .map(garment -> new GarmentProcessorResponse(garment.imageBase64()))
+                .map(garment -> new GarmentProcessorResponse(
+                        garment.tempId(),
+                        garment.detectionConfidence(),
+                        mapLabel(garment.labels(), ProcessorGarmentLabelsRequest::category),
+                        mapLabel(garment.labels(), ProcessorGarmentLabelsRequest::color),
+                        mapLabel(garment.labels(), ProcessorGarmentLabelsRequest::style),
+                        mapLabel(garment.labels(), ProcessorGarmentLabelsRequest::material),
+                        mapLabel(garment.labels(), ProcessorGarmentLabelsRequest::season),
+                        mapLabel(garment.labels(), ProcessorGarmentLabelsRequest::brand),
+                        garment.imageBase64()
+                ))
                 .toList();
+    }
+
+    private GarmentLabelPrediction mapLabel(
+            ProcessorGarmentLabelsRequest labels,
+            java.util.function.Function<ProcessorGarmentLabelsRequest, ProcessorLabelRequest> extractor
+    ) {
+        if (labels == null) {
+            return null;
+        }
+
+        ProcessorLabelRequest labelRequest = extractor.apply(labels);
+        if (labelRequest == null) {
+            return null;
+        }
+
+        return new GarmentLabelPrediction(labelRequest.label(), labelRequest.score());
     }
 
     private String extractDetail(String rawBody) {

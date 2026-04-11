@@ -38,22 +38,19 @@ class ProcessedGarmentResponseBuilder:
             ),
         )
 
-    def build_many(self, garments: list[Garment]) -> tuple[list[str], list[ProcessedGarment]]:
-        garment_pngs_base64: list[str] = []
+    def build_many(self, garments: list[Garment]) -> list[ProcessedGarment]:
         processed_garments: list[ProcessedGarment] = []
 
-        for index, garment in enumerate(garments):
+        for garment in garments:
             image_base64 = bytes_to_base64(image_to_png_bytes(garment.image))
-            garment_pngs_base64.append(image_base64)
             processed_garments.append(
                 ProcessedGarment(
                     temp_id=str(uuid4()),
                     detection_confidence=garment.detection_confidence,
                     labels=self._build_labels(garment),
-                    image_index=index,
                     image_base64=image_base64,
                     mime_type="image/png",
                 )
             )
 
-        return garment_pngs_base64, processed_garments
+        return processed_garments

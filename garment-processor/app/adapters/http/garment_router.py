@@ -32,7 +32,7 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
         LOGGER.info("Use case returned garments | request_id=%s count=%s", request_id, len(raw_garments))
 
         LOGGER.info("Building response | request_id=%s", request_id)
-        garment_pngs_base64, garments = request.app.state.response_builder.build_many(raw_garments)
+        garments = request.app.state.response_builder.build_many(raw_garments)
         LOGGER.info("Response built | request_id=%s garments=%s", request_id, len(garments))
     except HTTPException:
         raise
@@ -52,7 +52,6 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
 
     LOGGER.info("Returning response | request_id=%s garments=%s", request_id, len(garments))
     return ProcessGarmentsResponse(
-        garment_pngs_base64=garment_pngs_base64,
         garments=garments,
         mime_type="image/png",
     )
