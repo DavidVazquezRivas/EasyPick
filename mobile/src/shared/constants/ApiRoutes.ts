@@ -11,4 +11,13 @@ export const ApiRoutes = {
     Add: `${API_BASE_URL}/garments`,
     Patch: `${API_BASE_URL}/garments/:id`,
   },
+  Colors: {
+    GetAll: `${API_BASE_URL}/colors`,
+  },
+  Styles: {
+    GetAll: `${API_BASE_URL}/styles`,
+  },
+  Categories: {
+    GetAll: `${API_BASE_URL}/categories`,
+  },
 }

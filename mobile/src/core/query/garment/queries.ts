@@ -15,3 +15,39 @@ export const getMyGarmentsQueryOptions = () =>
   })
 
 export const useGetMyGarments = () => useQuery(getMyGarmentsQueryOptions())
+
+/**
+ * Query options for GET /colors
+ */
+export const getColorsQueryOptions = () =>
+  queryOptions({
+    queryKey: QueryKeys.colors.list,
+    queryFn: apiClient.garment.getColors,
+    staleTime: 1000 * 60 * 60, // 1 hour
+  })
+
+export const useGetColors = () => useQuery(getColorsQueryOptions())
+
+/**
+ * Query options for GET /styles
+ */
+export const getStylesQueryOptions = () =>
+  queryOptions({
+    queryKey: QueryKeys.styles.list,
+    queryFn: apiClient.garment.getStyles,
+    staleTime: 1000 * 60 * 60, // 1 hour
+  })
+
+export const useGetStyles = () => useQuery(getStylesQueryOptions())
+
+/**
+ * Query options for GET /categories
+ */
+export const getCategoriesQueryOptions = () =>
+  queryOptions({
+    queryKey: QueryKeys.categories.list,
+    queryFn: apiClient.garment.getCategories,
+    staleTime: 1000 * 60 * 60, // 1 hour
+  })
+
+export const useGetCategories = () => useQuery(getCategoriesQueryOptions())
