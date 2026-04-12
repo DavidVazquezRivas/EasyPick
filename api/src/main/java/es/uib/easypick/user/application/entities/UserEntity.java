@@ -3,9 +3,7 @@ package es.uib.easypick.user.application.entities;
 import es.uib.easypick.core.application.entities.BaseEntity;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +13,11 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class UserEntity extends BaseEntity {
+
+    //region JPA Configuration
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -31,4 +33,17 @@ public class UserEntity extends BaseEntity {
     private void preRemove() {
         garments.forEach(garment -> garment.setUser(null));
     }
+
+    //endregion
+
+    //region Domain Logic and Business Rules
+
+    public static UserEntity create(String name, String email) {
+        return UserEntity.builder()
+                .name(name)
+                .email(email)
+                .build();
+    }
+
+    //endregion
 }

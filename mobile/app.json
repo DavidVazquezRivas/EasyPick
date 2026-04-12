@@ -2,6 +2,7 @@
   "expo": {
     "name": "mobile",
     "slug": "mobile",
+    "scheme": "easypick",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,9 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "es.uib.easypick.mobile"
     },
     "android": {
+      "package": "es.uib.easypick.mobile",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -28,6 +31,12 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-secure-store", "expo-router"]
+    "plugins": ["expo-secure-store", "expo-router", "expo-web-browser", "@react-native-google-signin/google-signin"],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "496990e6-7628-4955-a8f0-b4f8e1cb602f"
+      }
+    }
   }
 }

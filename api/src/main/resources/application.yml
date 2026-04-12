@@ -69,6 +69,10 @@ application:
         scheduler:
           enabled: true
           cron: "0 */10 * * * *" # Every 10 minutes
+    auth:
+      oauth:
+        google:
+          client-id: ${GOOGLE_CLIENT_ID}
 
 
 cloud:
@@ -80,7 +84,7 @@ cloud:
       static: ${AWS_REGION:eu-west-1}
     s3:
       endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
-      public-url: ${AWS_S3_PUBLIC_URL:http://192.168.1.57:9000}
+      public-url: ${AWS_S3_PUBLIC_URL:http://192.168.1.128:9000}
       bucket-name: ${AWS_S3_BUCKET_NAME:easypick-images}
 
 

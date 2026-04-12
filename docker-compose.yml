@@ -91,6 +91,9 @@ services:
       retries: 3
       start_period: 90s
 
+      # Google
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+
 volumes:
   pgdata:
   minio_data:
