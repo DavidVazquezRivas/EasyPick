@@ -1,10 +1,10 @@
 package es.uib.easypick.auth.application.usecases;
 
-import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.auth.application.entities.RefreshTokenEntity;
 import es.uib.easypick.auth.application.factories.RefreshTokenFactory;
 import es.uib.easypick.auth.application.helpers.RefreshTokenTestBuilder;
 import es.uib.easypick.auth.infrastructure.repositories.RefreshTokenRepository;
+import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.core.application.exceptions.AppException;
 import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.presentation.web.security.JwtService;
@@ -46,7 +46,6 @@ class RefreshTokensUseCaseTest {
     void setUp() {
         tokenId = UUID.randomUUID();
 
-        // Si quisieras, también podrías hacer un UserTestBuilder para esto ;)
         mockUser = UserTestBuilder.aUser().build();
     }
 

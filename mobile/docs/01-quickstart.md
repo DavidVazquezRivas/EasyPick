@@ -22,15 +22,7 @@ npm install
 ## Arranque en desarrollo
 
 ```bash
-npm run start
-```
-
-Atajos:
-
-```bash
-npm run android
-npm run ios
-npm run web
+npx expo start
 ```
 
 ## Requisitos practicos
