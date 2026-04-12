@@ -61,7 +61,9 @@ application:
   modules:
     garment:
       processor:
-        mode: mock
+        base-url: ${GARMENT_PROCESSOR_BASE_URL:http://localhost:8082}
+        process-endpoint: ${GARMENT_PROCESSOR_PROCESS_ENDPOINT:/process-garments}
+        timeout-seconds: ${GARMENT_PROCESSOR_TIMEOUT_SECONDS:30}
       cleaner:
         pending-retention-time: 1h
         scheduler:

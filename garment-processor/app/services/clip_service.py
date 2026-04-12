@@ -1,0 +1,63 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any
+
+import torch
+from PIL import Image
+from transformers import CLIPModel, CLIPProcessor
+
+from app.config import (
+    SETTINGS,
+)
+from app.exceptions import ClipClassificationError
+
+
+@dataclass
+class ClipResult:
+    label: str
+    score: float
+
+
+class ClipTagger:
+    def __init__(self, model: CLIPModel, processor: Any) -> None:
+        self._model = model
+        self._processor = processor
+
+    def classify(self, image: Image.Image) -> dict[str, ClipResult]:
+        rgb_image = image if image.mode == "RGB" else image.convert("RGB")
+        return {
+            "category": self._infer_dimension(rgb_image, SETTINGS.category_labels, "a photo of a {label} garment"),
+            "color": self._infer_dimension(rgb_image, SETTINGS.color_labels, "a {label} colored garment"),
+            "style": self._infer_dimension(rgb_image, SETTINGS.style_labels, "a {label} style outfit"),
+            "material": self._infer_dimension(rgb_image, SETTINGS.material_labels, "a garment made of {label}"),
+            "season": self._infer_dimension(rgb_image, SETTINGS.season_labels, "a garment for {label}"),
+            "brand": self._infer_dimension(rgb_image, SETTINGS.brand_labels, "a {label} brand garment"),
+        }
+
+    def _infer_dimension(self, image: Image.Image, labels: tuple[str, ...], prompt_template: str) -> ClipResult:
+        prompts = [prompt_template.format(label=label) for label in labels]
+        try:
+            inputs = self._processor(text=prompts, images=image, return_tensors="pt", padding=True)
+            
+            device = next(self._model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            with torch.no_grad():
+                outputs = self._model(**inputs)
+                logits = outputs.logits_per_image
+                probs = torch.softmax(logits, dim=1)[0]
+
+            best_index = int(torch.argmax(probs).item())
+            best_score = float(probs[best_index].item())
+
+            if best_score < SETTINGS.clip_min_confidence:
+                raise ClipClassificationError(
+                    f"Low CLIP confidence ({best_score:.3f}) for dimension inference"
+                )
+
+            return ClipResult(label=labels[best_index], score=best_score)
+        except ClipClassificationError:
+            raise
+        except Exception as exc:
+            raise ClipClassificationError("CLIP classification failed") from exc
