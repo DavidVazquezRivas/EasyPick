@@ -3,11 +3,12 @@ import { tokenManager } from '@/core/api/global/tokenManager'
 import { eventEmitter } from '@/shared/utils/eventEmitter'
 import { Events } from '@/shared/constants/Events'
 import { OAuthProvider } from '@/core/auth/providers/types'
+import { AuthTokens } from '@/core/auth/models/AuthTokens'
 
 interface AuthContextType {
   isAuthenticated: boolean
   isInitialized: boolean
-  signIn: (refreshToken: string) => Promise<void>
+  signIn: (refreshTokenOrTokens: string | AuthTokens) => Promise<void>
   signInWithProvider: (provider: OAuthProvider) => Promise<void>
   signOut: () => Promise<void>
 }
@@ -38,13 +39,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [])
 
-  const signIn = async (refreshToken: string) => {
+  const signIn = async (refreshTokenOrTokens: string | AuthTokens) => {
+    const refreshToken = typeof refreshTokenOrTokens === 'string' ? refreshTokenOrTokens : refreshTokenOrTokens.refreshToken
+    const accessToken = typeof refreshTokenOrTokens === 'string' ? null : refreshTokenOrTokens.accessToken
+
     const normalizedRefreshToken = refreshToken.trim()
     if (!normalizedRefreshToken) {
       throw new Error('auth.errors.refreshTokenRequired')
     }
 
-    tokenManager.setAccessToken(null)
+    tokenManager.setAccessToken(accessToken?.trim() || null)
     await tokenManager.setRefreshToken(normalizedRefreshToken)
     setIsAuthenticated(true)
   }

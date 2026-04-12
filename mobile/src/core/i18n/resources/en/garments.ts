@@ -31,6 +31,12 @@ const garments = {
       pending: 'Pending',
     },
   },
+  closetScreen: {
+    title: 'My Closet',
+    fallback: {
+      noName: 'Unnamed garment',
+    }
+  },
   detail: {
     form: {
       name: {
