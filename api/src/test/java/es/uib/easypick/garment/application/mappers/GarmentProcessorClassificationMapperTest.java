@@ -1,7 +1,7 @@
 package es.uib.easypick.garment.application.mappers;
 
 import es.uib.easypick.garment.application.entities.*;
-import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentLabelPrediction;
+import es.uib.easypick.garment.application.helpers.*;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorResponse;
 import es.uib.easypick.garment.infrastructure.repositories.BrandRepository;
 import es.uib.easypick.garment.infrastructure.repositories.CategoryRepository;
@@ -38,37 +38,35 @@ class GarmentProcessorClassificationMapperTest {
 
     @Test
     void applyClassification_ShouldMapAllMatchingFields() {
-        GarmentEntity garment = new GarmentEntity();
+        // Arrange
+        GarmentEntity garment = GarmentTestBuilder.aGarment().build();
 
-        BrandEntity brand = new BrandEntity();
-        brand.setName("Gucci");
-        StyleEntity style = new StyleEntity();
-        style.setName("formal");
-        CategoryEntity category = new CategoryEntity();
-        category.setName("shoes");
-        ColorEntity color = new ColorEntity();
-        color.setName("black");
-        color.setHexCode("#000000");
+        BrandEntity brand = BrandTestBuilder.aBrand().withName("Gucci").build();
+        StyleEntity style = StyleTestBuilder.aStyle().withName("formal").build();
+        CategoryEntity category = CategoryTestBuilder.aCategory().withName("shoes").build();
+        ColorEntity color = ColorTestBuilder.aColor().withName("black").withHexCode("#000000").build();
 
-        GarmentProcessorResponse response = new GarmentProcessorResponse(
-                "tmp-1",
-                0.92,
-                new GarmentLabelPrediction("shoes", 0.88),
-                new GarmentLabelPrediction("black", 0.91),
-                new GarmentLabelPrediction("formal", 0.84),
-                new GarmentLabelPrediction("leather", 0.8),
-                new GarmentLabelPrediction("spring", 0.8),
-                new GarmentLabelPrediction("Gucci", 0.9),
-                "base64"
-        );
+        GarmentProcessorResponse response = GarmentProcessorResponseTestBuilder.aGarmentProcessorResponse()
+            .withTempId("tmp-1")
+            .withDetectionConfidence(0.92)
+            .withCategory(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("shoes").withScore(0.88).build())
+            .withColor(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("black").withScore(0.91).build())
+            .withStyle(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("formal").withScore(0.84).build())
+            .withMaterial(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("leather").withScore(0.8).build())
+            .withSeason(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("spring").withScore(0.8).build())
+            .withBrand(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("Gucci").withScore(0.9).build())
+            .withImageBase64("base64")
+            .build();
 
         when(brandRepository.findByNameIgnoreCase("Gucci")).thenReturn(Optional.of(brand));
         when(styleRepository.findByNameIgnoreCase("formal")).thenReturn(Optional.of(style));
         when(categoryRepository.findByNameIgnoreCase("shoes")).thenReturn(Optional.of(category));
         when(colorRepository.findByNameIgnoreCase("black")).thenReturn(Optional.of(color));
 
+        // Act
         mapper.applyClassification(garment, response);
 
+        // Assert
         assertEquals(brand, garment.getBrand());
         assertEquals(style, garment.getStyle());
         assertEquals(category, garment.getCategory());
@@ -77,25 +75,28 @@ class GarmentProcessorClassificationMapperTest {
 
     @Test
     void applyClassification_ShouldIgnoreMissingMatchesAndNullLabels() {
-        GarmentEntity garment = new GarmentEntity();
+        // Arrange
+        GarmentEntity garment = GarmentTestBuilder.aGarment().build();
 
-        GarmentProcessorResponse response = new GarmentProcessorResponse(
-                "tmp-1",
-                0.92,
-                new GarmentLabelPrediction("unknown-category", 0.88),
-                null,
-                new GarmentLabelPrediction("", 0.84),
-                null,
-                null,
-                new GarmentLabelPrediction("unknown-brand", 0.9),
-                "base64"
-        );
+        GarmentProcessorResponse response = GarmentProcessorResponseTestBuilder.aGarmentProcessorResponse()
+            .withTempId("tmp-1")
+            .withDetectionConfidence(0.92)
+            .withCategory(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("unknown-category").withScore(0.88).build())
+            .withColor(null)
+            .withStyle(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("").withScore(0.84).build())
+            .withMaterial(null)
+            .withSeason(null)
+            .withBrand(GarmentLabelPredictionTestBuilder.aGarmentLabelPrediction().withLabel("unknown-brand").withScore(0.9).build())
+            .withImageBase64("base64")
+            .build();
 
         when(brandRepository.findByNameIgnoreCase("unknown-brand")).thenReturn(Optional.empty());
         when(categoryRepository.findByNameIgnoreCase("unknown-category")).thenReturn(Optional.empty());
 
+        // Act
         mapper.applyClassification(garment, response);
 
+        // Assert
         assertNull(garment.getBrand());
         assertNull(garment.getStyle());
         assertNull(garment.getCategory());
