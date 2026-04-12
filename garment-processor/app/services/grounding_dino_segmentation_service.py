@@ -40,7 +40,6 @@ class GroundingDinoSegmentationService(SegmentationGeometryMixin):
     def segment_with_metrics(
         self,
         image: Image.Image,
-        regions: list[tuple[int, int, int, int]] | None = None,
     ) -> tuple[list[SegmentedCandidate], SegmentationStageMetrics]:
         t0 = time.perf_counter()
         inputs = self._processor(

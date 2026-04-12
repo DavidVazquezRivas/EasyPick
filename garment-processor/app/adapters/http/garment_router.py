@@ -40,8 +40,6 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
         mapped_error = map_exception_to_http_error(exc)
         if mapped_error.status_code >= 500:
             LOGGER.exception("Unexpected error | request_id=%s error=%s", request_id, exc)
-        elif isinstance(exc, InvalidInputError):
-            LOGGER.warning("Invalid input | request_id=%s error=%s", request_id, exc)
         else:
             LOGGER.warning("Processing error | request_id=%s error=%s", request_id, exc)
         raise HTTPException(status_code=mapped_error.status_code, detail=mapped_error.detail) from exc
