@@ -5,7 +5,9 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
     "skipLibCheck": true
   },
@@ -13,7 +15,8 @@
     "src/**/*",
     "app/**/*",
     "*.ts",
-    "*.tsx"
+    "*.tsx",
+    "nativewind-env.d.ts"
   ],
   "exclude": [
     "node_modules",

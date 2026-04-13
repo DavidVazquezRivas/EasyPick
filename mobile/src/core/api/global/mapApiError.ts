@@ -1,22 +1,17 @@
 import axios from 'axios'
 import { ApiResponse } from '@/core/api/global/ApiResponse'
+import { ApiError } from '@/core/api/global/errors'
 
-const backendErrorCodeToI18nKey: Record<number, string> = {
-  1000: 'common.api.errors.backendCodes.1000',
-  1001: 'common.api.errors.backendCodes.1001',
-  1002: 'common.api.errors.backendCodes.1002',
-  1003: 'common.api.errors.backendCodes.1003',
-  2000: 'common.api.errors.backendCodes.2000',
-  2001: 'common.api.errors.backendCodes.2001',
-}
-
-const getI18nKeyFromBackendCode = (code: number | undefined): string | null => {
-  if (!code) return null
-  return backendErrorCodeToI18nKey[code] ?? null
-}
-
+/**
+ * Map Axios errors to normalized app errors.
+ *
+ * For API responses with success=false, extracts the error code and creates an ApiError.
+ * The code is preserved so UI can map it to i18n keys (common.api.errors.backendCodes.{code}).
+ *
+ * For other errors, returns a generic error with i18n key for fallback.
+ */
 export const mapApiErrorToDisplayError = (error: unknown): Error => {
-  // Preserve already-normalized app errors.
+  // Preserve already-normalized app errors (including ApiError).
   if (error instanceof Error && !axios.isAxiosError(error)) {
     return error
   }
@@ -24,19 +19,16 @@ export const mapApiErrorToDisplayError = (error: unknown): Error => {
   if (axios.isAxiosError(error)) {
     const responseBody = error.response?.data as ApiResponse<unknown> | undefined
     const backendCode = responseBody?.message?.code
-    const i18nKey = getI18nKeyFromBackendCode(backendCode)
+    const message = responseBody?.message?.message || error.message || 'common.global.error.unknown'
+    const path = responseBody?.path
 
-    if (i18nKey) {
-      return new Error(i18nKey)
+    // If we have a backend error code, preserve it in ApiError for UI mapping to i18n keys
+    if (backendCode !== undefined) {
+      return new ApiError(backendCode, message, path ?? undefined, responseBody?.timestamp ?? undefined)
     }
 
-    if (responseBody?.message?.message) {
-      return new Error(responseBody.message.message)
-    }
-
-    if (error.message) {
-      return new Error(error.message)
-    }
+    // Fallback: return regular Error with message or generic i18n key
+    return new Error(message)
   }
 
   return new Error('common.global.error.unknown')

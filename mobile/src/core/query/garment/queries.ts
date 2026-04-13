@@ -10,7 +10,7 @@ import { QueryKeys } from '@/core/query/QueryKeys'
  */
 export const getMyGarmentsQueryOptions = () =>
   queryOptions({
-    queryKey: QueryKeys.garments.me,
+    queryKey: QueryKeys.garments.list,
     queryFn: apiClient.garment.getMyGarments,
   })
 
