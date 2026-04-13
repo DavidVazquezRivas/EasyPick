@@ -27,7 +27,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Allow auth endpoints and Swagger UI without authentication
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**","/api/v1/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/v1/garments/configurations").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api/v1/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Spring doesn't store session state
