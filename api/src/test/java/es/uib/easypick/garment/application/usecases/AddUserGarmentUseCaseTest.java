@@ -5,6 +5,7 @@ import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.infrastructure.gateways.storage.StorageGateway;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
 import es.uib.easypick.garment.application.helpers.GarmentTestBuilder;
+import es.uib.easypick.garment.application.mappers.GarmentProcessorClassificationMapper;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorGateway;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorResponse;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
@@ -45,6 +46,9 @@ class AddUserGarmentUseCaseTest {
 
     @Mock
     private StorageGateway storageGateway;
+
+    @Mock
+    private GarmentProcessorClassificationMapper garmentProcessorClassificationMapper;
 
     @InjectMocks
     private AddUserGarmentUseCase useCase;
@@ -120,6 +124,7 @@ class AddUserGarmentUseCaseTest {
         verify(userRepository, times(1)).findById(userId);
         verify(garmentProcessorGateway, times(1)).processImage(mockFile);
         verify(storageGateway, times(2)).uploadFile(any(byte[].class), anyString(), eq("image/jpeg"));
+        verify(garmentProcessorClassificationMapper, times(2)).applyClassification(any(GarmentEntity.class), any(GarmentProcessorResponse.class));
         verify(garmentRepository, times(1)).saveAll(garmentListCaptor.capture());
 
         List<GarmentEntity> capturedGarments = garmentListCaptor.getValue();

@@ -5,6 +5,7 @@ import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.application.usecases.UseCase;
 import es.uib.easypick.core.infrastructure.gateways.storage.StorageGateway;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
+import es.uib.easypick.garment.application.mappers.GarmentProcessorClassificationMapper;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorGateway;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorResponse;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
@@ -26,6 +27,7 @@ public class AddUserGarmentUseCase {
     private final GarmentRepository garmentRepository;
     private final UserRepository userRepository;
     private final GarmentProcessorGateway garmentProcessorGateway;
+    private final GarmentProcessorClassificationMapper garmentProcessorClassificationMapper;
 
     private final StorageGateway storageGateway;
 
@@ -44,8 +46,8 @@ public class AddUserGarmentUseCase {
 
             String imageUrl = storageGateway.uploadFile(decodedBytes, filename, "image/jpeg");
 
-            // TODO: Use a proper mapping from processor response when more fields are added
             GarmentEntity garmentEntity = GarmentEntity.createPendingClassification(user, imageUrl);
+            garmentProcessorClassificationMapper.applyClassification(garmentEntity, processorResponse);
 
             garmentsToSave.add(garmentEntity);
         }

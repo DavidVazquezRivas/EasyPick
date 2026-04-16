@@ -63,7 +63,38 @@ services:
       - CLOUD_AWS_S3_ENDPOINT=http://minio:9000
       - CLOUD_AWS_S3_BUCKET_NAME=easypick-images
       - CLOUD_AWS_REGION_STATIC=eu-west-1
+      - GARMENT_PROCESSOR_BASE_URL=http://garment-processor:8082
+      - GARMENT_PROCESSOR_PROCESS_ENDPOINT=/process-garments
+      - GARMENT_PROCESSOR_TIMEOUT_SECONDS=30
+
+  garment-processor:
+    build:
+      context: ./garment-processor
+    container_name: easypick-garment-processor
+    ports:
+      - '8082:8082'
+    depends_on:
+      - api
+    environment:
+      - EASYPICK_API_BASE_URL=http://api:8080
+      - GARMENT_CONFIG_ENDPOINT=/garments/configurations
+      - GARMENT_CONFIG_TIMEOUT_SECONDS=10
+      - SYNC_GARMENT_LABELS_ON_STARTUP=true
+      - TRANSFORMERS_CACHE=/app/.cache/models
+      - HF_HOME=/app/.cache/huggingface
+    volumes:
+      - garment_processor_models:/app/.cache
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8082/health/ready', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+      # Google
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 
 volumes:
   pgdata:
   minio_data:
+  garment_processor_models:
