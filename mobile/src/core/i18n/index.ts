@@ -5,9 +5,11 @@ import { initReactI18next } from 'react-i18next'
 import authEn from '@/core/i18n/resources/en/auth'
 import commonEn from '@/core/i18n/resources/en/common'
 import garmentsEn from '@/core/i18n/resources/en/garments'
+import settingsEn from '@/core/i18n/resources/en/settings'
 import authEs from '@/core/i18n/resources/es/auth'
 import commonEs from '@/core/i18n/resources/es/common'
 import garmentsEs from '@/core/i18n/resources/es/garments'
+import settingsEs from '@/core/i18n/resources/es/settings'
 
 const LANGUAGE_STORAGE_KEY = 'easypick_language'
 const SUPPORTED_LANGUAGES = ['en', 'es'] as const
@@ -21,7 +23,7 @@ const normalizeLanguage = (language: string | undefined): 'en' | 'es' => {
 const languageDetector: LanguageDetectorAsyncModule = {
   type: 'languageDetector',
   async: true,
-  init: () => {},
+  init: () => { },
   detect: async (callback) => {
     try {
       const persistedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY)
@@ -64,6 +66,7 @@ void i18next
           common: commonEn,
           auth: authEn,
           garment: garmentsEn,
+          settings: settingsEn,
         },
       },
       es: {
@@ -71,6 +74,7 @@ void i18next
           common: commonEs,
           auth: authEs,
           garment: garmentsEs,
+          settings: settingsEs,
         },
       },
     },

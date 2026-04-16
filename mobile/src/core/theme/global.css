@@ -30,9 +30,10 @@
     --navbar: #ffffff;
     --btn-ai-bg: #5d4037;
     --btn-ai-fg: #ffffff;
+    --switch: #c4b8b0;
   }
 
-  .dark {
+  .dark:root {
     --background: #1a1410;
     --foreground: #ede0d0;
     --card: #261e17;
@@ -58,6 +59,7 @@
     --navbar: #211812;
     --btn-ai-bg: #f0ece8;
     --btn-ai-fg: #1a1410;
+    --switch: #5c4a3a;
   }
 }
 
@@ -65,13 +67,16 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   * {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
+
   *::-webkit-scrollbar {
     display: none;
   }
