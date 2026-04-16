@@ -1,4 +1,4 @@
-import { View, ActivityIndicator } from 'react-native'
+import { View, ActivityIndicator, Pressable } from 'react-native'
 import { useState } from 'react';
 import { useColorScheme } from 'react-native'
 import Svg, { Path, Circle } from 'react-native-svg';
@@ -35,7 +35,13 @@ export const ClosetScreen = () => {
       </View>
 
       {isSettingsOn && (
-        <SettingsDropdown />
+        <>
+          <Pressable 
+            className="absolute top-0 bottom-0 left-0 right-0 z-40 bg-transparent"
+            onPress={() => setSettingsOn(false)}
+          />
+          <SettingsDropdown />
+        </>
       )}
 
       <View className='flex-1'>
