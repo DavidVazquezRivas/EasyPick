@@ -19,7 +19,7 @@ export const SettingsDropdown = () => {
   const router = useRouter()
 
   return (
-    <Card className="absolute top-28 right-5 w-72 p-0 py-0 gap-0 z-50 shadow-xl rounded-2xl border-0">
+    <Card className="absolute top-16 right-5 w-72 p-0 py-0 gap-0 z-50 shadow-xl rounded-2xl border-0">
       <View className="px-4 pt-3 pb-1">
         <Text className="text-xs font-semibold uppercase tracking-widest mb-1 text-muted-foreground">{t('settings.dropdown.title')}</Text>
 
