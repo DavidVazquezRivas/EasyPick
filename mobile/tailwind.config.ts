@@ -14,6 +14,7 @@ const config: Config = {
         input: 'var(--input)',
         ring: 'var(--ring)',
         navbar: 'var(--navbar)',
+        switch: 'var(--switch)',
 
         card: {
           DEFAULT: 'var(--card)',

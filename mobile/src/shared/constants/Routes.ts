@@ -16,5 +16,6 @@ export const Routes = {
     Explore: '/(private)/explore',
     Suggestions: '/(private)/suggestions',
     Outfits: '/(private)/outfits',
+    Settings: '/(private)/settings'
   },
 }

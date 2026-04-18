@@ -1,12 +1,15 @@
 import { useRef } from 'react'
 import { Image, Pressable, View, Animated } from 'react-native'
-import { Card, CardTitle } from '@/shared/components/ui/card'
+import { Text } from '@/shared/components/ui/text'
+import { Card } from '@/shared/components/ui/card'
 import { SimpleGarment } from '@/core/api/garment/models/SimpleGarment'
 import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 
 export const GarmentCard = ({ garment }: { garment: SimpleGarment }) => {
   const scale = useRef(new Animated.Value(1)).current;
   const { t } = useTranslation();
+  const [error, setError] = useState(false);
 
   const handlePress = () => {
 
@@ -35,16 +38,20 @@ export const GarmentCard = ({ garment }: { garment: SimpleGarment }) => {
       <Animated.View style={{ transform: [{ scale }] }}>
         <Card className="overflow-hidden p-0 gap-2">
           <View className="w-full aspect-[3/4] bg-muted">
-            <Image
-              source={{ uri: garment.imageUrl }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          </View>
-          <View className="mb-4 px-2">
-            <CardTitle className="text-sm" numberOfLines={3}>
-              {garment.name || t('garment.closetScreen.fallback.noName')}
-            </CardTitle>
+            {!error ? (
+              <Image
+                source={{ uri: garment.imageUrl }}
+                className="w-full h-full"
+                resizeMode="cover"
+                onError={() => setError(true)}
+              />
+            ) : (
+              <View className="w-full h-full items-center justify-center bg-muted">
+                <Text variant="muted" className="text-center px-2">
+                  {garment.name || t("garment.closetScreen.fallback.noName")}
+                </Text>
+              </View>
+            )}
           </View>
         </Card>
       </Animated.View>
