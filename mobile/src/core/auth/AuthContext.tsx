@@ -40,7 +40,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const signIn = async (refreshTokenOrTokens: string | AuthTokens) => {
-    const refreshToken = typeof refreshTokenOrTokens === 'string' ? refreshTokenOrTokens : refreshTokenOrTokens.refreshToken
+    const refreshToken =
+      typeof refreshTokenOrTokens === 'string' ? refreshTokenOrTokens : refreshTokenOrTokens.refreshToken
     const accessToken = typeof refreshTokenOrTokens === 'string' ? null : refreshTokenOrTokens.accessToken
 
     const normalizedRefreshToken = refreshToken.trim()

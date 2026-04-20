@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.uib.easypick.core.application.exceptions.AppException;
 import es.uib.easypick.core.application.exceptions.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +19,10 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(
+        name = {"application.modules.garment.processor.mode"},
+        havingValue = "http"
+)
 public class HttpGarmentProcessorGateway implements GarmentProcessorGateway {
 
     private final RestClient.Builder restClientBuilder;

@@ -18,7 +18,12 @@ export const AuthGateway = {
 
     const tokens = response.data.data
     if (!tokens?.refreshToken) {
-      throw new ApiError(0, 'Google sign in returned empty authentication data', response.data.path ?? undefined, response.data.timestamp ?? undefined)
+      throw new ApiError(
+        0,
+        'Google sign in returned empty authentication data',
+        response.data.path ?? undefined,
+        response.data.timestamp ?? undefined,
+      )
     }
 
     return tokens
