@@ -40,18 +40,20 @@ export const GarmentCard = ({ garment }: { garment: SimpleGarment }) => {
       <Animated.View style={{ transform: [{ scale }] }}>
         <Card className="overflow-hidden p-0 gap-2">
           <View className="w-full aspect-[3/4] bg-muted">
-            {imageUri.length > 0 && (
+            {!error ? (
               <Image
-                source={{ uri: imageUri }}
+                source={{ uri: garment.imageUrl }}
                 className="w-full h-full"
                 resizeMode="cover"
+                onError={() => setError(true)}
               />
+            ) : (
+              <View className="w-full h-full items-center justify-center bg-muted">
+                <Text variant="muted" className="text-center px-2">
+                  {garment.name || t("garment.closetScreen.fallback.noName")}
+                </Text>
+              </View>
             )}
-          </View>
-          <View className="mb-4 px-2">
-            <CardTitle className="text-sm" numberOfLines={3}>
-              {garment.name || t('garment.closetScreen.fallback.noName')}
-            </CardTitle>
           </View>
         </Card>
       </Animated.View>

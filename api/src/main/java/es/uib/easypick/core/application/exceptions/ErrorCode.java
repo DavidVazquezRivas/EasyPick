@@ -17,6 +17,7 @@ public enum ErrorCode {
     // ---- Authentication and Authorization Errors ----
     UNAUTHORIZED(2000, "Authentication is required to access this resource.", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(2001, "You do not have permission to access this resource.", HttpStatus.FORBIDDEN),
+    INVALID_GOOGLE_TOKEN(2002, "The given google token id was not valid", HttpStatus.UNAUTHORIZED),
 
     // --- User Module Logic Errors ---
     USER_NOT_FOUND(3000, "The specified user was not found.", HttpStatus.NOT_FOUND),

@@ -18,7 +18,6 @@ spring:
     password: ${DB_PASSWORD:uQFPS^axE88w!x4T%keL}
     driver-class-name: org.postgresql.Driver
 
-
   # Seed data configuration
   sql:
     init:
@@ -43,7 +42,6 @@ spring:
     error:
       include-message: always
 
-
 logging:
   level:
     es.uib.easypick: INFO
@@ -61,12 +59,19 @@ application:
   modules:
     garment:
       processor:
+        base-url: ${GARMENT_PROCESSOR_BASE_URL:http://localhost:8082}
+        process-endpoint: ${GARMENT_PROCESSOR_PROCESS_ENDPOINT:/process-garments}
+        timeout-seconds: ${GARMENT_PROCESSOR_TIMEOUT_SECONDS:30}
         mode: mock
       cleaner:
         pending-retention-time: 1h
         scheduler:
           enabled: true
           cron: "0 */10 * * * *" # Every 10 minutes
+    auth:
+      oauth:
+        google:
+          client-id: ${GOOGLE_CLIENT_ID}
 
 
 cloud:

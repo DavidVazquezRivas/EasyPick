@@ -10,8 +10,8 @@ const common = {
     language: {
       label: 'Idioma',
       options: {
-        english: 'Ingles',
-        spanish: 'Espanol',
+        english: 'Inglés',
+        spanish: 'Español',
       },
     },
   },

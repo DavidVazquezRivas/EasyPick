@@ -2,6 +2,7 @@
   "expo": {
     "name": "mobile",
     "slug": "mobile",
+    "scheme": "easypick",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,6 +21,7 @@
       }
     },
     "android": {
+      "package": "es.uib.easypick.mobile",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

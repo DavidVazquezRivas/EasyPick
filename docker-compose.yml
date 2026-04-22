@@ -5,9 +5,9 @@ services:
     image: postgres:16
     container_name: easypick-db
     environment:
-      POSTGRES_DB: easypick
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pgpassword123
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
       - '5432:5432'
     volumes:
@@ -18,8 +18,8 @@ services:
     image: minio/minio:latest
     container_name: easypick-minio
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - '9000:9000' # Port for  API (Where Spring Boot connects)
       - '9001:9001' # Port for the web console (Accessible at http://localhost:9001)
@@ -36,7 +36,7 @@ services:
     entrypoint: >
       /bin/sh -c "
       sleep 5;
-      /usr/bin/mc alias set myminio http://minio:9000 admin password123;
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb myminio/easypick-images --ignore-existing;
       /usr/bin/mc anonymous set public myminio/easypick-images;
       exit 0;
@@ -53,17 +53,57 @@ services:
       - minio
     environment:
       # Database connections overrides
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/easypick
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=pgpassword123
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DATABASE_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DATABASE_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD}
 
       # AWS S3 overrides for MinIO
-      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=admin
-      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=password123
+      - CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${MINIO_ROOT_USER}
+      - CLOUD_AWS_CREDENTIALS_SECRET_KEY=${MINIO_ROOT_PASSWORD}
       - CLOUD_AWS_S3_ENDPOINT=http://minio:9000
-      - CLOUD_AWS_S3_BUCKET_NAME=easypick-images
+      - CLOUD_AWS_S3_PATH_STYLE_ACCESS=http://${IP_ADDRESS}:9000
+      - CLOUD_AWS_S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - CLOUD_AWS_REGION_STATIC=eu-west-1
+
+      # Garment Processor overrides
+      - GARMENT_PROCESSOR_BASE_URL=http://garment-processor:8082
+      - GARMENT_PROCESSOR_PROCESS_ENDPOINT=/process-garments
+      - GARMENT_PROCESSOR_TIMEOUT_SECONDS=${PROCESSOR_TIMEOUT_SECONDS}
+
+      # Google
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+
+  garment-processor:
+    build:
+      context: ./garment-processor
+    container_name: easypick-garment-processor
+    ports:
+      - '8082:8082'
+    depends_on:
+      - api
+    environment:
+      - EASYPICK_API_BASE_URL=http://api:8080/api/v1
+      - GARMENT_CONFIG_ENDPOINT=/garments/configurations
+      - GARMENT_CONFIG_TIMEOUT_SECONDS=${API_TIMEOUT_SECONDS}
+      - SYNC_GARMENT_LABELS_ON_STARTUP=true
+      - TRANSFORMERS_CACHE=/app/.cache/models
+      - HF_HOME=/app/.cache/huggingface
+    volumes:
+      - garment_processor_models:/app/.cache
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://localhost:8082/health/ready', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
 
 volumes:
   pgdata:
   minio_data:
+  garment_processor_models:

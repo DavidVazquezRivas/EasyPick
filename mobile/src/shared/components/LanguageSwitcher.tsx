@@ -1,26 +1,25 @@
 import { useTranslation } from 'react-i18next'
-import { Card, CardContent, CardHeader, Text, Button } from '@/shared/components/ui'
+import { Text, Button } from '@/shared/components/ui'
+import { View } from 'react-native'
 
 export const LanguageSwitcher = () => {
   const { t, i18n } = useTranslation()
 
   return (
-    <Card>
-      <CardHeader>
-        <Text variant='large'>{t('common.global.language.label')}</Text>
-      </CardHeader>
-      <CardContent className='flex-row gap-2'>
+    < View className="px-4 pt-2 pb-2.5" >
+      <Text className="text-xs font-semibold uppercase tracking-widest mb-2 text-muted-foreground">{t('settings.dropdown.language')}</Text>
+      <View className="flex-row gap-2">
         <Button
           variant={i18n.language.startsWith('es') ? 'default' : 'outline'}
           onPress={() => i18n.changeLanguage('es')}>
-          {t('common.global.language.options.spanish')}
+          {<Text>🇪🇸</Text>}{t('common.global.language.options.spanish')}
         </Button>
         <Button
           variant={i18n.language.startsWith('en') ? 'default' : 'outline'}
           onPress={() => i18n.changeLanguage('en')}>
-          {t('common.global.language.options.english')}
+          {<Text>🇬🇧</Text>}{t('common.global.language.options.english')}
         </Button>
-      </CardContent>
-    </Card>
+      </View>
+    </View >
   )
 }

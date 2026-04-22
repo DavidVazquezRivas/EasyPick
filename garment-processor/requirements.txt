@@ -1,0 +1,20 @@
+# ==========================================
+# Vision API - Requerimientos (Python 3.11)
+# ==========================================
+
+# 1. Framework Base (API REST)
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+python-multipart>=0.0.9
+
+# 2. Procesamiento de Imágenes y Visión
+Pillow>=10.2.0
+numpy>=1.26.0
+
+# 3. Eliminación de Fondo (U-2-Net)
+rembg>=2.0.50
+onnxruntime>=1.18.0
+
+# 4. Etiquetado Automático / Zero-Shot (CLIP + Grounding DINO)
+torch>=2.2.0
+transformers>=4.38.0
