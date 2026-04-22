@@ -12,7 +12,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tunombre.easypick", 
+      "infoPlist": {
+        "NSCameraUsageDescription": "EasyPick necesita acceso a la cámara para tomar fotos de tus prendas.",
+        "NSPhotoLibraryUsageDescription": "EasyPick necesita acceso a tu galería para que puedas elegir fotos de tu ropa."
+      }
     },
     "android": {
       "usesCleartextTraffic": true,
@@ -28,6 +33,16 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-secure-store", "expo-router"]
+    "plugins": [
+      "expo-secure-store",
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite que la app acceda a tus fotos.",
+          "cameraPermission": "Permite que la app use la cámara."
+        }
+      ]
+    ]
   }
 }

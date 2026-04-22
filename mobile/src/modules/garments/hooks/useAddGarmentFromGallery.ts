@@ -9,9 +9,16 @@ export const useAddGarmentFromGallery = () => {
   const { mutateAsync, isPending } = useAddGarment()
 
   const selectImageFromGallery = async (): Promise<ImagePicker.ImagePickerAsset | null> => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    const { status: existingStatus } = await ImagePicker.getMediaLibraryPermissionsAsync()
+    
+    let finalStatus = existingStatus
 
-    if (!permissionResult.granted) {
+    if (existingStatus !== 'granted') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      finalStatus = status
+    }
+
+    if (finalStatus !== 'granted') {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryPermissionDenied'))
       return null
     }
@@ -20,7 +27,7 @@ export const useAddGarmentFromGallery = () => {
       const galleryResult = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: false,
-        quality: 1,
+        quality: 0.7,
       })
 
       if (galleryResult.canceled) {
@@ -35,7 +42,7 @@ export const useAddGarmentFromGallery = () => {
       }
 
       return asset
-    } catch {
+    } catch (error) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.galleryUploadFailed'))
       return null
     }
