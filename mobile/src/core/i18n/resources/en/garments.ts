@@ -23,9 +23,7 @@ const garments = {
       style: 'Style',
       colors: 'Colors',
     },
-    todo: {
-      attributes: 'TODO: allow manual attribute editing.',
-    },
+    editHint: 'You can adjust the detected attributes before adding the garment.',
     fallback: {
       noName: 'Unnamed garment',
       pending: 'Pending',

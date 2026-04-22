@@ -23,9 +23,7 @@ const garments = {
       style: 'Estilo',
       colors: 'Colores',
     },
-    todo: {
-      attributes: 'TODO: permitir edición manual de atributos.',
-    },
+    editHint: 'Puedes ajustar los atributos detectados antes de añadir la prenda.',
     fallback: {
       noName: 'Prenda sin nombre',
       pending: 'Pendiente',
