@@ -4,10 +4,12 @@ import es.uib.easypick.core.application.exceptions.AppException;
 import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.infrastructure.gateways.storage.StorageGateway;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
+import es.uib.easypick.garment.application.helpers.GarmentProcessorResponseItemTestBuilder;
 import es.uib.easypick.garment.application.helpers.GarmentTestBuilder;
-import es.uib.easypick.garment.application.mappers.GarmentProcessorClassificationMapper;
+import es.uib.easypick.garment.application.mappers.GarmentProcessorResponseMapper;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorGateway;
-import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorResponse;
+import es.uib.easypick.garment.infrastructure.gateways.processor.responses.GarmentProcessorResponse;
+import es.uib.easypick.garment.infrastructure.gateways.processor.responses.GarmentProcessorResponseItem;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
 import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import es.uib.easypick.user.application.entities.UserEntity;
@@ -48,7 +50,7 @@ class AddUserGarmentUseCaseTest {
     private StorageGateway storageGateway;
 
     @Mock
-    private GarmentProcessorClassificationMapper garmentProcessorClassificationMapper;
+    private GarmentProcessorResponseMapper mapper;
 
     @InjectMocks
     private AddUserGarmentUseCase useCase;
@@ -82,8 +84,14 @@ class AddUserGarmentUseCaseTest {
         String mockImageUrl1 = "https://s3.amazonaws.com/bucket/garment_1.jpg";
         String mockImageUrl2 = "https://s3.amazonaws.com/bucket/garment_2.jpg";
 
-        GarmentProcessorResponse aiResponse1 = new GarmentProcessorResponse(base64EncodedImage);
-        GarmentProcessorResponse aiResponse2 = new GarmentProcessorResponse(base64EncodedImage);
+        GarmentProcessorResponseItem responseItem1 = GarmentProcessorResponseItemTestBuilder
+                .aGarmentProcessorResponseItem()
+                .build();
+        GarmentProcessorResponseItem responseItem2 = GarmentProcessorResponseItemTestBuilder
+                .aGarmentProcessorResponseItem()
+                .build();
+
+        GarmentProcessorResponse mockedResponse = new GarmentProcessorResponse(List.of(responseItem1, responseItem2));
 
         // Utilize the Test Data Builder for cleaner instantiation
         GarmentEntity savedGarment1 = GarmentTestBuilder.aGarment()
@@ -99,7 +107,7 @@ class AddUserGarmentUseCaseTest {
                 .build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
-        when(garmentProcessorGateway.processImage(mockFile)).thenReturn(List.of(aiResponse1, aiResponse2));
+        when(garmentProcessorGateway.processImage(mockFile)).thenReturn(mockedResponse);
 
         // Simulate StorageGateway returning different URLs for consecutive calls
         when(storageGateway.uploadFile(any(byte[].class), anyString(), eq("image/jpeg")))
@@ -108,6 +116,16 @@ class AddUserGarmentUseCaseTest {
 
         // Mock saveAll to return the builder-generated entities
         when(garmentRepository.saveAll(anyList())).thenReturn(List.of(savedGarment1, savedGarment2));
+
+        when(mapper.toEntity(any(), any()))
+                .thenAnswer(invocation -> {
+                    UserEntity user = invocation.getArgument(1);
+
+                    return GarmentTestBuilder.aGarment()
+                            .withName("Pending Classification")
+                            .withUser(user)
+                            .build();
+                });
 
         // Act
         List<CompleteGarmentResponse> response = useCase.execute(userId, mockFile);
@@ -124,12 +142,11 @@ class AddUserGarmentUseCaseTest {
         verify(userRepository, times(1)).findById(userId);
         verify(garmentProcessorGateway, times(1)).processImage(mockFile);
         verify(storageGateway, times(2)).uploadFile(any(byte[].class), anyString(), eq("image/jpeg"));
-        verify(garmentProcessorClassificationMapper, times(2)).applyClassification(any(GarmentEntity.class), any(GarmentProcessorResponse.class));
         verify(garmentRepository, times(1)).saveAll(garmentListCaptor.capture());
 
         List<GarmentEntity> capturedGarments = garmentListCaptor.getValue();
         assertEquals(2, capturedGarments.size(), "Should save exactly two entities in batch");
-        assertEquals(mockUser, capturedGarments.get(0).getUser(), "The user should be assigned correctly prior to saving");
+        assertEquals(mockUser, capturedGarments.getFirst().getUser(), "The user should be assigned correctly prior to saving");
     }
 
     @Test
@@ -156,7 +173,7 @@ class AddUserGarmentUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
 
         // The processor returns an empty list (no garments found in the photo)
-        when(garmentProcessorGateway.processImage(mockFile)).thenReturn(List.of());
+        when(garmentProcessorGateway.processImage(mockFile)).thenReturn(new GarmentProcessorResponse(List.of()));
 
         // Act & Assert
         AppException exception = assertThrows(AppException.class, () -> {

@@ -1,0 +1,2 @@
+ALTER TABLE refresh_tokens
+    ADD COLUMN admin BOOLEAN NOT NULL DEFAULT FALSE;

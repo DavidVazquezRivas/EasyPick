@@ -5,9 +5,10 @@ import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.application.usecases.UseCase;
 import es.uib.easypick.core.infrastructure.gateways.storage.StorageGateway;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
-import es.uib.easypick.garment.application.mappers.GarmentProcessorClassificationMapper;
+import es.uib.easypick.garment.application.mappers.GarmentProcessorResponseMapper;
 import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorGateway;
-import es.uib.easypick.garment.infrastructure.gateways.processor.GarmentProcessorResponse;
+import es.uib.easypick.garment.infrastructure.gateways.processor.responses.GarmentProcessorResponse;
+import es.uib.easypick.garment.infrastructure.gateways.processor.responses.GarmentProcessorResponseItem;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
 import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import es.uib.easypick.user.application.entities.UserEntity;
@@ -27,27 +28,26 @@ public class AddUserGarmentUseCase {
     private final GarmentRepository garmentRepository;
     private final UserRepository userRepository;
     private final GarmentProcessorGateway garmentProcessorGateway;
-    private final GarmentProcessorClassificationMapper garmentProcessorClassificationMapper;
-
+    private final GarmentProcessorResponseMapper mapper;
     private final StorageGateway storageGateway;
 
     @Transactional
     public List<CompleteGarmentResponse> execute(UUID userId, MultipartFile file) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        List<GarmentProcessorResponse> processorResponses = garmentProcessorGateway.processImage(file);
-        if (processorResponses.isEmpty()) throw new AppException(ErrorCode.NO_GARMENT_DETECTED);
+        GarmentProcessorResponse processorResponse = garmentProcessorGateway.processImage(file);
+        if (processorResponse.garments() == null || processorResponse.garments().isEmpty())
+            throw new AppException(ErrorCode.NO_GARMENT_DETECTED);
 
         List<GarmentEntity> garmentsToSave = new ArrayList<>();
 
-        for (GarmentProcessorResponse processorResponse : processorResponses) {
-            byte[] decodedBytes = Base64.getDecoder().decode(processorResponse.imageBase64());
+        for (GarmentProcessorResponseItem responseItem : processorResponse.garments()) {
+            byte[] decodedBytes = Base64.getDecoder().decode(responseItem.imageBase64());
             String filename = "garment_" + UUID.randomUUID() + ".jpg";
 
             String imageUrl = storageGateway.uploadFile(decodedBytes, filename, "image/jpeg");
 
-            GarmentEntity garmentEntity = GarmentEntity.createPendingClassification(user, imageUrl);
-            garmentProcessorClassificationMapper.applyClassification(garmentEntity, processorResponse);
+            GarmentEntity garmentEntity = mapper.toEntity(responseItem, user);
 
             garmentsToSave.add(garmentEntity);
         }
