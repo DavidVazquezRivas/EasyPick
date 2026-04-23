@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name="refresh_tokens")
+@Table(name = "refresh_tokens")
 @Getter
 @Setter
 public class RefreshTokenEntity {
@@ -27,6 +27,9 @@ public class RefreshTokenEntity {
 
     @Column(nullable = false)
     private boolean revoked = false;
+
+    @Column(nullable = false)
+    private boolean admin = false;
 
     // Lazy loading to avoid unnecessary user data retrieval when fetching the token
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

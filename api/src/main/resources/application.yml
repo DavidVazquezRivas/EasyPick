@@ -68,6 +68,7 @@ application:
         scheduler:
           enabled: true
           cron: "0 */10 * * * *" # Every 10 minutes
+      warmth-index-base: 10
     auth:
       oauth:
         google:
