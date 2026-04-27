@@ -27,12 +27,17 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
     try:
         LOGGER.info("Starting garment processing use case | request_id=%s", request_id)
         use_case = request.app.state.process_garments_use_case
+        warmth_use_case = request.app.state.calculate_warmth_index_use_case
 
         raw_garments = use_case.execute(validated_image.image)
         LOGGER.info("Use case returned garments | request_id=%s count=%s", request_id, len(raw_garments))
 
+        LOGGER.info("Calculating warmth index | request_id=%s", request_id)
+        enriched_garments = warmth_use_case.execute(raw_garments)
+        LOGGER.info("Warmth index calculated | request_id=%s garments=%s", request_id, len(enriched_garments))
+
         LOGGER.info("Building response | request_id=%s", request_id)
-        garments = request.app.state.response_builder.build_many(raw_garments)
+        garments = request.app.state.response_builder.build_many(enriched_garments)
         LOGGER.info("Response built | request_id=%s garments=%s", request_id, len(garments))
     except HTTPException:
         raise

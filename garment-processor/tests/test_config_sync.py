@@ -51,6 +51,10 @@ def test_sync_garment_labels_updates_settings_from_api(monkeypatch) -> None:
         SETTINGS.color_label_ids_by_name,
         SETTINGS.style_label_ids_by_name,
         SETTINGS.brand_label_ids_by_name,
+        SETTINGS.warmth_category_values_by_name,
+        SETTINGS.warmth_color_modifiers_by_name,
+        SETTINGS.warmth_material_values_by_name,
+        SETTINGS.warmth_season_values_by_name,
     )
 
     def _fake_urlopen(request, timeout=0):
@@ -61,6 +65,8 @@ def test_sync_garment_labels_updates_settings_from_api(monkeypatch) -> None:
                 "colors": [{"id": "color-1", "name": "azul"}],
                 "styles": [{"id": "style-1", "name": "casual"}, {"id": "style-2", "name": "urbano"}],
                 "brands": [{"id": "brand-1", "name": "Zara"}, {"id": "brand-2", "name": "Nike"}],
+                "materials": [{"id": "mat-1", "name": "wool", "warmthValue": 9}],
+                "seasons": [{"id": "sea-1", "name": "winter", "warmthValue": 10}],
             },
         }
         return _FakeResponse(payload, status_code=200)
@@ -82,6 +88,10 @@ def test_sync_garment_labels_updates_settings_from_api(monkeypatch) -> None:
         assert SETTINGS.color_label_ids_by_name == {"azul": "color-1"}
         assert SETTINGS.style_label_ids_by_name == {"casual": "style-1", "urbano": "style-2"}
         assert SETTINGS.brand_label_ids_by_name == {"zara": "brand-1", "nike": "brand-2"}
+        assert SETTINGS.warmth_category_values_by_name == {}
+        assert SETTINGS.warmth_color_modifiers_by_name == {}
+        assert SETTINGS.warmth_material_values_by_name == {"wool": 9.0}
+        assert SETTINGS.warmth_season_values_by_name == {"winter": 10.0}
     finally:
         SETTINGS.update_classifier_labels(
             category_labels=original[0],
@@ -92,6 +102,10 @@ def test_sync_garment_labels_updates_settings_from_api(monkeypatch) -> None:
             color_label_ids_by_name=original[5],
             style_label_ids_by_name=original[6],
             brand_label_ids_by_name=original[7],
+            warmth_category_values_by_name=original[8],
+            warmth_color_modifiers_by_name=original[9],
+            warmth_material_values_by_name=original[10],
+            warmth_season_values_by_name=original[11],
         )
 
 
@@ -105,6 +119,10 @@ def test_sync_garment_labels_does_not_crash_when_api_fails(monkeypatch) -> None:
         SETTINGS.color_label_ids_by_name,
         SETTINGS.style_label_ids_by_name,
         SETTINGS.brand_label_ids_by_name,
+        SETTINGS.warmth_category_values_by_name,
+        SETTINGS.warmth_color_modifiers_by_name,
+        SETTINGS.warmth_material_values_by_name,
+        SETTINGS.warmth_season_values_by_name,
     )
 
     def _fake_urlopen(request, timeout=0):
@@ -126,3 +144,7 @@ def test_sync_garment_labels_does_not_crash_when_api_fails(monkeypatch) -> None:
     assert SETTINGS.color_label_ids_by_name == original[5]
     assert SETTINGS.style_label_ids_by_name == original[6]
     assert SETTINGS.brand_label_ids_by_name == original[7]
+    assert SETTINGS.warmth_category_values_by_name == original[8]
+    assert SETTINGS.warmth_color_modifiers_by_name == original[9]
+    assert SETTINGS.warmth_material_values_by_name == original[10]
+    assert SETTINGS.warmth_season_values_by_name == original[11]

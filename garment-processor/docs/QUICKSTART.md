@@ -37,7 +37,8 @@ Primer arranque:
 - La cache se persiste en el volumen `garment_processor_models`.
 
 Variables usadas por el servicio en compose:
-- EASYPICK_API_BASE_URL=http://api:8080
+- EASYPICK_API_BASE_URL=http://api:8080/api/v1
+- EASYPICK_REFRESH_TOKEN=refresh_token
 - GARMENT_CONFIG_ENDPOINT=/garments/configurations
 - GARMENT_CONFIG_TIMEOUT_SECONDS=10
 - SYNC_GARMENT_LABELS_ON_STARTUP=true

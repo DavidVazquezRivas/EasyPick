@@ -206,7 +206,13 @@ async def run_simulation(image_path: Path) -> dict[str, Any]:
     garments = components.process_garments_use_case.execute(validated.image)
     print_raw_garments(garments)
 
-    response = components.response_builder.build_many(garments)
+    warmth_garments = components.calculate_warmth_index_use_case.execute(garments)
+    print("\nSTEP 4B - WARMTH INDEX")
+    print("======================")
+    for index, garment in enumerate(warmth_garments, start=1):
+        print(f"Garment #{index}: warmth_index={garment.warmth_index}")
+
+    response = components.response_builder.build_many(warmth_garments)
 
     from app.models.process_garments_response import ProcessGarmentsResponse
 

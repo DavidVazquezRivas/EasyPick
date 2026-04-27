@@ -29,6 +29,7 @@ class ProcessedGarmentResponseBuilder:
                     style=self._resolve_label_uuid(garment, "style"),
                     brand=self._resolve_label_uuid(garment, "brand"),
                     imageBase64=image_base64,
+                    warmthIndex=garment.warmth_index,
                 )
             )
 

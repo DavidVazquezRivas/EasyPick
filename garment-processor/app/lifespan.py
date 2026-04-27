@@ -35,6 +35,7 @@ async def app_lifespan(application: FastAPI):
         raise RuntimeError("Runtime bootstrap failed") from exc
 
     application.state.process_garments_use_case = components.process_garments_use_case
+    application.state.calculate_warmth_index_use_case = components.calculate_warmth_index_use_case
     application.state.response_builder = components.response_builder
     LOGGER.info("Runtime components initialized")
     yield

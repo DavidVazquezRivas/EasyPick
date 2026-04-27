@@ -35,6 +35,7 @@ def test_response_builder_maps_predicted_names_to_uuid_ids() -> None:
                 "season": LabelPrediction(label="summer", score=0.70),
                 "brand": LabelPrediction(label="Zara", score=0.99),
             },
+            warmth_index=6.42,
         )
 
         built = ProcessedGarmentResponseBuilder().build_many([garment])
@@ -45,7 +46,7 @@ def test_response_builder_maps_predicted_names_to_uuid_ids() -> None:
         assert item.color == "color-uuid-1"
         assert item.style == "style-uuid-1"
         assert item.brand == "brand-uuid-1"
-        assert item.warmth_index is None
+        assert item.warmth_index == 6.42
         assert item.image_base64
     finally:
         SETTINGS.update_classifier_labels(

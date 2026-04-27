@@ -137,6 +137,25 @@ DEFAULT_BRAND_LABELS: tuple[str, ...] = (
     "Unknown",
 )
 
+DEFAULT_WARMTH_MATERIAL_VALUES_BY_NAME: dict[str, float] = {
+    "linen": 1.0,
+    "silk": 2.0,
+    "cotton": 4.0,
+    "polyester": 5.0,
+    "denim": 6.0,
+    "leather": 7.0,
+    "knit": 7.0,
+    "wool": 9.0,
+    "fleece": 10.0,
+}
+
+DEFAULT_WARMTH_SEASON_VALUES_BY_NAME: dict[str, float] = {
+    "summer": 1.0,
+    "spring": 4.0,
+    "autumn": 7.0,
+    "winter": 10.0,
+}
+
 
 @dataclass
 class Settings:
@@ -193,6 +212,14 @@ class Settings:
     color_label_ids_by_name: dict[str, str] = field(default_factory=dict)
     style_label_ids_by_name: dict[str, str] = field(default_factory=dict)
     brand_label_ids_by_name: dict[str, str] = field(default_factory=dict)
+    warmth_category_values_by_name: dict[str, float] = field(default_factory=dict)
+    warmth_color_modifiers_by_name: dict[str, float] = field(default_factory=dict)
+    warmth_material_values_by_name: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_WARMTH_MATERIAL_VALUES_BY_NAME)
+    )
+    warmth_season_values_by_name: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_WARMTH_SEASON_VALUES_BY_NAME)
+    )
 
     def update_classifier_labels(
         self,
@@ -205,6 +232,10 @@ class Settings:
         color_label_ids_by_name: dict[str, str] | None = None,
         style_label_ids_by_name: dict[str, str] | None = None,
         brand_label_ids_by_name: dict[str, str] | None = None,
+        warmth_category_values_by_name: dict[str, float] | None = None,
+        warmth_color_modifiers_by_name: dict[str, float] | None = None,
+        warmth_material_values_by_name: dict[str, float] | None = None,
+        warmth_season_values_by_name: dict[str, float] | None = None,
     ) -> None:
         if category_labels:
             self.category_labels = category_labels
@@ -222,6 +253,14 @@ class Settings:
             self.style_label_ids_by_name = style_label_ids_by_name
         if brand_label_ids_by_name is not None:
             self.brand_label_ids_by_name = brand_label_ids_by_name
+        if warmth_category_values_by_name is not None:
+            self.warmth_category_values_by_name = warmth_category_values_by_name
+        if warmth_color_modifiers_by_name is not None:
+            self.warmth_color_modifiers_by_name = warmth_color_modifiers_by_name
+        if warmth_material_values_by_name is not None:
+            self.warmth_material_values_by_name = warmth_material_values_by_name
+        if warmth_season_values_by_name is not None:
+            self.warmth_season_values_by_name = warmth_season_values_by_name
 
     def resolve_classifier_label_id(self, dimension: str, label_name: str) -> str | None:
         normalized = _normalize_label_key(label_name)
