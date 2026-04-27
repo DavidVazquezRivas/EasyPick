@@ -1,6 +1,7 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Image, Pressable, View, Animated } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Text } from '@/shared/components/ui/text'
 import { Card, CardTitle } from '@/shared/components/ui/card'
 import { SimpleGarment } from '@/core/api/garment/models/SimpleGarment'
 import { useTranslation } from 'react-i18next'
@@ -10,13 +11,15 @@ export const GarmentCard = ({ garment }: { garment: SimpleGarment }) => {
   const scale = useRef(new Animated.Value(1)).current
   const { t } = useTranslation()
   const router = useRouter()
+  const [error, setError] = useState(false);
+
 
   const imageUri = garment.imageUrl?.trim() ?? ''
   const garmentId = garment.id
 
   const handlePress = () => {
     Animated.timing(scale, {
-      toValue: 0.95,
+      toValue: 0.98,
       duration: 70,
       useNativeDriver: true,
     }).start(() => {
@@ -35,6 +38,7 @@ export const GarmentCard = ({ garment }: { garment: SimpleGarment }) => {
   return (
     <Pressable
       className="w-[49%] mb-2"
+      delayLongPress={200}
       onPress={handlePress}
     >
       <Animated.View style={{ transform: [{ scale }] }}>

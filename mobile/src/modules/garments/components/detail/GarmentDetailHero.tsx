@@ -39,6 +39,8 @@ export const GarmentDetailHero = ({
       </Pressable>
 
       {isEditing && (
+        // TODO: Pending decision. This overlay only indicates image-change mode for now;
+        // it does not open an image picker or perform any action yet.
         <Pressable className='absolute inset-0 items-center justify-center bg-black/35'>
           <Ionicons name='camera-outline' size={40} color='#FFFFFF' />
           <Text className='mt-2 text-xl font-medium text-white'>{changeImageLabel}</Text>
