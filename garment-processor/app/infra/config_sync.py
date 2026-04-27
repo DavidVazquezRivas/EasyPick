@@ -8,8 +8,13 @@ from urllib import parse as urllib_parse
 from urllib import request as urllib_request
 
 from app.config import SETTINGS
+from app.infra.main_api_auth import build_main_api_auth_headers
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _normalize_label_key(value: str) -> str:
+    return value.strip().lower()
 
 
 def sync_garment_labels_from_main_api() -> None:
@@ -21,7 +26,7 @@ def sync_garment_labels_from_main_api() -> None:
         SETTINGS.api_base_url.rstrip("/") + "/",
         SETTINGS.garment_config_endpoint.lstrip("/"),
     )
-    request = urllib_request.Request(url, headers={"Accept": "application/json"}, method="GET")
+    request = urllib_request.Request(url, headers=build_main_api_auth_headers(), method="GET")
 
     try:
         with urllib_request.urlopen(request, timeout=SETTINGS.garment_config_timeout_seconds) as response:
@@ -44,16 +49,20 @@ def sync_garment_labels_from_main_api() -> None:
         LOGGER.warning("Configuration response does not contain a valid 'data' object")
         return
 
-    category_labels = _extract_names(data.get("categories"))
-    color_labels = _extract_names(data.get("colors"))
-    style_labels = _extract_names(data.get("styles"))
-    brand_labels = _extract_names(data.get("brands"))
+    category_labels, category_label_ids_by_name = _extract_label_catalog(data.get("categories"))
+    color_labels, color_label_ids_by_name = _extract_label_catalog(data.get("colors"))
+    style_labels, style_label_ids_by_name = _extract_label_catalog(data.get("styles"))
+    brand_labels, brand_label_ids_by_name = _extract_label_catalog(data.get("brands"))
 
     SETTINGS.update_classifier_labels(
         category_labels=category_labels,
         color_labels=color_labels,
         style_labels=style_labels,
         brand_labels=brand_labels,
+        category_label_ids_by_name=category_label_ids_by_name,
+        color_label_ids_by_name=color_label_ids_by_name,
+        style_label_ids_by_name=style_label_ids_by_name,
+        brand_label_ids_by_name=brand_label_ids_by_name,
     )
 
     LOGGER.info(
@@ -65,11 +74,12 @@ def sync_garment_labels_from_main_api() -> None:
     )
 
 
-def _extract_names(values: Any) -> tuple[str, ...]:
+def _extract_label_catalog(values: Any) -> tuple[tuple[str, ...], dict[str, str]]:
     if not isinstance(values, list):
-        return tuple()
+        return tuple(), {}
 
     names: list[str] = []
+    ids_by_name: dict[str, str] = {}
     seen: set[str] = set()
     for value in values:
         if not isinstance(value, dict):
@@ -87,7 +97,16 @@ def _extract_names(values: Any) -> tuple[str, ...]:
         if dedupe_key in seen:
             continue
 
+        label_id = value.get("id")
+        if not isinstance(label_id, str):
+            continue
+
+        normalized_id = label_id.strip()
+        if not normalized_id:
+            continue
+
         seen.add(dedupe_key)
         names.append(normalized)
+        ids_by_name[_normalize_label_key(normalized)] = normalized_id
 
-    return tuple(names)
+    return tuple(names), ids_by_name

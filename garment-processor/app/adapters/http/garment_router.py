@@ -49,7 +49,4 @@ async def process_garments(request: Request, image: UploadFile = File(...)) -> P
         raise HTTPException(status_code=422, detail="No garments detected in image")
 
     LOGGER.info("Returning response | request_id=%s garments=%s", request_id, len(garments))
-    return ProcessGarmentsResponse(
-        garments=garments,
-        mime_type="image/png",
-    )
+    return ProcessGarmentsResponse(garments=garments)
