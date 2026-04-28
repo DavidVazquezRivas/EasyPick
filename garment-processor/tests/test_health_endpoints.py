@@ -23,9 +23,10 @@ def test_health_ready_returns_503_when_components_missing() -> None:
     assert response.json()["detail"] == "Service not ready"
 
 
-def test_health_ready_returns_ready_when_use_case_and_response_builder_present() -> None:
+def test_health_ready_returns_ready_when_runtime_components_present() -> None:
     app = create_app(enable_lifespan=False)
     app.state.process_garments_use_case = object()
+    app.state.calculate_warmth_index_use_case = object()
     app.state.response_builder = object()
 
     with TestClient(app) as client:

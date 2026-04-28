@@ -16,12 +16,13 @@ from app.services.background_service import BackgroundRemover
 from app.services.clip_service import ClipTagger
 from app.services.garment_filter_service import ClipGarmentFilter
 from app.services.grounding_dino_segmentation_service import GroundingDinoSegmentationService
-from app.use_cases import ProcessGarmentsUseCase
+from app.use_cases import CalculateWarmthIndexUseCase, ProcessGarmentsUseCase
 
 
 @dataclass(frozen=True)
 class RuntimeComponents:
     process_garments_use_case: ProcessGarmentsUseCase
+    calculate_warmth_index_use_case: CalculateWarmthIndexUseCase
     response_builder: ProcessedGarmentResponseBuilder
 
 
@@ -51,5 +52,6 @@ def build_runtime_components(device: str) -> RuntimeComponents:
 
     return RuntimeComponents(
         process_garments_use_case=use_case,
+        calculate_warmth_index_use_case=CalculateWarmthIndexUseCase(),
         response_builder=ProcessedGarmentResponseBuilder(),
     )
