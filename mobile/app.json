@@ -14,7 +14,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "es.uib.easypick.mobile"
+      "bundleIdentifier": "com.tunombre.easypick", 
+      "infoPlist": {
+        "NSCameraUsageDescription": "EasyPick necesita acceso a la cámara para tomar fotos de tus prendas.",
+        "NSPhotoLibraryUsageDescription": "EasyPick necesita acceso a tu galería para que puedas elegir fotos de tu ropa."
+      }
     },
     "android": {
       "package": "es.uib.easypick.mobile",
@@ -31,12 +35,16 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-secure-store", "expo-router", "expo-web-browser", "@react-native-google-signin/google-signin"],
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "496990e6-7628-4955-a8f0-b4f8e1cb602f"
-      }
-    }
+    "plugins": [
+      "expo-secure-store",
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permite que la app acceda a tus fotos.",
+          "cameraPermission": "Permite que la app use la cámara."
+        }
+      ]
+    ]
   }
 }

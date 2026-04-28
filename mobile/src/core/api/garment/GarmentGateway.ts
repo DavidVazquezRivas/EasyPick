@@ -5,6 +5,7 @@ import { ApiError } from '@/core/api/global/errors'
 import { SimpleGarment } from '@/core/api/garment/models/SimpleGarment'
 import { CompleteGarment } from './models/CompleteGarment'
 import { PatchGarmentRequest } from '@/core/api/garment/models/PatchGarmentRequest'
+import { GarmentConfigs } from '@/core/api/garment/models/GarmentConfigs'
 
 export type UploadImageFile = {
   uri: string
@@ -26,6 +27,36 @@ export const GarmentGateway = {
     }
 
     return response.data.data ?? []
+  },
+
+  /**
+   * Fetches a single garment by its id.
+   */
+  getGarmentById: async (id: string): Promise<CompleteGarment> => {
+    const url = ApiRoutes.Garments.GetById.replace(':id', id)
+
+    const response = await httpClient.get<ApiResponse<CompleteGarment>>(url)
+
+    if (!response.data.success || !response.data.data) {
+      throw new ApiError(
+        response.data.message?.code ?? 0,
+        response.data.message?.message ?? 'Error loading garment',
+      )
+    }
+
+    return response.data.data
+  },
+
+  getGarmentConfigs: async (): Promise<GarmentConfigs> => {
+    const response = await httpClient.get<ApiResponse<GarmentConfigs>>(ApiRoutes.Garments.GetConfigs)
+
+    if (!response.data.success || response.data.data === null) {
+      const code = response.data.message?.code ?? 0
+      const msg = response.data.message?.message ?? 'Failed to fetch configs'
+      throw new ApiError(code, msg, response.data.path ?? undefined, response.data.timestamp)
+    }
+
+    return response.data.data
   },
 
   /**
@@ -53,16 +84,15 @@ export const GarmentGateway = {
   /**
    * Patches a garment by id.
    */
-  patchGarment: async (id: string, patch: PatchGarmentRequest): Promise<CompleteGarment | null> => {
-    const route = ApiRoutes.Garments.Patch.replace(':id', id)
-    const response = await httpClient.patch<ApiResponse<CompleteGarment>>(route, patch)
+  patchGarment: async (id: string, patch: PatchGarmentRequest): Promise<CompleteGarment> => {
+    const url = ApiRoutes.Garments.Patch.replace(':id', id)
 
-    if (!response.data.success) {
-      const code = response.data.message?.code ?? 0
-      const message = response.data.message?.message ?? 'Failed to patch garment'
-      throw new ApiError(code, message, response.data.path ?? undefined, response.data.timestamp ?? undefined)
+    const response = await httpClient.patch<ApiResponse<CompleteGarment>>(url, patch)
+
+    if (!response.data.success || !response.data.data) {
+      throw new ApiError(response.data.message?.code ?? 0, 'Error al actualizar')
     }
 
-    return response.data.data ?? null
+    return response.data.data
   },
 }

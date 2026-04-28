@@ -28,7 +28,13 @@ public enum ErrorCode {
     NO_GARMENT_DETECTED(3101, "No garment could be detected in the uploaded image. Please try with a different image.",
             HttpStatus.BAD_REQUEST),
     INVALID_GARMENT_STATUS(3102, "The provided garment status is invalid.", HttpStatus.BAD_REQUEST),
-    GARMENT_NOT_FOUND(3103, "The specified garment was not found.", HttpStatus.NOT_FOUND);
+    GARMENT_NOT_FOUND(3103, "The specified garment was not found.", HttpStatus.NOT_FOUND),
+    CATEGORY_NOT_FOUND(3104, "The specified category was not found.", HttpStatus.NOT_FOUND),
+    BRAND_NOT_FOUND(3105, "The specified brand was not found.", HttpStatus.NOT_FOUND),
+    STYLE_NOT_FOUND(3106, "The specified style was not found.", HttpStatus.NOT_FOUND),
+    COLOR_NOT_FOUND(3107, "One or more of the specified colors were not found.", HttpStatus.NOT_FOUND),
+    INVALID_GARMENT_NAME(3108, "The provided garment name is invalid or empty.", HttpStatus.BAD_REQUEST),
+    INVALID_UUID_FORMAT(3109, "The provided ID format is invalid.", HttpStatus.BAD_REQUEST);
 
     private final Integer errorCode;
     private final String defaultMessage;

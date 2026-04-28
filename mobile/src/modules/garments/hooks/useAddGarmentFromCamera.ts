@@ -9,9 +9,16 @@ export const useAddGarmentFromCamera = () => {
   const { mutateAsync, isPending } = useAddGarment()
 
   const selectImageFromCamera = async (): Promise<ImagePicker.ImagePickerAsset | null> => {
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
+    const { status: existingStatus } = await ImagePicker.getCameraPermissionsAsync()
+    
+    let finalStatus = existingStatus
 
-    if (!permissionResult.granted) {
+    if (existingStatus !== 'granted') {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync()
+      finalStatus = status
+    }
+
+    if (finalStatus !== 'granted') {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraPermissionDenied'))
       return null
     }
@@ -20,7 +27,7 @@ export const useAddGarmentFromCamera = () => {
       const cameraResult = await ImagePicker.launchCameraAsync({
         mediaTypes: ['images'],
         allowsEditing: false,
-        quality: 1,
+        quality: 0.7,
       })
 
       if (cameraResult.canceled) {
@@ -35,7 +42,7 @@ export const useAddGarmentFromCamera = () => {
       }
 
       return asset
-    } catch {
+    } catch (error) {
       showGlobalApiError(new AppError('garment.uploadSourceSheet.errors.cameraUploadFailed'))
       return null
     }

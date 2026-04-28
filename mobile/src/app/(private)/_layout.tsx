@@ -1,4 +1,4 @@
-import { Slot, usePathname } from 'expo-router'
+import { Slot, useSegments } from 'expo-router'
 import { View } from 'react-native'
 import { UploadSourceSheet } from '@/modules/garments/components'
 import { useGarmentUploadFlow } from '@/modules/garments/hooks'
@@ -7,7 +7,12 @@ import { BottomTabBar, GlobalModalHost } from '@/shared/components/layout'
 import { PRIVATE_BOTTOM_TABS } from '@/shared/constants/BottomTabs'
 
 function PrivateLayoutContent() {
-  const pathname = usePathname()
+  const segments = useSegments()
+  const normalizedSegments = [...segments] as string[]
+  const section = normalizedSegments[1] ?? ''
+  const garmentSubRoute = normalizedSegments[2] ?? ''
+  const isKnownGarmentListRoute = garmentSubRoute === 'closet' || garmentSubRoute === 'uploading' || garmentSubRoute === 'confirmation'
+  const isGarmentDetailRoute = section === 'garments' && Boolean(garmentSubRoute) && !isKnownGarmentListRoute
   const {
     isUploadSourceOpen,
     isUploading,
@@ -32,7 +37,9 @@ function PrivateLayoutContent() {
         <Slot />
       </View>
 
-      <BottomTabBar items={PRIVATE_BOTTOM_TABS} pathname={pathname} onCenterPress={openUploadSource} />
+      {!isGarmentDetailRoute && (
+        <BottomTabBar items={PRIVATE_BOTTOM_TABS} pathname={`/${normalizedSegments.join('/')}`} onCenterPress={openUploadSource} />
+      )}
 
       <GlobalModalHost visible={isUploadSourceOpen} onClose={closeUploadSource}>
         {uploadSourceSheet}
