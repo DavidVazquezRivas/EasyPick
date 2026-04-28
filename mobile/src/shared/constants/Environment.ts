@@ -46,7 +46,7 @@ const {
   EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: googleIosClientId,
 } = parsedEnv.data
 
-// Derived values (SIN .env magic)
+// Derived values
 const apiBaseUrl = `http://${apiHost}:8080/api/v1`
 
 // Config
