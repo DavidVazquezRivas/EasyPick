@@ -26,15 +26,15 @@ public class GarmentProcessorResponseMapper {
     @Value("${application.modules.garment.warmth-index-base}")
     private int warmthIndexBase;
 
-    public List<GarmentEntity> toEntities(GarmentProcessorResponse response, UserEntity user) {
+    public List<GarmentEntity> toEntities(GarmentProcessorResponse response, UserEntity user, String imageUrl) {
         return response.garments()
                 .stream()
-                .map(item -> toEntity(item, user))
+                .map(item -> toEntity(item, user, imageUrl))
                 .toList();
     }
 
-    public GarmentEntity toEntity(GarmentProcessorResponseItem item, UserEntity user) {
-        GarmentEntity garment = GarmentEntity.createPendingClassification(user, item.imageBase64());
+    public GarmentEntity toEntity(GarmentProcessorResponseItem item, UserEntity user, String imageUrl) {
+        GarmentEntity garment = GarmentEntity.createPendingClassification(user, imageUrl);
 
         if (item.category() != null) {
             categoryRepository.findById(item.category())

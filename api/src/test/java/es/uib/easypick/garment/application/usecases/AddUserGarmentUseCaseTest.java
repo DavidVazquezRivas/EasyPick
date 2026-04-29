@@ -117,7 +117,7 @@ class AddUserGarmentUseCaseTest {
         // Mock saveAll to return the builder-generated entities
         when(garmentRepository.saveAll(anyList())).thenReturn(List.of(savedGarment1, savedGarment2));
 
-        when(mapper.toEntity(any(), any()))
+        when(mapper.toEntity(any(), any(), any()))
                 .thenAnswer(invocation -> {
                     UserEntity user = invocation.getArgument(1);
 

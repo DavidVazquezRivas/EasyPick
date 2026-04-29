@@ -47,7 +47,7 @@ public class AddUserGarmentUseCase {
 
             String imageUrl = storageGateway.uploadFile(decodedBytes, filename, "image/jpeg");
 
-            GarmentEntity garmentEntity = mapper.toEntity(responseItem, user);
+            GarmentEntity garmentEntity = mapper.toEntity(responseItem, user, imageUrl);
 
             garmentsToSave.add(garmentEntity);
         }
