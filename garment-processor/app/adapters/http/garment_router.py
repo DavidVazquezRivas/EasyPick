@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 router = APIRouter(tags=["garment-processing"])
 
 
-@router.post("/process-garments", response_model=ProcessGarmentsResponse)
+@router.post("/", response_model=ProcessGarmentsResponse)
 async def process_garments(request: Request, image: UploadFile = File(...)) -> ProcessGarmentsResponse:
     request_id = get_request_id()
     LOGGER.info("Processing image | request_id=%s filename=%s", request_id, image.filename)
