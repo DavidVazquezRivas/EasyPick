@@ -1,5 +1,6 @@
 package es.uib.easypick.garment.application.mappers;
 
+import es.uib.easypick.garment.application.entities.ColorEntity;
 import es.uib.easypick.garment.application.entities.GarmentEntity;
 import es.uib.easypick.garment.infrastructure.gateways.processor.responses.GarmentProcessorResponse;
 import es.uib.easypick.garment.infrastructure.gateways.processor.responses.GarmentProcessorResponseItem;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class GarmentProcessorResponseMapper {
     public GarmentEntity toEntity(GarmentProcessorResponseItem item, UserEntity user, String imageUrl) {
         GarmentEntity garment = GarmentEntity.createPendingClassification(user, imageUrl);
 
+
         if (item.category() != null) {
             categoryRepository.findById(item.category())
                     .ifPresent(garment::setCategory);
@@ -54,6 +57,15 @@ public class GarmentProcessorResponseMapper {
         if (item.color() != null) {
             colorRepository.findById(item.color())
                     .ifPresent(garment::addColor);
+        }
+
+        if (!garment.getColors().isEmpty() && garment.getCategory() != null) {
+            String colors = garment.getColors()
+                    .stream()
+                    .map(ColorEntity::getName)
+                    .collect(Collectors.joining(" "));
+
+            garment.setName(garment.getCategory().getName() + " " + colors);
         }
 
         if (item.warmthIndex() != null) {
