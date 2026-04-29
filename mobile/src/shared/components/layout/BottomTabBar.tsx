@@ -1,4 +1,7 @@
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import ClosetIcon from '@/shared/components/icons/ClosetIcon'
+import ExploreIcon from '@/shared/components/icons/ExploreIcon'
+import OutfitsIcon from '@/shared/components/icons/OutfitsIcon'
+import SuggestionIcon from '@/shared/components/icons/SuggestionIcon'
 import { Link } from 'expo-router'
 import type { ReactNode } from 'react'
 import { Pressable, View, useColorScheme } from 'react-native'
@@ -22,23 +25,7 @@ const REGULAR_ICON_SIZE = 20
 // and adding the animation for the center button when it's active. Otherwise, explore different icon libraries
 
 const getIconColor = (active: boolean, colorScheme: 'light' | 'dark') =>
-  active ? getThemeColor('primary', colorScheme) : getThemeColor('iconInactive', colorScheme)
-
-const IconCloset = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
-  <MaterialCommunityIcons name='tshirt-crew-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
-)
-
-const IconExplore = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
-  <Ionicons name='search-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
-)
-
-const IconSuggestions = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
-  <MaterialCommunityIcons name='magic-staff' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
-)
-
-const IconOutfits = ({ active, colorScheme }: { active: boolean; colorScheme: 'light' | 'dark' }) => (
-  <Ionicons name='layers-outline' size={REGULAR_ICON_SIZE} color={getIconColor(active, colorScheme)} />
-)
+  active ? getThemeColor('foreground', colorScheme) : getThemeColor('iconInactive', colorScheme)
 
 const CenterPlus = () => (
   <View className='h-20 w-20 items-center justify-center rounded-full bg-foreground shadow-sm shadow-black/40'>
@@ -48,15 +35,17 @@ const CenterPlus = () => (
 )
 
 const getRegularIcon = (key: BottomTabKey, active: boolean, colorScheme: 'light' | 'dark'): ReactNode => {
+  const color = getIconColor(active, colorScheme)
+
   switch (key) {
     case 'closet':
-      return <IconCloset active={active} colorScheme={colorScheme} />
+      return <ClosetIcon size={REGULAR_ICON_SIZE} color={color} strokeWidth={active ? 2.8 : 1.8} />
     case 'explore':
-      return <IconExplore active={active} colorScheme={colorScheme} />
+      return <ExploreIcon size={REGULAR_ICON_SIZE} color={color} strokeWidth={active ? 2.8 : 1.8} />
     case 'suggestions':
-      return <IconSuggestions active={active} colorScheme={colorScheme} />
+      return <SuggestionIcon size={REGULAR_ICON_SIZE} color={color} strokeWidth={active ? 2.8 : 1.8} />
     case 'outfits':
-      return <IconOutfits active={active} colorScheme={colorScheme} />
+      return <OutfitsIcon size={REGULAR_ICON_SIZE} color={color} strokeWidth={active ? 2.8 : 1.8} />
     default:
       return null
   }
@@ -70,7 +59,9 @@ const getTabByKey = (items: ReadonlyArray<BottomTabItem>, key: BottomTabKey): Bo
 }
 
 const getIsActive = (item: BottomTabItem, pathname: string): boolean =>
-  item.activeOn.some((route) => pathname.startsWith(route))
+  item.activeOn.some((route) =>
+    pathname.includes(route.replace('/(private)', ''))
+  )
 
 const renderCenterTab = (item: BottomTabItem, onPress: () => void) => (
   <View key={item.key} className='min-w-20 items-center'>
