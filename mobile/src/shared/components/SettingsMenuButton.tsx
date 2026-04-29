@@ -3,11 +3,9 @@ import { useColorScheme, Pressable, Dimensions } from 'react-native';
 import { Button } from '@/shared/components/ui/button';
 import { getThemeColor } from '@/core/theme/themeColors';
 import { SettingsDropdown } from './SettingsDropdown';
-import { Feather } from '@expo/vector-icons';
+import SettingsIcon from './icons/SettingsIcon';
 
 export const SettingsMenuButton = () => {
-    const colorScheme = useColorScheme();
-    const foreground = getThemeColor('foreground', colorScheme);
     const [isSettingsOn, setSettingsOn] = useState(false);
 
     return (
@@ -18,7 +16,7 @@ export const SettingsMenuButton = () => {
                 size="icon"
                 className="active:scale-90 rounded-full"
             >
-                <Feather name="settings" size={22} color={foreground} />
+                <SettingsIcon />
             </Button>
 
             {isSettingsOn && (

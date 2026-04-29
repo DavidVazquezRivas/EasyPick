@@ -73,7 +73,7 @@ export const ThemeColors: Readonly<{ light: ThemeColorPalette; dark: ThemeColorP
     muted: '#4a3728',
     mutedForeground: '#b09880',
     placeholder: '#7a6455',
-    iconInactive: '#5c4a3a',
+    iconInactive: '#9b8575',
     destructive: '#f87171',
     destructiveForeground: '#1a1410',
     destructiveSubtle: '#3a1818',
