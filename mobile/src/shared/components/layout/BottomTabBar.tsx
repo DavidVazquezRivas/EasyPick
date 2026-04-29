@@ -21,9 +21,6 @@ type BottomTabBarProps = {
 const MIN_BOTTOM_PADDING = 8
 const REGULAR_ICON_SIZE = 20
 
-// TODO: Style the bar and icons according to the design, probably using a custom SVG for controlling the stroke and fill of the icons,
-// and adding the animation for the center button when it's active. Otherwise, explore different icon libraries
-
 const getIconColor = (active: boolean, colorScheme: 'light' | 'dark') =>
   active ? getThemeColor('foreground', colorScheme) : getThemeColor('iconInactive', colorScheme)
 
