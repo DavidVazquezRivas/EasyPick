@@ -78,10 +78,10 @@ application:
 cloud:
   aws:
     credentials:
-      access-key: ${AWS_ACCESS_KEY:admin}
-      secret-key: ${AWS_SECRET_KEY:password123}
+      access-key: ${AWS_CREDENTIALS_ACCESS_KEY:admin}
+      secret-key: ${AWS_CREDENTIALS_SECRET_KEY:password123}
     region:
-      static: ${AWS_REGION:eu-west-1}
+      static: ${AWS_REGION_STATIC:eu-west-1}
     s3:
       endpoint: ${AWS_S3_ENDPOINT:http://minio:9000}
       public-url: ${AWS_S3_PUBLIC_URL:http://172.20.10.4:9000}
