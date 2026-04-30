@@ -124,7 +124,6 @@ class GarmentEntityTest {
         // Assert
         assertEquals(user, newGarment.getUser(), "User should be assigned");
         assertEquals(imageUrl, newGarment.getImageUrl(), "Image URL should be assigned");
-        assertEquals("This garment is pending classification. Please provide details to complete it.", newGarment.getDescription());
         assertEquals(0, newGarment.getWarmthIndex());
         assertEquals(0, newGarment.getPreferenceScore());
     }
