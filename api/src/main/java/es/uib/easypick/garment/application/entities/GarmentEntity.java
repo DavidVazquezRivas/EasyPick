@@ -126,8 +126,8 @@ public class GarmentEntity extends BaseEntity {
         if (user != null) garment.setUser(user);
         garment.setImageUrl(imageUrl);
 
-        garment.setName("Pending Classification");
-        garment.setDescription("This garment is pending classification. Please provide details to complete it.");
+        garment.setName("Pendiente");
+        garment.setDescription("Todavía no se ha proporcionado una descripción.");
         garment.setWarmthIndex(0);
         garment.setPreferenceScore(0);
 
