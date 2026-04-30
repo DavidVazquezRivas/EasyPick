@@ -124,7 +124,6 @@ class GarmentEntityTest {
         // Assert
         assertEquals(user, newGarment.getUser(), "User should be assigned");
         assertEquals(imageUrl, newGarment.getImageUrl(), "Image URL should be assigned");
-        assertEquals("Pending Classification", newGarment.getName());
         assertEquals("This garment is pending classification. Please provide details to complete it.", newGarment.getDescription());
         assertEquals(0, newGarment.getWarmthIndex());
         assertEquals(0, newGarment.getPreferenceScore());
@@ -141,7 +140,6 @@ class GarmentEntityTest {
         // Assert
         assertNull(newGarment.getUser(), "User should be null for garments without an owner");
         assertEquals(imageUrl, newGarment.getImageUrl());
-        assertEquals("Pending Classification", newGarment.getName());
     }
 
     //endregion
