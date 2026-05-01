@@ -34,7 +34,10 @@ public enum ErrorCode {
     STYLE_NOT_FOUND(3106, "The specified style was not found.", HttpStatus.NOT_FOUND),
     COLOR_NOT_FOUND(3107, "One or more of the specified colors were not found.", HttpStatus.NOT_FOUND),
     INVALID_GARMENT_NAME(3108, "The provided garment name is invalid or empty.", HttpStatus.BAD_REQUEST),
-    INVALID_UUID_FORMAT(3109, "The provided ID format is invalid.", HttpStatus.BAD_REQUEST);
+    INVALID_UUID_FORMAT(3109, "The provided ID format is invalid.", HttpStatus.BAD_REQUEST),
+
+    // --- Suggestion Module Logic Errors ---
+    SUGGESTION_SERVICE_ERROR(3200, "The suggestion service returned an error. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final Integer errorCode;
     private final String defaultMessage;
