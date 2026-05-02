@@ -20,4 +20,22 @@ export const QueryKeys = {
     detail: (id: string) => ['garments', 'detail', id] as const,
     configs: ['garments', 'configs'] as const,
   },
+  colors: {
+    /** All colors queries */
+    all: ['colors'] as const,
+    /** GET /colors — list of colors */
+    list: ['colors', 'list'] as const,
+  },
+  styles: {
+    /** All styles queries */
+    all: ['styles'] as const,
+    /** GET /styles — list of styles */
+    list: ['styles', 'list'] as const,
+  },
+  categories: {
+    /** All categories queries */
+    all: ['categories'] as const,
+    /** GET /categories — list of categories */
+    list: ['categories', 'list'] as const,
+  },
 } as const

@@ -3,3 +3,4 @@ export { useAddGarmentFromGallery } from '@/modules/garments/hooks/useAddGarment
 export { useGarmentDetailForm } from '@/modules/garments/hooks/useGarmentDetailForm'
 export { useGarmentDetailSave } from '@/modules/garments/hooks/useGarmentDetailSave'
 export { useGarmentUploadFlow } from '@/modules/garments/hooks/useGarmentUploadFlow'
+export { useGarmentFilters } from '@/modules/garments/hooks/useGarmentFilters'
