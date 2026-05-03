@@ -27,6 +27,11 @@ export const mapApiErrorToDisplayError = (error: unknown): Error => {
       return new ApiError(backendCode, message, path ?? undefined, responseBody?.timestamp ?? undefined)
     }
 
+    // If backend does not return a structured code, preserve HTTP status for UI handling (e.g. 529).
+    if (error.response?.status) {
+      return new ApiError(error.response.status, message, path ?? undefined, responseBody?.timestamp ?? undefined)
+    }
+
     // Fallback: return regular Error with message or generic i18n key
     return new Error(message)
   }
