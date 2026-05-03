@@ -68,7 +68,7 @@ application:
         base-url: ${GARMENT_PROCESSOR_BASE_URL:http://localhost:8082}
         process-endpoint: ${GARMENT_PROCESSOR_PROCESS_ENDPOINT:/process-garments}
         timeout-seconds: ${GARMENT_PROCESSOR_TIMEOUT_SECONDS:30}
-        mode: ${PROCESSOR_MODE:mock}
+        mode: ${PROCESSOR_MODE:http}
       cleaner:
         pending-retention-time: 1h
         scheduler:

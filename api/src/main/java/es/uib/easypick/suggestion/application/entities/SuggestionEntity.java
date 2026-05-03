@@ -1,11 +1,13 @@
 package es.uib.easypick.suggestion.application.entities;
 
 import es.uib.easypick.core.application.entities.BaseEntity;
+import es.uib.easypick.user.application.entities.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +27,13 @@ public class SuggestionEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 30, nullable = false)
     private SuggestionStatus status = SuggestionStatus.PENDING;
+
+    @Column(name = "generated_at")
+    private OffsetDateTime generatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     @OneToMany(mappedBy = "suggestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<GarmentSuggestionEntity> garmentSuggestions = new HashSet<>();
