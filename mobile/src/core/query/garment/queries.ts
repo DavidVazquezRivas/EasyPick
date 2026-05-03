@@ -55,3 +55,36 @@ export const getGarmentConfigsQueryOptions = (enabled = true) =>
   })
 
 export const useGetGarmentConfigs = (enabled = true) => useQuery(getGarmentConfigsQueryOptions(enabled))
+
+/**
+ * Hook to get colors from garment configs.
+ */
+export const useGetColors = () => {
+  const { data, ...rest } = useGetGarmentConfigs()
+  return {
+    data: data?.colors ?? [],
+    ...rest,
+  }
+}
+
+/**
+ * Hook to get styles from garment configs.
+ */
+export const useGetStyles = () => {
+  const { data, ...rest } = useGetGarmentConfigs()
+  return {
+    data: data?.styles ?? [],
+    ...rest,
+  }
+}
+
+/**
+ * Hook to get categories from garment configs.
+ */
+export const useGetCategories = () => {
+  const { data, ...rest } = useGetGarmentConfigs()
+  return {
+    data: data?.categories ?? [],
+    ...rest,
+  }
+}

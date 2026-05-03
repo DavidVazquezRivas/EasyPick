@@ -29,6 +29,24 @@ export const useGarmentFilters = (garments: SimpleGarment[] | undefined) => {
         if (!matchesSearch) return false
       }
 
+      // Filter by color (if any colors are selected)
+      if (filters.selectedColors.length > 0) {
+        const matchesColor = garment.color && filters.selectedColors.includes(garment.color.id)
+        if (!matchesColor) return false
+      }
+
+      // Filter by style (if any styles are selected)
+      if (filters.selectedStyles.length > 0) {
+        const matchesStyle = garment.style && filters.selectedStyles.includes(garment.style.id)
+        if (!matchesStyle) return false
+      }
+
+      // Filter by category (if any categories are selected)
+      if (filters.selectedCategories.length > 0) {
+        const matchesCategory = garment.category && filters.selectedCategories.includes(garment.category.id)
+        if (!matchesCategory) return false
+      }
+
       return true
     })
   }, [garments, filters])

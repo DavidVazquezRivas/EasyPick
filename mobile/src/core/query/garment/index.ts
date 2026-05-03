@@ -5,5 +5,8 @@ export {
 	getGarmentDetailQueryOptions,
 	useGetGarmentConfigs,
 	getGarmentConfigsQueryOptions,
+	useGetColors,
+	useGetStyles,
+	useGetCategories,
 } from './queries'
 export { useAddGarment, usePatchGarment } from './mutations'

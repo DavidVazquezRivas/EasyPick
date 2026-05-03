@@ -113,6 +113,18 @@ const garments = {
     },
     cancel: 'Cancel',
   },
+  filters: {
+    title: 'Filters',
+    search: 'Search',
+    searchPlaceholder: 'Garment name...',
+    color: 'Color',
+    style: 'Style',
+    category: 'Type',
+    filters: 'Filters',
+    noOptions: 'No options available',
+    clear: 'Clear',
+    apply: 'Apply',
+  },
 }
 
 export default garments
