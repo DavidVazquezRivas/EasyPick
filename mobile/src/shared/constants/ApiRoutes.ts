@@ -13,4 +13,9 @@ export const ApiRoutes = {
     GetById: `${API_BASE_URL}/garments/:id`,
     GetConfigs: `${API_BASE_URL}/garments/configurations`,
   },
+  Suggestions: {
+    List: `${API_BASE_URL}/suggestions`,
+    Patch: `${API_BASE_URL}/suggestions/:id`,
+    RejectionReasons: `${API_BASE_URL}/suggestions/rejection-reasons`,
+  },
 }

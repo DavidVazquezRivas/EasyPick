@@ -69,6 +69,12 @@ services:
       - GARMENT_PROCESSOR_BASE_URL=http://garment-processor:8082
       - GARMENT_PROCESSOR_PROCESS_ENDPOINT=/process-garments
       - GARMENT_PROCESSOR_TIMEOUT_SECONDS=${PROCESSOR_TIMEOUT_SECONDS}
+      - PROCESSOR_MODE=http
+
+      # Suggestion Motor overrides
+      - SUGGESTION_MODE=mock
+      - SUGGESTION_BASE_URL=http://suggestion-motor:8083
+      - SUGGESTION_PROCESS_ENDPOINT=/suggest
 
       # Google
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}

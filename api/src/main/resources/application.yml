@@ -49,6 +49,8 @@ logging:
     org.hibernate.SQL: DEBUG
 
 application:
+  suggestion:
+    requested-outfit-count: 3
   security:
     jwt:
       secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
@@ -57,12 +59,16 @@ application:
       expiration-days: 30 # Refresh token validity in days
 
   modules:
+    suggestion:
+      mode: ${SUGGESTION_MODE:mock}
+      base-url: ${SUGGESTION_BASE_URL:http://localhost:8083}
+      process-endpoint: ${SUGGESTION_PROCESS_ENDPOINT:/suggest}
     garment:
       processor:
         base-url: ${GARMENT_PROCESSOR_BASE_URL:http://localhost:8082}
         process-endpoint: ${GARMENT_PROCESSOR_PROCESS_ENDPOINT:/process-garments}
         timeout-seconds: ${GARMENT_PROCESSOR_TIMEOUT_SECONDS:30}
-        mode: http
+        mode: ${PROCESSOR_MODE:http}
       cleaner:
         pending-retention-time: 1h
         scheduler:

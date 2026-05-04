@@ -12,6 +12,7 @@ import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.presentation.web.security.JwtService;
 import es.uib.easypick.user.application.entities.UserEntity;
 import es.uib.easypick.user.application.helpers.UserTestBuilder;
+import es.uib.easypick.user.application.usecases.RegisterUserUseCase;
 import es.uib.easypick.user.infrastructure.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,9 @@ class GoogleSignInUseCaseTest {
 
     @Mock
     private GoogleAuthGateway googleAuthGateway;
+
+    @Mock
+    private RegisterUserUseCase registerUserUseCase;
 
     @InjectMocks
     private GoogleSignInUseCase useCase;
@@ -96,15 +100,15 @@ class GoogleSignInUseCaseTest {
     void execute_ShouldCreateUserAndReturnTokens_WhenUserDoesNotExist() {
         // Arrange
         String expectedAccessToken = "jwt.access.token.new";
+        UserEntity user = UserTestBuilder.aUser()
+                .withEmail(mockGoogleUser.email())
+                .build();
 
         when(googleAuthGateway.verifyAndExtractUser(validGoogleToken)).thenReturn(mockGoogleUser);
         when(userRepository.findByEmail(mockGoogleUser.email())).thenReturn(Optional.empty());
-
-        // Simulamos que al hacer save() se devuelve el usuario creado
-        when(userRepository.save(any(UserEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
         when(jwtService.generateToken(any(UserEntity.class))).thenReturn(expectedAccessToken);
         when(refreshTokenFactory.createForUser(any(UserEntity.class))).thenReturn(mockRefreshToken);
+        when(registerUserUseCase.execute(any(String.class), any(String.class))).thenReturn(user);
 
         // Act
         TokenResponse response = useCase.execute(validGoogleToken);
@@ -116,7 +120,8 @@ class GoogleSignInUseCaseTest {
 
         verify(googleAuthGateway).verifyAndExtractUser(validGoogleToken);
         verify(userRepository).findByEmail(mockGoogleUser.email());
-        verify(userRepository).save(any(UserEntity.class)); // Verificamos que se crea el usuario
+        verify(registerUserUseCase).execute("John Doe", mockGoogleUser.email());
+        verify(userRepository, never()).save(any(UserEntity.class));
         verify(refreshTokenRepository).save(mockRefreshToken);
     }
 

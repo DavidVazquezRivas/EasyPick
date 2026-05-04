@@ -11,6 +11,11 @@
  * Each leaf value is a `readonly` tuple for type-safe key comparison.
  */
 export const QueryKeys = {
+  suggestions: {
+    all: ['suggestions'] as const,
+    list: (lat: number, lng: number) => ['suggestions', 'list', lat, lng] as const,
+    rejectionReasons: ['suggestions', 'rejection-reasons'] as const,
+  },
   garments: {
     /** All garments queries — use to invalidate the entire module's cache */
     all: ['garments'] as const,

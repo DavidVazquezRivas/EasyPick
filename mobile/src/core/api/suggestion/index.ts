@@ -1,0 +1,5 @@
+export { SuggestionGateway } from './SuggestionGateway'
+export type { SuggestionLocation } from './SuggestionGateway'
+export type { PatchSuggestionRequest, SuggestionRejectionPayload, SuggestionStatus } from './models/PatchSuggestionRequest'
+export type { RejectionReason } from './models/RejectionReason'
+export type { SuggestedGarment, SuggestedOutfit } from './models/SuggestedOutfit'
