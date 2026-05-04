@@ -2,19 +2,25 @@ package es.uib.easypick.garment.application.helpers;
 
 import es.uib.easypick.garment.application.entities.BrandEntity;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
  * Test Data Builder for BrandEntity.
+ * Centralizes the creation of valid Brand instances for testing,
+ * insulating tests from future changes in the entity's structure.
  */
+
 public class BrandTestBuilder {
 
     private UUID id;
     private String name;
+    private OffsetDateTime createdAt;
 
     private BrandTestBuilder() {
         this.id = UUID.randomUUID();
-        this.name = "Default Brand";
+        this.name = "Nike";
+        this.createdAt = OffsetDateTime.now();
     }
 
     public static BrandTestBuilder aBrand() {
@@ -31,10 +37,18 @@ public class BrandTestBuilder {
         return this;
     }
 
+    public BrandTestBuilder withCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+        return this;
+    }
+
     public BrandEntity build() {
         BrandEntity brand = new BrandEntity();
         brand.setId(this.id);
         brand.setName(this.name);
+        brand.setCreatedAt(this.createdAt);
         return brand;
     }
+
+
 }

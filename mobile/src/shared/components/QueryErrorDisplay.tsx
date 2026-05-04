@@ -42,13 +42,13 @@ export const QueryErrorDisplay: React.FC<QueryErrorDisplayProps> = ({ error, onR
   }
 
   return (
-    <View className={`rounded-lg border border-destructive bg-destructive/10 p-4 gap-3 ${className || ''}`}>
+    <View className={`rounded-lg mx-2 border border-destructive bg-destructive/10 p-4 gap-3 ${className || ''}`}>
       <View>
         <Text variant='large' className='text-destructive font-semibold'>
           {t('common.global.error.prefix')}
           {errorCode && ` (${errorCode})`}
         </Text>
-        <Text className='text-destructive/80 mt-1'>{displayMessage}</Text>
+        <Text className='text-destructive/80 mt-1 text-secondary-foreground'>{displayMessage}</Text>
       </View>
 
       {onRetry && (

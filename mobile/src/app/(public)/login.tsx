@@ -8,13 +8,7 @@ import { useLoginActions } from '@/core/auth/hooks/useLoginActions'
 export default function LoginScreen() {
   const { t } = useTranslation()
   const colorScheme = useColorScheme()
-  const {
-    errorKey,
-    isSubmitting,
-    handleGoogleLogin,
-    handleDevLogin,
-    handleOpenDevErrorPlayground,
-  } = useLoginActions()
+  const { errorKey, isSubmitting, handleGoogleLogin, handleDevLogin, handleOpenDevErrorPlayground } = useLoginActions()
   const loaderColor = getThemeColor('primary', colorScheme)
   const isDevelopment = Environment.isDevelopment
 
@@ -27,7 +21,11 @@ export default function LoginScreen() {
         </CardHeader>
 
         <CardContent>
-          {errorKey ? <Text className='mb-3 text-destructive'>{t(errorKey, { defaultValue: t('auth.login.errors.signInFailed') })}</Text> : null}
+          {errorKey ?
+            <Text className='mb-3 text-destructive'>
+              {t(errorKey, { defaultValue: t('auth.login.errors.signInFailed') })}
+            </Text>
+          : null}
 
           {isSubmitting ?
             <ActivityIndicator size='small' color={loaderColor} />

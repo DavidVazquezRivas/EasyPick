@@ -11,6 +11,11 @@
  * Each leaf value is a `readonly` tuple for type-safe key comparison.
  */
 export const QueryKeys = {
+  suggestions: {
+    all: ['suggestions'] as const,
+    list: (lat: number, lng: number) => ['suggestions', 'list', lat, lng] as const,
+    rejectionReasons: ['suggestions', 'rejection-reasons'] as const,
+  },
   garments: {
     /** All garments queries — use to invalidate the entire module's cache */
     all: ['garments'] as const,
@@ -18,5 +23,6 @@ export const QueryKeys = {
     list: ['garments', 'list'] as const,
     /** GET /garments/<id> — detail of a specific garment */
     detail: (id: string) => ['garments', 'detail', id] as const,
+    configs: ['garments', 'configs'] as const,
   },
 } as const

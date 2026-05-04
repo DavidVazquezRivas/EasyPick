@@ -3,6 +3,7 @@ package es.uib.easypick.garment.presentation.controllers;
 import es.uib.easypick.core.presentation.web.resolvers.AuthenticatedUserId;
 import es.uib.easypick.core.presentation.web.response.ApiResponse;
 import es.uib.easypick.garment.application.usecases.AddUserGarmentUseCase;
+import es.uib.easypick.garment.application.usecases.GetGarmentByIdUseCase;
 import es.uib.easypick.garment.application.usecases.GetUserGarmentsUseCase;
 import es.uib.easypick.garment.application.usecases.PatchGarmentUseCase;
 import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
@@ -29,6 +30,7 @@ public class GarmentController {
     private final GetUserGarmentsUseCase getUserGarmentsUseCase;
     private final AddUserGarmentUseCase addUserGarmentUseCase;
     private final PatchGarmentUseCase patchGarmentUseCase;
+    private final GetGarmentByIdUseCase getGarmentByIdUseCase;
 
     @GetMapping()
     public ResponseEntity<ApiResponse<List<SimpleGarmentResponse>>> getUserGarments(
@@ -58,6 +60,16 @@ public class GarmentController {
     ) {
         CompleteGarmentResponse response = patchGarmentUseCase.execute(id, patchInstructions);
 
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("@garmentSecurity.isOwner(#userId, #id)")
+    public ResponseEntity<ApiResponse<CompleteGarmentResponse>> getGarmentById(
+            @PathVariable UUID id,
+            @AuthenticatedUserId UUID userId
+    ) {
+        CompleteGarmentResponse response = getGarmentByIdUseCase.execute(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

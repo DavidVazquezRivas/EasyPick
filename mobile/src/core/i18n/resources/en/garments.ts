@@ -23,9 +23,7 @@ const garments = {
       style: 'Style',
       colors: 'Colors',
     },
-    todo: {
-      attributes: 'TODO: allow manual attribute editing.',
-    },
+    editHint: 'You can adjust the detected attributes before adding the garment.',
     fallback: {
       noName: 'Unnamed garment',
       pending: 'Pending',
@@ -37,11 +35,57 @@ const garments = {
       noName: 'Unnamed garment',
     }
   },
-  detail: {
-    form: {
-      name: {
-        label: 'Name',
+  detailScreen: {
+    tabs: {
+      info: 'Information',
+      outfit: 'Outfit',
+    },
+    sectionTitle: 'Garment information',
+    actions: {
+      delete: 'Delete',
+      edit: 'Edit',
+      cancel: 'Cancel',
+      save: 'Save',
+      changeImage: 'Change image',
+    },
+    fields: {
+      name: 'Name',
+      category: 'Category',
+      color: 'Color',
+      style: 'Occasion',
+      brand: 'Brand',
+    },
+    options: {
+      categories: {
+        tops: 'Tops',
+        pants: 'Pants',
+        shoes: 'Shoes',
+        accessories: 'Accessories',
+        dresses: 'Dresses',
+        coats: 'Coats',
       },
+      styles: {
+        casual: 'Casual',
+        sport: 'Sport',
+        formal: 'Formal',
+        work: 'Work',
+        party: 'Party',
+      },
+      colors: {
+        white: 'White',
+        black: 'Black',
+        beige: 'Beige',
+        blue: 'Blue',
+        brown: 'Brown',
+        gray: 'Gray',
+        red: 'Red',
+        green: 'Green',
+      },
+    },
+    outfitTodo: 'Coming soon: outfit recommendations for this garment.',
+    fallback: {
+      noName: 'Unnamed garment',
+      pending: 'Pending',
     },
   },
   uploadSourceSheet: {

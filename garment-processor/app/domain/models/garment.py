@@ -12,3 +12,4 @@ class Garment:
     image: Image.Image
     detection_confidence: float
     labels: dict[str, LabelPrediction]
+    warmth_index: float | None = None

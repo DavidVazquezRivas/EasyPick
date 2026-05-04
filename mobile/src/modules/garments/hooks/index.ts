@@ -1,3 +1,5 @@
 export { useAddGarmentFromCamera } from '@/modules/garments/hooks/useAddGarmentFromCamera'
 export { useAddGarmentFromGallery } from '@/modules/garments/hooks/useAddGarmentFromGallery'
+export { useGarmentDetailForm } from '@/modules/garments/hooks/useGarmentDetailForm'
+export { useGarmentDetailSave } from '@/modules/garments/hooks/useGarmentDetailSave'
 export { useGarmentUploadFlow } from '@/modules/garments/hooks/useGarmentUploadFlow'

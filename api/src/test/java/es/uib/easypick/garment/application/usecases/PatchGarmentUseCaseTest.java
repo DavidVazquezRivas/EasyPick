@@ -54,7 +54,7 @@ class PatchGarmentUseCaseTest {
     @Test
     void execute_shouldSuccessfullyPatchAndReturnGarment_whenIdExists() {
         // Arrange
-        when(garmentRepository.findById(validGarmentId)).thenReturn(Optional.of(existingGarment));
+        when(garmentRepository.findWithDetailsById(validGarmentId)).thenReturn(Optional.of(existingGarment));
 
         // We mock the void method to do nothing, which is the default
         doNothing().when(patchStrategyContext).applyPatch(existingGarment, validPatchInstructions);
@@ -70,7 +70,7 @@ class PatchGarmentUseCaseTest {
         assertEquals(validGarmentId, response.id(), "The returned ID should match the requested ID");
 
         // Verify orchestrator interactions
-        verify(garmentRepository).findById(validGarmentId);
+        verify(garmentRepository).findWithDetailsById(validGarmentId);
         verify(patchStrategyContext).applyPatch(existingGarment, validPatchInstructions);
         verify(garmentRepository).save(existingGarment);
     }
@@ -78,7 +78,7 @@ class PatchGarmentUseCaseTest {
     @Test
     void execute_shouldThrowException_whenGarmentNotFound() {
         // Arrange
-        when(garmentRepository.findById(validGarmentId)).thenReturn(Optional.empty());
+        when(garmentRepository.findWithDetailsById(validGarmentId)).thenReturn(Optional.empty());
 
         // Act & Assert
         AppException exception = assertThrows(AppException.class, () ->
@@ -95,7 +95,7 @@ class PatchGarmentUseCaseTest {
     @Test
     void execute_shouldPropagateException_whenStrategyContextThrows() {
         // Arrange
-        when(garmentRepository.findById(validGarmentId)).thenReturn(Optional.of(existingGarment));
+        when(garmentRepository.findWithDetailsById(validGarmentId)).thenReturn(Optional.of(existingGarment));
 
         // Simulate a validation error from the patch context (e.g., bad status)
         AppException expectedValidationException = new AppException(ErrorCode.INVALID_GARMENT_STATUS);
@@ -111,7 +111,7 @@ class PatchGarmentUseCaseTest {
         assertEquals(ErrorCode.INVALID_GARMENT_STATUS, exception.getErrorCode());
 
         // Verify that if patching fails, we never try to save corrupted data to the DB
-        verify(garmentRepository).findById(validGarmentId);
+        verify(garmentRepository).findWithDetailsById(validGarmentId);
         verify(garmentRepository, never()).save(any());
     }
 }

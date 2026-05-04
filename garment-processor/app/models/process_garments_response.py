@@ -7,4 +7,3 @@ from app.models.processed_garment import ProcessedGarment
 
 class ProcessGarmentsResponse(BaseModel):
     garments: list[ProcessedGarment]
-    mime_type: str = "image/png"

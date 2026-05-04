@@ -8,6 +8,7 @@ import es.uib.easypick.garment.application.patch.GarmentPatchStrategyContext;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
 import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.UUID;
@@ -18,8 +19,9 @@ public class PatchGarmentUseCase {
     private final GarmentRepository garmentRepository;
     private final GarmentPatchStrategyContext patchStrategyContext;
 
+    @Transactional
     public CompleteGarmentResponse execute(UUID garmentId, Map<String, Object> patchInstructions) {
-        GarmentEntity garment = garmentRepository.findById(garmentId)
+        GarmentEntity garment = garmentRepository.findWithDetailsById(garmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.GARMENT_NOT_FOUND));
 
         patchStrategyContext.applyPatch(garment, patchInstructions);

@@ -1,9 +1,9 @@
 package es.uib.easypick.auth.application.usecases;
 
-import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.auth.application.entities.RefreshTokenEntity;
 import es.uib.easypick.auth.application.factories.RefreshTokenFactory;
 import es.uib.easypick.auth.infrastructure.repositories.RefreshTokenRepository;
+import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.core.application.exceptions.AppException;
 import es.uib.easypick.core.application.exceptions.ErrorCode;
 import es.uib.easypick.core.application.usecases.UseCase;
@@ -37,10 +37,16 @@ public class RefreshTokensUseCase {
 
         String newAccessToken = jwtService.generateToken(user);
 
-        RefreshTokenEntity newRefreshToken = refreshTokenFactory.createForUser(user);
-        refreshTokenRepository.save(newRefreshToken);
+        RefreshTokenEntity newRefreshToken;
 
-        refreshTokenRepository.delete(oldToken);
+        if (oldToken.isAdmin()) {
+            newRefreshToken = oldToken;
+        } else {
+            newRefreshToken = refreshTokenFactory.createForUser(user);
+            refreshTokenRepository.save(newRefreshToken);
+
+            refreshTokenRepository.delete(oldToken);
+        }
 
         return TokenResponse
                 .builder()

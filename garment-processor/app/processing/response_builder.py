@@ -2,41 +2,19 @@ from __future__ import annotations
 
 from uuid import uuid4
 
+from app.config import SETTINGS
 from app.domain.models.garment import Garment
-from app.models.garment_labels import GarmentLabels
-from app.models.label_score import LabelScore
 from app.models.processed_garment import ProcessedGarment
 from app.utils.image_io import bytes_to_base64, image_to_png_bytes
 
 
 class ProcessedGarmentResponseBuilder:
-    def _build_labels(self, garment: Garment) -> GarmentLabels:
-        return GarmentLabels(
-            category=LabelScore(
-                label=garment.labels["category"].label,
-                score=garment.labels["category"].score,
-            ),
-            color=LabelScore(
-                label=garment.labels["color"].label,
-                score=garment.labels["color"].score,
-            ),
-            style=LabelScore(
-                label=garment.labels["style"].label,
-                score=garment.labels["style"].score,
-            ),
-            material=LabelScore(
-                label=garment.labels["material"].label,
-                score=garment.labels["material"].score,
-            ),
-            season=LabelScore(
-                label=garment.labels["season"].label,
-                score=garment.labels["season"].score,
-            ),
-            brand=LabelScore(
-                label=garment.labels["brand"].label,
-                score=garment.labels["brand"].score,
-            ),
-        )
+    def _resolve_label_uuid(self, garment: Garment, dimension: str) -> str | None:
+        prediction = garment.labels.get(dimension)
+        if prediction is None:
+            return None
+
+        return SETTINGS.resolve_classifier_label_id(dimension, prediction.label)
 
     def build_many(self, garments: list[Garment]) -> list[ProcessedGarment]:
         processed_garments: list[ProcessedGarment] = []
@@ -45,11 +23,13 @@ class ProcessedGarmentResponseBuilder:
             image_base64 = bytes_to_base64(image_to_png_bytes(garment.image))
             processed_garments.append(
                 ProcessedGarment(
-                    temp_id=str(uuid4()),
-                    detection_confidence=garment.detection_confidence,
-                    labels=self._build_labels(garment),
-                    image_base64=image_base64,
-                    mime_type="image/png",
+                    tempId=str(uuid4()),
+                    category=self._resolve_label_uuid(garment, "category"),
+                    color=self._resolve_label_uuid(garment, "color"),
+                    style=self._resolve_label_uuid(garment, "style"),
+                    brand=self._resolve_label_uuid(garment, "brand"),
+                    imageBase64=image_base64,
+                    warmthIndex=garment.warmth_index,
                 )
             )
 

@@ -26,6 +26,7 @@ export type ThemeColorToken =
   | 'navbar'
   | 'btnAiBg'
   | 'btnAiFg'
+  | 'switch'
 
 type ThemeColorPalette = Readonly<Record<ThemeColorToken, string>>
 
@@ -56,6 +57,7 @@ export const ThemeColors: Readonly<{ light: ThemeColorPalette; dark: ThemeColorP
     navbar: '#ffffff',
     btnAiBg: '#5d4037',
     btnAiFg: '#ffffff',
+    switch: '#c4b8b0',
   },
   dark: {
     background: '#1a1410',
@@ -71,7 +73,7 @@ export const ThemeColors: Readonly<{ light: ThemeColorPalette; dark: ThemeColorP
     muted: '#4a3728',
     mutedForeground: '#b09880',
     placeholder: '#7a6455',
-    iconInactive: '#5c4a3a',
+    iconInactive: '#9b8575',
     destructive: '#f87171',
     destructiveForeground: '#1a1410',
     destructiveSubtle: '#3a1818',
@@ -83,6 +85,7 @@ export const ThemeColors: Readonly<{ light: ThemeColorPalette; dark: ThemeColorP
     navbar: '#211812',
     btnAiBg: '#f0ece8',
     btnAiFg: '#1a1410',
+    switch: '#5c4a3a',
   },
 } as const
 
