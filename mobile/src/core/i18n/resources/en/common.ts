@@ -41,6 +41,7 @@ const common = {
     permissionAction: 'Enable location',
     swipeHint: 'Swipe left to reject or right to accept',
     cardLabel: 'Outfit',
+    viewGarments: 'View garments',
     piece: '{{count}} piece',
     pieces: '{{count}} pieces',
     rejectSheet: {
@@ -51,6 +52,7 @@ const common = {
       skip: 'Skip',
       loadError: 'Could not load rejection reasons.',
     },
+    outfitGarments: 'Outfit garments',
   },
   api: {
     errors: {
