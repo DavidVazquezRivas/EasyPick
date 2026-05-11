@@ -1,9 +1,10 @@
-import { ActivityIndicator, Pressable, View } from 'react-native'
+import { ActivityIndicator, Pressable, useColorScheme, View } from 'react-native'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { RejectionReason } from '@/core/api/suggestion'
 import { Button, Input, Text } from '@/shared/components/ui'
 import { cn } from '@/shared/utils/tailwind.utils'
+import { getThemeColor } from '@/core/theme/themeColors'
 
 type SuggestionRejectReasonSheetProps = {
   reasons: RejectionReason[]
@@ -43,6 +44,9 @@ export const SuggestionRejectReasonSheet = ({
 
     onSelectReason({ reasonId, customReason: trimmedCustomReason })
   }
+
+  const colorScheme = useColorScheme()
+  const foregroundColor = getThemeColor('foreground', colorScheme)
 
   return (
     <View className='px-4'>
@@ -86,6 +90,7 @@ export const SuggestionRejectReasonSheet = ({
         <Input
           className='mt-3 h-11 rounded-xl border-border bg-muted/60'
           placeholder={t('common.suggestions.rejectSheet.customReasonPlaceholder')}
+          placeholderTextColor={foregroundColor}
           value={customReason}
           onChangeText={setCustomReason}
           onSubmitEditing={sendCustomReason}

@@ -1,4 +1,6 @@
-import { View, Image, ScrollView } from 'react-native'
+import { View, Image, Pressable } from 'react-native'
+import { useRouter } from 'expo-router'
+import { Routes } from '@/shared/constants/Routes'
 import { Text } from '@/shared/components/ui/text'
 import { Button } from '@/shared/components/ui/button'
 import { Card } from '@/shared/components/ui/card'
@@ -13,6 +15,7 @@ type SuggestionOutfitGarmentsProps = {
 
 export const SuggestionOutfitGarments = ({ garments, onClose }: SuggestionOutfitGarmentsProps) => {
     const { t } = useTranslation()
+    const router = useRouter()
     return (
         <Card className='absolute bottom-[10px] mx-6 z-50 flex-col overflow-hidden rounded-[28px] p-0 gap-0 border-0 shadow-lg shadow-black/20'>
             <View className='flex-col items-center border-b border-border pb-3 pt-2.5'>
@@ -31,7 +34,11 @@ export const SuggestionOutfitGarments = ({ garments, onClose }: SuggestionOutfit
 
             <View className='flex-1 px-4 py-3'>
                 {garments.map((garment) => (
-                    <View key={garment.id} className='flex-row items-center gap-3 rounded-[14px] bg-muted px-3 py-2.5 mb-2'>
+                    <Pressable
+                        key={garment.id}
+                        className='flex-row items-center gap-3 rounded-[14px] bg-muted px-3 py-2.5 mb-2'
+                        onPress={() => router.push(Routes.Private.Garments.Detail(garment.id))}
+                    >
                         <View className='h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-white'>
                             {garment.imageUrl ? (
                                 <Image source={{ uri: garment.imageUrl }} className='h-full w-full' resizeMode='cover' />
@@ -51,7 +58,7 @@ export const SuggestionOutfitGarments = ({ garments, onClose }: SuggestionOutfit
                                 style={{ backgroundColor: garment.colors?.[0]?.hexCode ?? 'black' }}
                             />
                         </View>
-                    </View>
+                    </Pressable>
                 ))}
             </View>
         </Card>
