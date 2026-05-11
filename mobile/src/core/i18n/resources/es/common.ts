@@ -41,6 +41,7 @@ const common = {
     permissionAction: 'Activar ubicación',
     swipeHint: 'Desliza a la izquierda para rechazar o a la derecha para aceptar',
     cardLabel: 'Outfit',
+    viewGarments: 'Ver prendas',
     piece: '{{count}} prenda',
     pieces: '{{count}} prendas',
     rejectSheet: {
@@ -51,6 +52,7 @@ const common = {
       skip: 'Saltar',
       loadError: 'No se pudieron cargar los motivos de rechazo.',
     },
+    outfitGarments: 'Prendas del outfit',
   },
   api: {
     errors: {
