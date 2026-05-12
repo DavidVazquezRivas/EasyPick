@@ -1,0 +1,12 @@
+.venv
+__pycache__
+.pytest_cache
+.git
+.gitignore
+tests
+PENDIENTES_Y_HUECOS.md
+prompt_inicial.md
+*.pyc
+*.pyo
+*.pyd
+.env
