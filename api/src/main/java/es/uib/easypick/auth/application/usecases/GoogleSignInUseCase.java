@@ -9,6 +9,7 @@ import es.uib.easypick.auth.presentation.dtos.responses.TokenResponse;
 import es.uib.easypick.core.application.usecases.UseCase;
 import es.uib.easypick.core.presentation.web.security.JwtService;
 import es.uib.easypick.user.application.entities.UserEntity;
+import es.uib.easypick.user.application.usecases.RegisterUserUseCase;
 import es.uib.easypick.user.infrastructure.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +23,17 @@ public class GoogleSignInUseCase {
     private final RefreshTokenFactory refreshTokenFactory;
     private final RefreshTokenRepository refreshTokenRepository;
     private final GoogleAuthGateway googleAuthGateway;
+    private final RegisterUserUseCase registerUserUseCase;
 
     @Transactional
     public TokenResponse execute(String idTokenString) {
         GoogleUserResponse googleUser = googleAuthGateway.verifyAndExtractUser(idTokenString);
 
         UserEntity user = userRepository.findByEmail(googleUser.email())
-                .orElseGet(() -> userRepository.save(UserEntity.create(
+                .orElseGet(() -> registerUserUseCase.execute(
                         googleUser.firstName() + " " + googleUser.lastName(),
                         googleUser.email()
-                )));
+                ));
 
         String accessToken = jwtService.generateToken(user);
         RefreshTokenEntity refreshTokenEntity = refreshTokenFactory.createForUser(user);
