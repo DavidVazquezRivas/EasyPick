@@ -27,8 +27,14 @@ Uso (desarrollo)
 uvicorn main:app --reload
 ```
 
+Por defecto el servicio escucha en `8083`.
+
 Endpoints
-- `POST /api/v1/suggestions/generate` — generar sugerencias (payload definido en `prompt_inicial.md`).
+- `POST /suggest` — generar sugerencias con el contrato de la API principal (Java `SuggestionContextRequest`).
+
+Ejemplos de contrato de integracion
+- Request desde API Java: `dtos/from_api/SuggestionContextRequest.json`
+- Response hacia API Java: `dtos/to_api/SuggestionGatewayResponse.json`
 
 Notas
 - La carga del modelo LLM está diseñada para ser intercambiable (vLLM / llama.cpp / adaptadores). Ver `infrastructure/llm/gemma_local_engine.py`.
@@ -57,3 +63,9 @@ export HUGGINGFACE_HUB_TOKEN=...
 export LLM_BACKEND=auto
 uvicorn main:app --reload
 ```
+
+Compatibilidad de variables de entorno
+
+- La API principal puede configurarse con `EASYPICK_API_BASE_URL` o `MAIN_API_BASE_URL`.
+- El token de refresco puede configurarse con `EASYPICK_REFRESH_TOKEN` o `MAIN_API_REFRESH_TOKEN`.
+- El puerto del servicio se toma de `PORT` y por defecto es `8083`.

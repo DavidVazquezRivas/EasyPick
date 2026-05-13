@@ -13,8 +13,8 @@ class SpringBootClient(APIGateway):
 
     def __init__(self, settings: Optional[Settings] = None):
         self.settings = settings or Settings()
-        self.base_url = self.settings.EASYPICK_API_BASE_URL
-        self.refresh_token = self.settings.EASYPICK_REFRESH_TOKEN
+        self.base_url = self.settings.api_base_url
+        self.refresh_token = self.settings.refresh_token
         self.refresh_endpoint = self.settings.EASYPICK_AUTH_REFRESH_ENDPOINT
         self.config_endpoint = self.settings.GARMENT_CONFIG_ENDPOINT
 

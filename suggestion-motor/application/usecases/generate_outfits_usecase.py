@@ -61,8 +61,22 @@ def _is_combination_rejected(outfit_garment_uuids: List[str], rejected_combos: S
     return frozenset(outfit_garment_uuids) in rejected_combos
 
 
-async def generate_outfits(llm, request: SuggestionRequest, weather_provider: Optional[WeatherProvider] = None) -> SuggestionResponse:
-    """Generate outfit suggestions combining deterministic filtering and LLM enhancement."""
+async def generate_outfits(
+    llm,
+    request: SuggestionRequest,
+    weather_provider: Optional[WeatherProvider] = None,
+    preferences_context: Optional[str] = None,
+    rejections_context: Optional[str] = None,
+) -> SuggestionResponse:
+    """Generate outfit suggestions combining deterministic filtering and LLM enhancement.
+    
+    Args:
+        llm: LLM provider instance
+        request: Suggestion request with garments, preferences, location
+        weather_provider: Optional weather provider for temperature-based filtering
+        preferences_context: Formatted preference string for LLM prompting
+        rejections_context: Formatted rejection string for LLM prompting
+    """
     logger.info("Starting outfit generation for %d garments, expecting %d outfits", 
                 len(request.garments), request.expected_outfits or 3)
 
@@ -114,14 +128,24 @@ async def generate_outfits(llm, request: SuggestionRequest, weather_provider: Op
     # Phase 2: If we don't have enough outfits, call LLM to generate more
     if len(outfits) < expected and llm:
         garment_list_str = json.dumps([{"uuid": g.uuid, "type": g.type, "warm_index": g.warm_index} for g in filtered_garments[:50]])
+        
+        # Build enriched prompt with user preferences and rejection history
+        prompt_context = f"Temperature: {temperature}°C"
+        if preferences_context:
+            prompt_context += f"\n{preferences_context}"
+        if rejections_context:
+            prompt_context += f"\n{rejections_context}"
+        
         prompt = f"""You are an expert fashion stylist. Generate {expected - len(outfits)} outfit suggestions.
 Garments available: {garment_list_str}
-Temperature: {temperature}°C
+
+{prompt_context}
+
 Return valid JSON with structure: {{"outfits": [{{"garment_uuids": ["uuid1", "uuid2", "uuid3"]}}]}}
-Ensure each outfit has exactly 3 garments from the provided list."""
+Ensure each outfit has exactly 3 garments from the provided list and respects user preferences."""
 
         try:
-            result = await llm.generate(prompt, temperature=0.4, max_tokens=512)
+            result = await llm.generate(prompt, temperature=0.5, max_tokens=512)
             if result and isinstance(result, dict) and "text" in result:
                 # Try to parse LLM output as JSON
                 text = result.get("text", "")

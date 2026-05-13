@@ -5,7 +5,6 @@ from httpx import AsyncClient
 
 from main import app
 from core.dependencies import get_llm_provider, get_weather_provider
-from application.entities.garment import Garment
 
 
 class TestLLM:
@@ -33,21 +32,47 @@ async def test_deterministic_generation(monkeypatch):
 
     async with AsyncClient(app=app, base_url="http://test") as client:
         payload = {
-            "user_location": {"latitude": 39.0, "longitude": -0.1},
-            "expected_outfits": 1,
+            "colorPreferences": [],
+            "brandPreferences": [],
+            "categoryPreferences": [],
+            "stylePreferences": [],
+            "requestedOutfitCount": 1,
+            "location": {"lat": 39.0, "lng": -0.1},
             "garments": [
-                {"uuid": "g1", "type": "t_shirt", "color": "black", "warm_index": 1.5},
-                {"uuid": "g2", "type": "shirt", "color": "white", "warm_index": 1.0},
-                {"uuid": "g3", "type": "shorts", "color": "blue", "warm_index": 2.0},
-                {"uuid": "g4", "type": "coat", "color": "red", "warm_index": 8.0},
+                {
+                    "id": "g1",
+                    "category": {"id": "cat-top", "name": "t_shirt"},
+                    "style": {"id": "style-casual", "name": "casual"},
+                    "colors": [{"id": "c1", "name": "black"}],
+                },
+                {
+                    "id": "g2",
+                    "category": {"id": "cat-top", "name": "shirt"},
+                    "style": {"id": "style-smart", "name": "smart"},
+                    "colors": [{"id": "c2", "name": "white"}],
+                },
+                {
+                    "id": "g3",
+                    "category": {"id": "cat-bottom", "name": "shorts"},
+                    "style": {"id": "style-casual", "name": "casual"},
+                    "colors": [{"id": "c3", "name": "blue"}],
+                },
+                {
+                    "id": "g4",
+                    "category": {"id": "cat-outer", "name": "coat"},
+                    "style": {"id": "style-elegant", "name": "elegant"},
+                    "colors": [{"id": "c4", "name": "red"}],
+                },
             ],
+            "previousSuggestions": [],
         }
 
-        resp = await client.post("/api/v1/suggestions/generate", json=payload)
+        resp = await client.post("/suggest", json=payload)
         assert resp.status_code == 200
         body = resp.json()
         assert "outfits" in body
         assert len(body["outfits"]) >= 1
+        assert "garmentIds" in body["outfits"][0]
 
 
 @pytest.mark.asyncio
@@ -64,17 +89,38 @@ async def test_llm_generation_fallback(monkeypatch):
 
     async with AsyncClient(app=app, base_url="http://test") as client:
         payload = {
-            "user_location": {"latitude": 39.0, "longitude": -0.1},
-            "expected_outfits": 2,
+            "colorPreferences": [],
+            "brandPreferences": [],
+            "categoryPreferences": [],
+            "stylePreferences": [],
+            "requestedOutfitCount": 2,
+            "location": {"lat": 39.0, "lng": -0.1},
             "garments": [
-                {"uuid": "g1", "type": "t_shirt", "color": "black", "warm_index": 1.5},
-                {"uuid": "g2", "type": "shirt", "color": "white", "warm_index": 1.0},
-                {"uuid": "g3", "type": "shorts", "color": "blue", "warm_index": 2.0},
+                {
+                    "id": "g1",
+                    "category": {"id": "cat-top", "name": "t_shirt"},
+                    "style": {"id": "style-casual", "name": "casual"},
+                    "colors": [{"id": "c1", "name": "black"}],
+                },
+                {
+                    "id": "g2",
+                    "category": {"id": "cat-top", "name": "shirt"},
+                    "style": {"id": "style-smart", "name": "smart"},
+                    "colors": [{"id": "c2", "name": "white"}],
+                },
+                {
+                    "id": "g3",
+                    "category": {"id": "cat-bottom", "name": "shorts"},
+                    "style": {"id": "style-casual", "name": "casual"},
+                    "colors": [{"id": "c3", "name": "blue"}],
+                },
             ],
+            "previousSuggestions": [],
         }
 
-        resp = await client.post("/api/v1/suggestions/generate", json=payload)
+        resp = await client.post("/suggest", json=payload)
         assert resp.status_code == 200
         body = resp.json()
         assert "outfits" in body
         assert len(body["outfits"]) == 2
+        assert "garmentIds" in body["outfits"][0]

@@ -19,6 +19,8 @@ RUN python -m pip install --upgrade pip \
 
 COPY . .
 
-EXPOSE 8003
+ARG PORT=8083
+ENV PORT=${PORT}
+EXPOSE ${PORT}
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8083}"]

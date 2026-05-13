@@ -54,7 +54,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(suggestion_router, prefix="/api/v1/suggestions")
+settings = Settings()
+app.include_router(suggestion_router, prefix=settings.SUGGESTION_PROCESS_ENDPOINT)
 
 
 @app.get("/health")
@@ -65,4 +66,4 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 8003)), reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=settings.PORT, reload=True)
