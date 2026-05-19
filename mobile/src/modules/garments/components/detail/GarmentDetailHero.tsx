@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator, Image, Pressable, View } from 'react-native'
 import { Text } from '@/shared/components/ui'
+import ChevronLeftIcon from '@/shared/components/icons/ChevronLeftIcon'
 
 type GarmentDetailHeroProps = {
   detailImageUri: string
@@ -35,7 +36,7 @@ export const GarmentDetailHero = ({
         className='absolute left-6 h-11 w-11 items-center justify-center rounded-full bg-white/95'
         style={{ top: topInset + 10 }}
         onPress={onBackPress}>
-        <Ionicons name='chevron-back' size={22} color='#1C1C1C' />
+        <ChevronLeftIcon size={22} color='#1C1C1C' />
       </Pressable>
 
       {isEditing && (

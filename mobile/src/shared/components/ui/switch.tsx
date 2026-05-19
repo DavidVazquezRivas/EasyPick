@@ -9,6 +9,7 @@ interface SwitchProps extends React.ComponentPropsWithoutRef<typeof Pressable> {
 
 const Switch = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>(
   ({ className, checked, onCheckedChange, disabled, ...props }, ref) => {
+    const switchColor = checked ? 'bg-[#52b788]' : 'bg-[#e57373]';
     return (
       <Pressable
         ref={ref}
@@ -17,7 +18,7 @@ const Switch = React.forwardRef<React.ElementRef<typeof Pressable>, SwitchProps>
         role="switch"
         accessibilityState={{ checked }}
         className={cn(
-          'w-11 h-6 rounded-full bg-switch',
+          'w-11 h-6 rounded-full ' + switchColor,
           disabled && 'opacity-50',
           className
         )}
