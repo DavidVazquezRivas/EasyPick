@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { SuggestedOutfit } from '@/core/api/suggestion'
 import { getThemeColor } from '@/core/theme/themeColors'
-import { Text, Button } from '@/shared/components/ui'
+import { Text } from '@/shared/components/ui'
 import { cn } from '@/shared/utils/tailwind.utils'
 import { useSwipeGestures } from '../hooks'
 import { SuggestionOutfitGarments } from './SuggestionOutfitGarments'
@@ -16,6 +16,8 @@ type SuggestionOutfitCardProps = {
   index: number
   total: number
   onSwipe: (direction: 'left' | 'right', outfitId: string) => void
+  onToggleFavorite?: (outfit: SuggestedOutfit) => void
+  isTogglingFavorite?: boolean
 }
 
 type SwipeIndicatorProps = {
@@ -66,10 +68,16 @@ const renderEmptyGarmentCard = (title: string) => (
   </View>
 )
 
-export const SuggestionOutfitCard = ({ outfit, index, total, onSwipe }: SuggestionOutfitCardProps) => {
+export const SuggestionOutfitCard = ({
+  outfit,
+  index,
+  total,
+  onSwipe,
+  onToggleFavorite,
+  isTogglingFavorite,
+}: SuggestionOutfitCardProps) => {
   const { t } = useTranslation()
   const [showGarments, setShowGarments] = useState(false)
-  const [isLiked, setIsLiked] = useState(false)
   const colorScheme = useColorScheme()
   const iconColor = getThemeColor('foreground', colorScheme)
   const garments = outfit.garments ?? []
@@ -111,9 +119,19 @@ export const SuggestionOutfitCard = ({ outfit, index, total, onSwipe }: Suggesti
             {pieceLabel}
           </Text>
         </View>
-        <Button className='h-9 w-9 items-center justify-center rounded-full bg-secondary' onPress={() => setIsLiked(!isLiked)}>
-          <HeartIcon size={20} color={isLiked ? '#ef4444' : iconColor} fill={isLiked ? '#ef4444' : 'none'} strokeWidth={2} />
-        </Button>
+        <Pressable
+          disabled={isTogglingFavorite || !onToggleFavorite}
+          onPress={() => onToggleFavorite?.(outfit)}
+          accessibilityRole='button'
+          accessibilityLabel={outfit.isFavorite ? t('common.outfits.actions.favoriteOff') : t('common.outfits.actions.favoriteOn')}
+          className='h-9 w-9 items-center justify-center rounded-full bg-secondary'>
+          <HeartIcon
+            size={20}
+            color={outfit.isFavorite ? '#ef4444' : iconColor}
+            fill={outfit.isFavorite ? '#ef4444' : 'none'}
+            strokeWidth={2}
+          />
+        </Pressable>
       </View>
     </View>
   )

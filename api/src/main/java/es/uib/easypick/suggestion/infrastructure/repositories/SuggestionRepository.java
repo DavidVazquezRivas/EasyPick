@@ -17,8 +17,16 @@ public interface SuggestionRepository extends JpaRepository<SuggestionEntity, UU
             "LEFT JOIN FETCH s.garmentSuggestions gs " +
             "LEFT JOIN FETCH gs.garment g " +
             "LEFT JOIN FETCH s.rejection " +
-            "WHERE g.user.id = :userId")
+            "WHERE s.user.id = :userId")
     List<SuggestionEntity> findByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT DISTINCT s FROM SuggestionEntity s " +
+            "LEFT JOIN FETCH s.garmentSuggestions gs " +
+            "LEFT JOIN FETCH gs.garment g " +
+            "LEFT JOIN FETCH s.rejection " +
+            "WHERE s.user.id = :userId " +
+            "ORDER BY s.generatedAt DESC")
+    List<SuggestionEntity> findByUserIdOrderByGeneratedAtDesc(@Param("userId") UUID userId);
 
     @Query("SELECT DISTINCT s FROM SuggestionEntity s " +
             "LEFT JOIN FETCH s.garmentSuggestions gs " +

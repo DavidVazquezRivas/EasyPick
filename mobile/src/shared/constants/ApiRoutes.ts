@@ -15,6 +15,7 @@ export const ApiRoutes = {
   },
   Suggestions: {
     List: `${API_BASE_URL}/suggestions`,
+    Me: `${API_BASE_URL}/suggestions/me`,
     Patch: `${API_BASE_URL}/suggestions/:id`,
     RejectionReasons: `${API_BASE_URL}/suggestions/rejection-reasons`,
   },

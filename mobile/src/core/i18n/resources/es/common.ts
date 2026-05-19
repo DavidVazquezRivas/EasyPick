@@ -30,6 +30,27 @@ const common = {
     },
     placeholder: 'Pantalla placeholder',
   },
+  outfits: {
+    loading: 'Cargando tus outfits guardados...',
+    tabs: {
+      saved: 'Guardados',
+      favorites: 'Favoritos',
+    },
+    detailTitle: 'Detalle del outfit',
+    empty: {
+      saved: 'Aún no has guardado outfits.',
+      favorites: 'Todavía no tienes outfits favoritos.',
+    },
+    labels: {
+      saved: 'Guardado',
+      favorite: 'Favorito',
+      pieces: '{{count}} prendas',
+    },
+    actions: {
+      favoriteOn: 'Marcar como favorito',
+      favoriteOff: 'Quitar de favoritos',
+    },
+  },
   suggestions: {
     loading: 'Buscando tus sugerencias de outfit...',
     empty: 'No hay sugerencias disponibles ahora mismo.',

@@ -11,6 +11,27 @@ The Suggestion patch API allows you to update the status of suggestions and hand
 }
 ```
 
+### Mark a Suggestion as Favorite
+
+Use the `isFavorite` field to toggle the favorite flag on a suggestion.
+
+**Request:**
+```json
+{
+  "isFavorite": true
+}
+```
+
+**Example:**
+```bash
+PATCH /suggestions/{suggestionId}
+Content-Type: application/json
+
+{
+  "isFavorite": true
+}
+```
+
 **Example:**
 ```bash
 PATCH /suggestions/{suggestionId}
@@ -73,6 +94,13 @@ Content-Type: application/json
 Get all available rejection reasons:
 ```bash
 GET /rejection-reasons
+```
+
+### Get User Outfits
+
+Get all outfits saved by the authenticated user:
+```bash
+GET /suggestions/me
 ```
 
 ### Error Handling

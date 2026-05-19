@@ -4,6 +4,7 @@ import es.uib.easypick.core.presentation.web.resolvers.AuthenticatedUserId;
 import es.uib.easypick.core.presentation.web.response.ApiResponse;
 import es.uib.easypick.suggestion.application.usecases.GenerateSuggestionsUseCase;
 import es.uib.easypick.suggestion.application.usecases.GetRejectionReasonsUseCase;
+import es.uib.easypick.suggestion.application.usecases.GetUserOutfitsUseCase;
 import es.uib.easypick.suggestion.application.usecases.PatchSuggestionUseCase;
 import es.uib.easypick.suggestion.application.usecases.responses.GeneratedSuggestionResponse;
 import es.uib.easypick.suggestion.application.usecases.responses.RejectionReasonResponse;
@@ -25,7 +26,8 @@ import java.util.UUID;
 public class SuggestionController {
 
     private final GenerateSuggestionsUseCase generateSuggestionsUseCase;
-        private final GetRejectionReasonsUseCase getRejectionReasonsUseCase;
+    private final GetRejectionReasonsUseCase getRejectionReasonsUseCase;
+    private final GetUserOutfitsUseCase getUserOutfitsUseCase;
     private final PatchSuggestionUseCase patchSuggestionUseCase;
 
     @GetMapping
@@ -43,16 +45,29 @@ public class SuggestionController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-        @GetMapping("/rejection-reasons")
-        @Operation(
-                        summary = "Get rejection reasons",
-                        description = "Returns available reasons to reject a suggestion."
-        )
-        public ResponseEntity<ApiResponse<List<RejectionReasonResponse>>> getRejectionReasons() {
-                List<RejectionReasonResponse> response = getRejectionReasonsUseCase.execute();
+    @GetMapping("/me")
+    @Operation(
+            summary = "Get user outfits",
+            description = "Retrieves the authenticated user's saved outfits and favorites."
+    )
+    public ResponseEntity<ApiResponse<List<GeneratedSuggestionResponse>>> getUserOutfits(
+            @AuthenticatedUserId UUID userId
+    ) {
+        List<GeneratedSuggestionResponse> response = getUserOutfitsUseCase.execute(userId);
 
-                return ResponseEntity.ok(ApiResponse.success(response));
-        }
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/rejection-reasons")
+    @Operation(
+            summary = "Get rejection reasons",
+            description = "Returns available reasons to reject a suggestion."
+    )
+    public ResponseEntity<ApiResponse<List<RejectionReasonResponse>>> getRejectionReasons() {
+        List<RejectionReasonResponse> response = getRejectionReasonsUseCase.execute();
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
     @PatchMapping("/{suggestionId}")
     @Operation(
