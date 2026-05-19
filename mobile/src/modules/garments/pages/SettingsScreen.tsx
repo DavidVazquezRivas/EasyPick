@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
-import { ActivityIndicator, ScrollView, View, useColorScheme, Pressable, KeyboardAvoidingView, Platform } from 'react-native'
+import React, { useState, useRef, useEffect } from 'react'
+import { ActivityIndicator, ScrollView, View, useColorScheme, KeyboardAvoidingView, Platform, Pressable } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import ChevronLeftIcon from '@/shared/components/icons/ChevronLeftIcon'
@@ -33,6 +34,8 @@ export const SettingsScreen = () => {
     const successColor = getThemeColor('success', colorScheme)
     const successStrong = getThemeColor('successStrong', colorScheme)
 
+    const scrollViewRef = useRef<ScrollView>(null)
+
     const [notificationsEnabled, setNotificationsEnabled] = useState(false)
     const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly'>('daily')
     const [selectedDays, setSelectedDays] = useState<string[]>(['mon', 'wed'])
@@ -43,13 +46,56 @@ export const SettingsScreen = () => {
 
     const [isSaving, setIsSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
-    const handleSave = () => {
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const storedSettings = await AsyncStorage.getItem('notification_settings')
+                if (storedSettings) {
+                    const parsed = JSON.parse(storedSettings)
+                    if (parsed.notificationsEnabled !== undefined) setNotificationsEnabled(parsed.notificationsEnabled)
+                    if (parsed.frequency !== undefined) setFrequency(parsed.frequency)
+                    if (parsed.selectedDays !== undefined) setSelectedDays(parsed.selectedDays)
+                    if (parsed.selectedMonthlyDay !== undefined) setSelectedMonthlyDay(parsed.selectedMonthlyDay)
+                    if (parsed.hour !== undefined) setHour(parsed.hour)
+                    if (parsed.minute !== undefined) setMinute(parsed.minute)
+                    if (parsed.customMessage !== undefined) setCustomMessage(parsed.customMessage)
+                }
+            } catch (error) {
+                console.error('Error loading settings', error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        loadSettings()
+    }, [])
+
+    const handleSave = async () => {
         setIsSaving(true)
         setShowSuccess(false)
+
+        try {
+            const settingsToSave = {
+                notificationsEnabled,
+                frequency,
+                selectedDays,
+                selectedMonthlyDay,
+                hour,
+                minute,
+                customMessage
+            }
+            await AsyncStorage.setItem('notification_settings', JSON.stringify(settingsToSave))
+        } catch (error) {
+            console.error('Error saving settings', error)
+        }
+
         setTimeout(() => {
             setIsSaving(false)
             setShowSuccess(true)
+            setTimeout(() => {
+                scrollViewRef.current?.scrollTo({ y: 0, animated: true })
+            }, 100)
         }, 1200)
     }
 
@@ -161,22 +207,30 @@ export const SettingsScreen = () => {
         >
             <View className='flex-1 pt-[12%]'>
                 <View className='px-[6%] pb-[5%] flex-row items-center gap-4'>
-                    <Pressable
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onPress={() => router.back()}
-                        className='p-2 -ml-2 rounded-full active:bg-secondary/50'
+                        className="-ml-2 rounded-full"
                     >
-                        <ChevronLeftIcon size={24} color={"#1C1C1C"} />
-                    </Pressable>
+                        <ChevronLeftIcon size={24} color={foreground} />
+                    </Button>
                     <Text className="text-4xl font-bold tracking-tight text-foreground">
                         {t('settings.screen.title')}
                     </Text>
                 </View>
 
-                <ScrollView
-                    className='flex-1'
-                    contentContainerClassName='px-[6%] pb-12 gap-6'
-                    showsVerticalScrollIndicator={false}
-                >
+                {isLoading ? (
+                    <View className="flex-1 justify-center items-center bg-background">
+                        <ActivityIndicator size="large" color={primary} />
+                    </View>
+                ) : (
+                    <ScrollView
+                        ref={scrollViewRef}
+                        className='flex-1'
+                        contentContainerClassName='px-[6%] pb-12 gap-6'
+                        showsVerticalScrollIndicator={false}
+                    >
                     {showSuccess && (
                         <View
                             style={{ borderColor: successColor }}
@@ -353,12 +407,14 @@ export const SettingsScreen = () => {
 
                                         <View className="flex-row items-center gap-4">
                                             <View className="flex-row items-center bg-muted/30 rounded-2xl border border-border px-3 py-1.5 flex-1 justify-between h-14">
-                                                <Pressable
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onPress={decrementHour}
-                                                    className="p-2 active:bg-secondary/40 rounded-lg"
+                                                    className="h-8 w-8 rounded-lg"
                                                 >
                                                     <ChevronDownIcon size={18} color={foreground} />
-                                                </Pressable>
+                                                </Button>
 
                                                 <Input
                                                     className="border-0 bg-transparent text-center font-bold text-xl h-10 w-12 p-0 text-foreground"
@@ -369,22 +425,26 @@ export const SettingsScreen = () => {
                                                     maxLength={2}
                                                 />
 
-                                                <Pressable
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onPress={incrementHour}
-                                                    className="p-2 active:bg-secondary/40 rounded-lg"
+                                                    className="h-8 w-8 rounded-lg"
                                                 >
                                                     <ChevronUpIcon size={18} color={foreground} />
-                                                </Pressable>
+                                                </Button>
                                             </View>
 
                                             <Text className="text-2xl font-bold text-foreground">:</Text>
                                             <View className="flex-row items-center bg-muted/30 rounded-2xl border border-border px-3 py-1.5 flex-1 justify-between h-14">
-                                                <Pressable
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onPress={decrementMinute}
-                                                    className="p-2 active:bg-secondary/40 rounded-lg"
+                                                    className="h-8 w-8 rounded-lg"
                                                 >
                                                     <ChevronDownIcon size={18} color={foreground} />
-                                                </Pressable>
+                                                </Button>
 
                                                 <Input
                                                     className="border-0 bg-transparent text-center font-bold text-xl h-10 w-12 p-0 text-foreground"
@@ -395,12 +455,14 @@ export const SettingsScreen = () => {
                                                     maxLength={2}
                                                 />
 
-                                                <Pressable
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     onPress={incrementMinute}
-                                                    className="p-2 active:bg-secondary/40 rounded-lg"
+                                                    className="h-8 w-8 rounded-lg"
                                                 >
                                                     <ChevronUpIcon size={18} color={foreground} />
-                                                </Pressable>
+                                                </Button>
                                             </View>
                                         </View>
                                     </View>
@@ -448,6 +510,7 @@ export const SettingsScreen = () => {
                         )}
                     </Button>
                 </ScrollView>
+            )}
             </View>
         </KeyboardAvoidingView>
     )
