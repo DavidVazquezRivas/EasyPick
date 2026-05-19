@@ -13,10 +13,7 @@ import es.uib.easypick.suggestion.infrastructure.gateways.suggestion.requests.Su
 import es.uib.easypick.suggestion.infrastructure.gateways.suggestion.requests.LocationDto;
 import es.uib.easypick.suggestion.infrastructure.repositories.SuggestionRepository;
 import es.uib.easypick.user.application.entities.UserEntity;
-import es.uib.easypick.user.application.entities.UserBrandPreferenceEntity;
-import es.uib.easypick.user.application.entities.UserCategoryPreferenceEntity;
-import es.uib.easypick.user.application.entities.UserColorPreferenceEntity;
-import es.uib.easypick.user.application.entities.UserStylePreferenceEntity;
+// ...existing code...
 import es.uib.easypick.user.infrastructure.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,16 +58,7 @@ public class GetSuggestionContextUseCase {
 				.collect(Collectors.toList());
 
 		List<CompleteSuggestionDto> previousSuggestions = suggestionRepository.findByUserId(userId).stream()
-				.map(suggestion -> new CompleteSuggestionDto(
-						suggestion.getId(),
-						suggestion.getName(),
-						suggestion.getIsFavorite(),
-						suggestion.getStatus().name(),
-						suggestion.getGarmentSuggestions().stream()
-								.map(gs -> gs.getGarment().getId())
-								.collect(Collectors.toSet()),
-						suggestion.getCreatedAt()
-				))
+				.map(CompleteSuggestionDto::fromEntity)
 				.collect(Collectors.toList());
 
 		return new SuggestionContextRequest(
