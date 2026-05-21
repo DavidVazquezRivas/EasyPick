@@ -20,7 +20,8 @@ public record CompleteGarmentResponse(
         BrandResponse brand,
         StyleResponse style,
         CategoryResponse category,
-        Set<ColorResponse> colors
+        Set<ColorResponse> colors,
+        Integer score
 ) {
     public static CompleteGarmentResponse fromEntity(
             GarmentEntity entity
@@ -46,6 +47,7 @@ public record CompleteGarmentResponse(
                                 .map(ColorResponse::fromEntity)
                                 .collect(Collectors.toSet()))
                         .orElse(Set.of()))
+                .score(entity.getPreferenceScore())
                 .build();
     }
 }
