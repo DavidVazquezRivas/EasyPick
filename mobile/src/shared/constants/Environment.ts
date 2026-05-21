@@ -58,8 +58,10 @@ const deriveHost = () => {
     return '10.0.2.2'
   }
 
+  const expoHost = Constants.expoConfig?.hostUri?.split(':')[0]
   const debuggerHost = Constants.manifest?.debuggerHost?.split(':')[0]
-  return debuggerHost ?? apiHost
+
+  return expoHost ?? debuggerHost ?? apiHost
 }
 
 // Derived values
