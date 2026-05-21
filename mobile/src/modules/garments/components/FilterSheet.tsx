@@ -7,20 +7,20 @@ import {
   Modal,
   TouchableOpacity,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native'
 import { Text } from '@/shared/components/ui'
 import { useTranslation } from 'react-i18next'
 import { GarmentFilters } from '../hooks/useGarmentFilters'
 import { useGetGarmentConfigs } from '@/core/query/garment'
 import { normalizeText } from '@/modules/garments/utils/garmentDetail.utils'
-import { useColorScheme } from 'react-native'
 import { getThemeColor } from '@/core/theme/themeColors'
 
 interface FilterSheetProps {
   visible: boolean
   filters: GarmentFilters
   hasActiveFilters: boolean
-  onUpdateFilter: (key: keyof GarmentFilters, value: any) => void
+  onUpdateFilter: <K extends keyof GarmentFilters>(key: K, value: GarmentFilters[K]) => void
   onToggleColor: (color: string) => void
   onToggleStyle: (style: string) => void
   onToggleCategory: (category: string) => void
