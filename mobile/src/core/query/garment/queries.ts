@@ -7,11 +7,33 @@ import { GarmentConfigs } from '@/core/api/garment/models/GarmentConfigs'
 import { ApiError } from '@/core/api/global/errors'
 import type { GetMyGarmentsParams } from '@/core/api/garment/GarmentGateway'
 
+const normalizeGetMyGarmentsParams = (params?: GetMyGarmentsParams): GetMyGarmentsParams | undefined => {
+  if (!params) return undefined
+
+  const search = params.search?.trim()
+  const categoryIds = params.categoryIds?.map((id) => id.trim()).filter(Boolean)
+  const styleIds = params.styleIds?.map((id) => id.trim()).filter(Boolean)
+  const colorIds = params.colorIds?.map((id) => id.trim()).filter(Boolean)
+
+  const normalizedParams: GetMyGarmentsParams = {}
+
+  if (search) normalizedParams.search = search
+  if (categoryIds?.length) normalizedParams.categoryIds = categoryIds
+  if (styleIds?.length) normalizedParams.styleIds = styleIds
+  if (colorIds?.length) normalizedParams.colorIds = colorIds
+
+  return Object.keys(normalizedParams).length ? normalizedParams : undefined
+}
+
 export const getMyGarmentsQueryOptions = (params?: GetMyGarmentsParams) =>
-  queryOptions<SimpleGarment[]>({
-    queryKey: [QueryKeys.garments.list, params],
-    queryFn: () => apiClient.garment.getMyGarments(params),
-  })
+  {
+    const normalizedParams = normalizeGetMyGarmentsParams(params)
+
+    return queryOptions<SimpleGarment[]>({
+      queryKey: [...QueryKeys.garments.list, normalizedParams],
+      queryFn: () => apiClient.garment.getMyGarments(normalizedParams),
+    })
+  }
 
 export const useGetMyGarments = (params?: GetMyGarmentsParams) => useQuery(getMyGarmentsQueryOptions(params))
 
