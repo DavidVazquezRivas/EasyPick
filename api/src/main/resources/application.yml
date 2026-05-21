@@ -80,7 +80,7 @@ application:
     auth:
       oauth:
         google:
-          client-id: ${GOOGLE_CLIENT_ID:test-token}
+          client-id: ${application.security.google.client-id}
 
 
 cloud:
