@@ -18,4 +18,13 @@ export const ApiRoutes = {
     Patch: `${API_BASE_URL}/suggestions/:id`,
     RejectionReasons: `${API_BASE_URL}/suggestions/rejection-reasons`,
   },
+  Colors: {
+    GetAll: `${API_BASE_URL}/colors`,
+  },
+  Styles: {
+    GetAll: `${API_BASE_URL}/styles`,
+  },
+  Categories: {
+    GetAll: `${API_BASE_URL}/categories`,
+  },
 }

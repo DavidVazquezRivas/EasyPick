@@ -31,6 +31,7 @@ const garments = {
   },
   closetScreen: {
     title: 'Mi Armario',
+    empty: 'No se encontraron resultados',
     fallback: {
       noName: 'Prenda sin nombre',
     }
@@ -112,6 +113,19 @@ const garments = {
       fileTooLarge: 'La imagen seleccionada es demasiado grande. Elige una imagen más pequeña.',
     },
     cancel: 'Cancelar',
+  },
+  filters: {
+    title: 'Filtros',
+    search: 'Buscar',
+    searchPlaceholder: 'Nombre de prenda...',
+    color: 'Color',
+    style: 'Estilo',
+    category: 'Tipo',
+    filters: 'Filtros',
+    noOptions: 'No hay opciones',
+    clear: 'Limpiar',
+    apply: 'Aplicar',
+    loadError: 'Error al cargar filtros',
   },
 }
 

@@ -1,3 +1,5 @@
+import Constants from 'expo-constants'
+import { Platform } from 'react-native'
 import { z } from 'zod'
 
 // Types
@@ -46,8 +48,24 @@ const {
   EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: googleIosClientId,
 } = parsedEnv.data
 
+const deriveHost = () => {
+  const prefersLocalhost = apiHost === 'localhost' || apiHost === '127.0.0.1'
+  if (!prefersLocalhost) {
+    return apiHost
+  }
+
+  if (Platform.OS === 'android') {
+    return '10.0.2.2'
+  }
+
+  const expoHost = Constants.expoConfig?.hostUri?.split(':')[0]
+  const debuggerHost = Constants.manifest?.debuggerHost?.split(':')[0]
+
+  return expoHost ?? debuggerHost ?? apiHost
+}
+
 // Derived values
-const apiBaseUrl = `http://${apiHost}:8080/api/v1`
+const apiBaseUrl = `http://${deriveHost()}:8080/api/v1`
 
 // Config
 export const Environment: EnvironmentConfig = {

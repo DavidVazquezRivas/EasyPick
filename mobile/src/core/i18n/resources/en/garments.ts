@@ -31,6 +31,7 @@ const garments = {
   },
   closetScreen: {
     title: 'My Closet',
+    empty: 'No results found',
     fallback: {
       noName: 'Unnamed garment',
     }
@@ -112,6 +113,19 @@ const garments = {
       fileTooLarge: 'The selected image is too large. Please choose a smaller image.',
     },
     cancel: 'Cancel',
+  },
+  filters: {
+    title: 'Filters',
+    search: 'Search',
+    searchPlaceholder: 'Garment name...',
+    color: 'Color',
+    style: 'Style',
+    category: 'Type',
+    filters: 'Filters',
+    noOptions: 'No options available',
+    clear: 'Clear',
+    apply: 'Apply',
+    loadError: 'Error loading filters',
   },
 }
 
