@@ -29,22 +29,30 @@ export const ClosetScreen = () => {
     hasActiveFilters,
   } = useGarmentFilterState()
 
-  const filterParams = useMemo(
-    () => ({
-      search: filters.searchText,
-      categoryIds: filters.selectedCategories,
-      styleIds: filters.selectedStyles,
-      colorIds: filters.selectedColors,
-    }),
-    [
-      filters.searchText,
-      filters.selectedCategories,
-      filters.selectedStyles,
-      filters.selectedColors,
-    ],
-  )
+  const normalizedParams = useMemo(() => {
+    const search = filters.searchText.trim()
+    const hasCategoryIds = filters.selectedCategories.length > 0
+    const hasStyleIds = filters.selectedStyles.length > 0
+    const hasColorIds = filters.selectedColors.length > 0
 
-  const { data: garments, isLoading, isError, error, refetch } = useGetMyGarments(filterParams)
+    if (!search && !hasCategoryIds && !hasStyleIds && !hasColorIds) {
+      return undefined
+    }
+
+    return {
+      ...(search ? { search } : {}),
+      ...(hasCategoryIds ? { categoryIds: filters.selectedCategories } : {}),
+      ...(hasStyleIds ? { styleIds: filters.selectedStyles } : {}),
+      ...(hasColorIds ? { colorIds: filters.selectedColors } : {}),
+    }
+  }, [
+    filters.searchText,
+    filters.selectedCategories,
+    filters.selectedStyles,
+    filters.selectedColors,
+  ])
+
+  const { data: garments, isLoading, isError, error, refetch } = useGetMyGarments(normalizedParams)
 
   const { filteredGarments } = useGarmentFilters(garments)
 
