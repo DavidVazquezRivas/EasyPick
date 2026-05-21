@@ -3,6 +3,7 @@ import { View } from 'react-native'
 import { UploadSourceSheet } from '@/modules/garments/components'
 import { useGarmentUploadFlow } from '@/modules/garments/hooks'
 import { ConfirmationFlowProvider } from '@/modules/garments/context/ConfirmationFlowContext'
+import { GarmentFiltersProvider } from '@/modules/garments/context/GarmentFiltersContext'
 import { BottomTabBar, GlobalModalHost } from '@/shared/components/layout'
 import { PRIVATE_BOTTOM_TABS } from '@/shared/constants/BottomTabs'
 
@@ -51,7 +52,9 @@ function PrivateLayoutContent() {
 export default function PrivateLayout() {
   return (
     <ConfirmationFlowProvider>
-      <PrivateLayoutContent />
+      <GarmentFiltersProvider>
+        <PrivateLayoutContent />
+      </GarmentFiltersProvider>
     </ConfirmationFlowProvider>
   )
 }

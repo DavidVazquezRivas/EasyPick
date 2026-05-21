@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { SimpleGarment } from '@/core/api/garment/models/SimpleGarment'
+import { useGarmentFilterState } from '@/modules/garments/context/GarmentFiltersContext'
+import { normalizeText } from '@/modules/garments/utils/garmentDetail.utils'
 
 export interface GarmentFilters {
   searchText: string
@@ -8,94 +10,68 @@ export interface GarmentFilters {
   selectedCategories: string[]
 }
 
+const normalizeValue = (value: unknown) => normalizeText(String(value ?? ''))
+
+const getEntityIdentifiers = (source: unknown): string[] => {
+  if (source === null || source === undefined) return []
+
+  if (typeof source === 'string' || typeof source === 'number' || typeof source === 'boolean') {
+    return [normalizeValue(source)]
+  }
+
+  if (Array.isArray(source)) {
+    return source.flatMap((item) => getEntityIdentifiers(item))
+  }
+
+  if (typeof source === 'object') {
+    const typed = source as Record<string, unknown>
+    const keys = ['id', '_id', 'brandId', 'styleId', 'categoryId', 'name', 'label', 'title', 'hexCode']
+    return keys.flatMap((key) => getEntityIdentifiers(typed[key])).filter(Boolean)
+  }
+
+  return []
+}
+
+const matchesSelectedValues = (source: unknown, selectedValues: string[]) => {
+  if (selectedValues.length === 0) return true
+
+  const normalizedSelected = selectedValues.map(normalizeValue)
+  const sourceIdentifiers = getEntityIdentifiers(source)
+
+  return sourceIdentifiers.some((identifier) => normalizedSelected.includes(identifier))
+}
+
 export const useGarmentFilters = (garments: SimpleGarment[] | undefined) => {
-  const [filters, setFilters] = useState<GarmentFilters>({
-    searchText: '',
-    selectedColors: [],
-    selectedStyles: [],
-    selectedCategories: [],
-  })
+  const {
+    filters,
+    updateFilter,
+    toggleColorFilter,
+    toggleStyleFilter,
+    toggleCategoryFilter,
+    clearFilters,
+    hasActiveFilters,
+  } = useGarmentFilterState()
 
   const filteredGarments = useMemo(() => {
-    if (!garments) return []
+  if (!garments) return []
+
+  const searchQuery = normalizeValue(filters.searchText)
 
     return garments.filter((garment) => {
-      // Filter by search text
-      if (filters.searchText.trim()) {
-        const searchLower = filters.searchText.toLowerCase()
+      if (searchQuery) {
         const matchesSearch =
-          garment.name?.toLowerCase().includes(searchLower) ||
-          garment.description?.toLowerCase().includes(searchLower)
+          normalizeValue(garment.name).includes(searchQuery) ||
+          normalizeValue(garment.description).includes(searchQuery)
         if (!matchesSearch) return false
       }
 
-      // Filter by color (if any colors are selected)
-      if (filters.selectedColors.length > 0) {
-        const matchesColor = garment.color && filters.selectedColors.includes(garment.color.id)
-        if (!matchesColor) return false
-      }
-
-      // Filter by style (if any styles are selected)
-      if (filters.selectedStyles.length > 0) {
-        const matchesStyle = garment.style && filters.selectedStyles.includes(garment.style.id)
-        if (!matchesStyle) return false
-      }
-
-      // Filter by category (if any categories are selected)
-      if (filters.selectedCategories.length > 0) {
-        const matchesCategory = garment.category && filters.selectedCategories.includes(garment.category.id)
-        if (!matchesCategory) return false
-      }
+      if (!matchesSelectedValues(garment.colors, filters.selectedColors)) return false
+      if (!matchesSelectedValues(garment.style, filters.selectedStyles)) return false
+      if (!matchesSelectedValues(garment.category, filters.selectedCategories)) return false
 
       return true
     })
   }, [garments, filters])
-
-  const updateFilter = (key: keyof GarmentFilters, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value }))
-  }
-
-  const toggleColorFilter = (color: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      selectedColors: prev.selectedColors.includes(color)
-        ? prev.selectedColors.filter((c) => c !== color)
-        : [...prev.selectedColors, color],
-    }))
-  }
-
-  const toggleStyleFilter = (style: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      selectedStyles: prev.selectedStyles.includes(style)
-        ? prev.selectedStyles.filter((s) => s !== style)
-        : [...prev.selectedStyles, style],
-    }))
-  }
-
-  const toggleCategoryFilter = (category: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      selectedCategories: prev.selectedCategories.includes(category)
-        ? prev.selectedCategories.filter((c) => c !== category)
-        : [...prev.selectedCategories, category],
-    }))
-  }
-
-  const clearFilters = () => {
-    setFilters({
-      searchText: '',
-      selectedColors: [],
-      selectedStyles: [],
-      selectedCategories: [],
-    })
-  }
-
-  const hasActiveFilters = 
-    filters.searchText.trim() !== '' ||
-    filters.selectedColors.length > 0 ||
-    filters.selectedStyles.length > 0 ||
-    filters.selectedCategories.length > 0
 
   return {
     filters,

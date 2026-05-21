@@ -18,9 +18,6 @@ export const FilterButton = ({ hasActiveFilters, onPress, filterCount = 0 }: Fil
         hasActiveFilters ? 'bg-primary/20 border border-primary' : 'bg-muted border border-border'
       }`}
     >
-      <Text className={`text-lg ${hasActiveFilters ? 'text-primary' : 'text-foreground'}`}>
-        🔍
-      </Text>
       <Text className={`font-medium ${hasActiveFilters ? 'text-primary' : 'text-foreground'}`}>
         {t('garment.filters.filters') || 'Filtros'}
       </Text>

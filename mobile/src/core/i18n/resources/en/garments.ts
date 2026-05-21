@@ -31,6 +31,7 @@ const garments = {
   },
   closetScreen: {
     title: 'My Closet',
+    empty: 'No results found',
     fallback: {
       noName: 'Unnamed garment',
     }
@@ -124,6 +125,7 @@ const garments = {
     noOptions: 'No options available',
     clear: 'Clear',
     apply: 'Apply',
+    loadError: 'Error loading filters',
   },
 }
 

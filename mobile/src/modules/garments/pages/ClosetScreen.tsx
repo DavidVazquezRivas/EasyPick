@@ -1,7 +1,6 @@
-import { View, ActivityIndicator } from 'react-native'
-import { useColorScheme } from 'react-native'
+import { View, ActivityIndicator, useColorScheme } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Text } from '@/shared/components/ui'
 import { SettingsMenuButton } from '@/shared/components/SettingsMenuButton'
 import { QueryErrorDisplay } from '@/shared/components/QueryErrorDisplay'
@@ -9,6 +8,7 @@ import { GarmentGrid } from '../components/GarmentGrid'
 import { FilterButton } from '../components/FilterButton'
 import { FilterSheet } from '../components/FilterSheet'
 import { useGetMyGarments } from '@/core/query/garment'
+import { useGarmentFilterState } from '@/modules/garments/context/GarmentFiltersContext'
 import { useGarmentFilters } from '../hooks/useGarmentFilters'
 import { getThemeColor } from '@/core/theme/themeColors'
 
@@ -19,17 +19,34 @@ export const ClosetScreen = () => {
   const foreground = getThemeColor('foreground', colorScheme)
   const [filterSheetVisible, setFilterSheetVisible] = useState(false)
 
-  const { data: garments, isLoading, isError, error, refetch } = useGetMyGarments()
   const {
-    filteredGarments,
     filters,
-    hasActiveFilters,
     updateFilter,
     toggleColorFilter,
     toggleStyleFilter,
     toggleCategoryFilter,
     clearFilters,
-  } = useGarmentFilters(garments)
+    hasActiveFilters,
+  } = useGarmentFilterState()
+
+  const filterParams = useMemo(
+    () => ({
+      search: filters.searchText,
+      categoryIds: filters.selectedCategories,
+      styleIds: filters.selectedStyles,
+      colorIds: filters.selectedColors,
+    }),
+    [
+      filters.searchText,
+      filters.selectedCategories,
+      filters.selectedStyles,
+      filters.selectedColors,
+    ],
+  )
+
+  const { data: garments, isLoading, isError, error, refetch } = useGetMyGarments(filterParams)
+
+  const { filteredGarments } = useGarmentFilters(garments)
 
   const getFilterCount = () => {
     let count = 0
@@ -67,7 +84,10 @@ export const ClosetScreen = () => {
         <QueryErrorDisplay error={error} onRetry={() => refetch()} />
 
         {garments && !isError && !isLoading && (
-          <GarmentGrid garments={filteredGarments} />
+          <GarmentGrid
+            garments={filteredGarments}
+            emptyMessage={t('garment.closetScreen.empty') || 'No se encontraron resultados'}
+          />
         )}
       </View>
 

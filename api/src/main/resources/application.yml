@@ -55,6 +55,8 @@ application:
       expiration: 3600000 # 1 hour in milliseconds
     refresh-token:
       expiration-days: 30 # Refresh token validity in days
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
 
   modules:
     garment:
@@ -72,7 +74,7 @@ application:
     auth:
       oauth:
         google:
-          client-id: ${GOOGLE_CLIENT_ID}
+          client-id: ${GOOGLE_CLIENT_ID:test-token}
 
 
 cloud:

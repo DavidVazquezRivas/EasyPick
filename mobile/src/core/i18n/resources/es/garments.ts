@@ -31,6 +31,7 @@ const garments = {
   },
   closetScreen: {
     title: 'Mi Armario',
+    empty: 'No se encontraron resultados',
     fallback: {
       noName: 'Prenda sin nombre',
     }
@@ -124,6 +125,7 @@ const garments = {
     noOptions: 'No hay opciones',
     clear: 'Limpiar',
     apply: 'Aplicar',
+    loadError: 'Error al cargar filtros',
   },
 }
 

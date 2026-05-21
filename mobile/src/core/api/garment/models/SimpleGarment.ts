@@ -19,7 +19,7 @@ export interface SimpleGarment {
   name: string
   description: string | null
   imageUrl: string
-  color?: Color | null
+  colors?: Color[] | null
   style?: Style | null
   category?: Category | null
   createdAt: string

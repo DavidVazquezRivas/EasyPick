@@ -61,7 +61,7 @@ class GetUserGarmentsUseCaseTest {
         when(repository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED)).thenReturn(repositoryResult);
 
         // Act
-        List<SimpleGarmentResponse> result = useCase.execute(userId);
+        List<SimpleGarmentResponse> result = useCase.execute(userId, new GetUserGarmentsFilters(null, null, null, null));
 
         // Assert
         assertNotNull(result, "The returned list should never be null");
@@ -80,7 +80,7 @@ class GetUserGarmentsUseCaseTest {
         when(repository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED)).thenReturn(Collections.emptyList());
 
         // Act
-        List<SimpleGarmentResponse> result = useCase.execute(userId);
+        List<SimpleGarmentResponse> result = useCase.execute(userId, new GetUserGarmentsFilters(null, null, null, null));
 
         // Assert
         assertNotNull(result, "Even if there are no garments, it should return an empty list, not null");

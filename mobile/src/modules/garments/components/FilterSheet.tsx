@@ -11,7 +11,8 @@ import {
 import { Text } from '@/shared/components/ui'
 import { useTranslation } from 'react-i18next'
 import { GarmentFilters } from '../hooks/useGarmentFilters'
-import { useGetColors, useGetStyles, useGetCategories } from '@/core/query/garment'
+import { useGetGarmentConfigs } from '@/core/query/garment'
+import { normalizeText } from '@/modules/garments/utils/garmentDetail.utils'
 import { useColorScheme } from 'react-native'
 import { getThemeColor } from '@/core/theme/themeColors'
 
@@ -48,9 +49,17 @@ export const FilterSheet = ({
     category: false,
   })
 
-  const { data: colors = [], isLoading: colorsLoading } = useGetColors()
-  const { data: styles = [], isLoading: stylesLoading } = useGetStyles()
-  const { data: categories = [], isLoading: categoriesLoading } = useGetCategories()
+  const {
+    data: garmentConfigs,
+    isLoading: configsLoading,
+    isError: configsError,
+  } = useGetGarmentConfigs()
+
+  const colors = garmentConfigs?.colors ?? []
+  const styles = garmentConfigs?.styles ?? []
+  const categories = garmentConfigs?.categories ?? []
+
+  const norm = (value: unknown) => normalizeText(value)
 
   const toggleSection = (section: string) => {
     setExpandedSections((prev) => ({
@@ -100,10 +109,14 @@ export const FilterSheet = ({
               isExpanded={expandedSections['color']}
               onToggle={() => toggleSection('color')}
             >
-              {colorsLoading ? (
+              {configsLoading ? (
                 <View className="py-4 items-center">
                   <ActivityIndicator size="small" color={loaderColor} />
                 </View>
+              ) : configsError ? (
+                <Text className="text-destructive">
+                  {t('garment.filters.loadError') || 'Error al cargar filtros'}
+                </Text>
               ) : (
                 <View className="flex-row flex-wrap gap-3">
                   {colors.length > 0 ? (
@@ -111,7 +124,7 @@ export const FilterSheet = ({
                       <FilterTag
                         key={color.id}
                         label={color.name}
-                        isSelected={filters.selectedColors.includes(color.id)}
+                        isSelected={filters.selectedColors.map((s) => norm(s)).includes(norm(color.id))}
                         onPress={() => onToggleColor(color.id)}
                         color={color.hexCode}
                       />
@@ -131,10 +144,14 @@ export const FilterSheet = ({
               isExpanded={expandedSections['style']}
               onToggle={() => toggleSection('style')}
             >
-              {stylesLoading ? (
+              {configsLoading ? (
                 <View className="py-4 items-center">
                   <ActivityIndicator size="small" color={loaderColor} />
                 </View>
+              ) : configsError ? (
+                <Text className="text-destructive">
+                  {t('garment.filters.loadError') || 'Error al cargar filtros'}
+                </Text>
               ) : (
                 <View className="flex-row flex-wrap gap-3">
                   {styles.length > 0 ? (
@@ -142,7 +159,7 @@ export const FilterSheet = ({
                       <FilterTag
                         key={style.id}
                         label={style.name}
-                        isSelected={filters.selectedStyles.includes(style.id)}
+                        isSelected={filters.selectedStyles.map((s) => norm(s)).includes(norm(style.id))}
                         onPress={() => onToggleStyle(style.id)}
                       />
                     ))
@@ -161,10 +178,14 @@ export const FilterSheet = ({
               isExpanded={expandedSections['category']}
               onToggle={() => toggleSection('category')}
             >
-              {categoriesLoading ? (
+              {configsLoading ? (
                 <View className="py-4 items-center">
                   <ActivityIndicator size="small" color={loaderColor} />
                 </View>
+              ) : configsError ? (
+                <Text className="text-destructive">
+                  {t('garment.filters.loadError') || 'Error al cargar filtros'}
+                </Text>
               ) : (
                 <View className="flex-row flex-wrap gap-3">
                   {categories.length > 0 ? (
@@ -172,7 +193,7 @@ export const FilterSheet = ({
                       <FilterTag
                         key={category.id}
                         label={category.name}
-                        isSelected={filters.selectedCategories.includes(category.id)}
+                        isSelected={filters.selectedCategories.map((s) => norm(s)).includes(norm(category.id))}
                         onPress={() => onToggleCategory(category.id)}
                       />
                     ))

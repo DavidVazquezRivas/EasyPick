@@ -5,16 +5,15 @@ import { SimpleGarment } from '@/core/api/garment/models/SimpleGarment'
 import { CompleteGarment } from '@/core/api/garment/models/CompleteGarment'
 import { GarmentConfigs } from '@/core/api/garment/models/GarmentConfigs'
 import { ApiError } from '@/core/api/global/errors'
-/**
- * Central query config for GET /garments.
- */
-export const getMyGarmentsQueryOptions = () =>
+import type { GetMyGarmentsParams } from '@/core/api/garment/GarmentGateway'
+
+export const getMyGarmentsQueryOptions = (params?: GetMyGarmentsParams) =>
   queryOptions<SimpleGarment[]>({
-    queryKey: QueryKeys.garments.list,
-    queryFn: apiClient.garment.getMyGarments,
+    queryKey: [QueryKeys.garments.list, params],
+    queryFn: () => apiClient.garment.getMyGarments(params),
   })
 
-export const useGetMyGarments = () => useQuery(getMyGarmentsQueryOptions())
+export const useGetMyGarments = (params?: GetMyGarmentsParams) => useQuery(getMyGarmentsQueryOptions(params))
 
 /**
  * Central query config for GET /garments/:id.

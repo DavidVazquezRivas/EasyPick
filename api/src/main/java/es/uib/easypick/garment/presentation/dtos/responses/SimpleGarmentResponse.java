@@ -4,7 +4,10 @@ import es.uib.easypick.garment.application.entities.GarmentEntity;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Builder
 public record SimpleGarmentResponse(
@@ -13,7 +16,10 @@ public record SimpleGarmentResponse(
         String description,
         String imageUrl,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        StyleResponse style,
+        CategoryResponse category,
+        Set<ColorResponse> colors
 ) {
     public static SimpleGarmentResponse fromEntity(GarmentEntity entity) {
         return SimpleGarmentResponse.builder()
@@ -23,6 +29,17 @@ public record SimpleGarmentResponse(
                 .imageUrl(entity.getImageUrl())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .style(Optional.ofNullable(entity.getStyle())
+                        .map(StyleResponse::fromEntity)
+                        .orElse(null))
+                .category(Optional.ofNullable(entity.getCategory())
+                        .map(CategoryResponse::fromEntity)
+                        .orElse(null))
+                .colors(Optional.ofNullable(entity.getColors())
+                        .map(colors -> colors.stream()
+                                .map(ColorResponse::fromEntity)
+                                .collect(Collectors.toSet()))
+                        .orElse(Set.of()))
                 .build();
     }
 }
