@@ -106,6 +106,13 @@ export default function SuggestionsScreen() {
             onSwipe={(direction, outfitId) => {
               void swipeFlow.onCardSwipe(direction, outfitId)
             }}
+            onToggleFavorite={(outfit) => {
+              void patchSuggestion({
+                id: outfit.id,
+                patch: { isFavorite: !outfit.isFavorite },
+              }).catch(showGlobalApiError)
+            }}
+            isTogglingFavorite={isPatchingSuggestion}
           />
         )}
 

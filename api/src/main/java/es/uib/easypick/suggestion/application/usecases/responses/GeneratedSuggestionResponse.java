@@ -9,7 +9,8 @@ public record GeneratedSuggestionResponse(
         UUID id,
         String name,
         List<CompleteGarmentResponse> garments,
-        String status
+        String status,
+        boolean isFavorite
 ) {
 }
 

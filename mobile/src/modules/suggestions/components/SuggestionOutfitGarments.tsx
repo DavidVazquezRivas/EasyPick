@@ -11,22 +11,20 @@ import { useTranslation } from 'react-i18next'
 type SuggestionOutfitGarmentsProps = {
     garments: SuggestedGarment[]
     onClose: () => void
+    title?: string
 }
 
-export const SuggestionOutfitGarments = ({ garments, onClose }: SuggestionOutfitGarmentsProps) => {
+export const SuggestionOutfitGarments = ({ garments, onClose, title }: SuggestionOutfitGarmentsProps) => {
     const { t } = useTranslation()
     const router = useRouter()
+
     return (
-        <Card className='absolute bottom-[10px] mx-6 z-50 flex-col overflow-hidden rounded-[28px] p-0 gap-0 border-0 shadow-lg shadow-black/20'>
+        <Card className='absolute bottom-[18px] mx-6 z-50 flex-col overflow-hidden rounded-[28px] p-0 gap-0 border-0 shadow-lg shadow-black/20'>
             <View className='flex-col items-center border-b border-border pb-3 pt-2.5'>
                 <View className='mb-3 h-1 w-9 rounded-full bg-muted-foreground/30' />
                 <View className='w-full flex-row items-center justify-between px-4'>
-                    <Text className='text-sm font-bold text-foreground'>{t('common.suggestions.outfitGarments')}</Text>
-                    <Button
-                        variant='ghost'
-                        size='icon'
-                        onPress={onClose}
-                        className='h-8 w-8 rounded-full bg-muted'>
+                    <Text className='text-sm font-bold text-foreground'>{title ?? t('common.suggestions.outfitGarments')}</Text>
+                    <Button variant='ghost' size='icon' onPress={onClose} className='h-8 w-8 rounded-full bg-muted'>
                         <CloseIcon size={16} />
                     </Button>
                 </View>
@@ -36,20 +34,17 @@ export const SuggestionOutfitGarments = ({ garments, onClose }: SuggestionOutfit
                 {garments.map((garment) => (
                     <Pressable
                         key={garment.id}
-                        className='flex-row items-center gap-3 rounded-[14px] bg-muted px-3 py-2.5 mb-2'
-                        onPress={() => router.push(Routes.Private.Garments.Detail(garment.id))}
-                    >
+                        className='mb-2 flex-row items-center gap-3 rounded-[14px] bg-muted px-3 py-2.5'
+                        onPress={() => router.push(Routes.Private.Garments.Detail(garment.id))}>
                         <View className='h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-white'>
-                            {garment.imageUrl ? (
-                                <Image source={{ uri: garment.imageUrl }} className='h-full w-full' resizeMode='cover' />
-                            ) : null}
+                            {garment.imageUrl ? <Image source={{ uri: garment.imageUrl }} className='h-full w-full' resizeMode='cover' /> : null}
                         </View>
                         <View className='flex-1'>
                             <Text className='text-[13px] font-semibold text-foreground' numberOfLines={1}>
                                 {garment.name}
                             </Text>
                             <Text className='text-[11px] text-muted-foreground' numberOfLines={1}>
-                                {garment.category?.name ?? 'Categoría'} {garment.brand ? `· ${garment.brand}` : ''}
+                                {garment.category?.name ?? 'Categoría'} {garment.brand ? `· ${garment.brand.name}` : ''}
                             </Text>
                         </View>
                         <View className='shrink-0 flex-row gap-[3px]'>

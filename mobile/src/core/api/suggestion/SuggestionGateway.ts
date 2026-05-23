@@ -26,6 +26,18 @@ export const SuggestionGateway = {
     return response.data.data ?? []
   },
 
+  getUserOutfits: async (): Promise<SuggestedOutfit[]> => {
+    const response = await httpClient.get<ApiResponse<SuggestedOutfit[]>>(ApiRoutes.Suggestions.Me)
+
+    if (!response.data.success) {
+      const code = response.data.message?.code ?? 0
+      const message = response.data.message?.message ?? 'Failed to fetch user outfits'
+      throw new ApiError(code, message, response.data.path ?? undefined, response.data.timestamp ?? undefined)
+    }
+
+    return response.data.data ?? []
+  },
+
   getRejectionReasons: async (): Promise<RejectionReason[]> => {
     const response = await httpClient.get<ApiResponse<RejectionReason[]>>(ApiRoutes.Suggestions.RejectionReasons)
 

@@ -14,6 +14,7 @@ export const QueryKeys = {
   suggestions: {
     all: ['suggestions'] as const,
     list: (lat: number, lng: number) => ['suggestions', 'list', lat, lng] as const,
+    library: ['suggestions', 'library'] as const,
     rejectionReasons: ['suggestions', 'rejection-reasons'] as const,
   },
   garments: {
