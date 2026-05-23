@@ -14,18 +14,18 @@ class SpringBootClient(APIGateway):
     def __init__(self, settings: Optional[Settings] = None):
         self.settings = settings or Settings()
         self.base_url = self.settings.api_base_url
-        self.refresh_token = self.settings.refresh_token
+        self._refresh_token_value = self.settings.refresh_token
         self.refresh_endpoint = self.settings.EASYPICK_AUTH_REFRESH_ENDPOINT
         self.config_endpoint = self.settings.GARMENT_CONFIG_ENDPOINT
 
     async def refresh_token_impl(self) -> Optional[str]:
         """POST to /auth/refresh with the refresh token to get a new access token."""
-        if not self.base_url or not self.refresh_token:
+        if not self.base_url or not self._refresh_token_value:
             logger.warning("Base URL or refresh token not configured; skipping token refresh")
             return None
 
         url = f"{self.base_url}{self.refresh_endpoint}"
-        payload = {"refreshToken": self.refresh_token}
+        payload = {"refreshToken": self._refresh_token_value}
 
         async with httpx.AsyncClient() as client:
             try:

@@ -23,6 +23,8 @@ class Garment(BaseModel):
     color: Optional[str] = None
     warm_index: Optional[int] = None
     style: Optional[str] = None
+    brand: Optional[str] = None
+    score: Optional[int] = None
 
 
 class Rejection(BaseModel):
@@ -75,6 +77,7 @@ class CompleteGarmentDto(BaseModel):
     category: Optional[NestedRefDto] = None
     colors: List[ColorRefDto] = []
     score: Optional[int] = None
+    warm_index: Optional[int] = Field(default=None, alias="warmthIndex")
 
 
 class CompleteSuggestionDto(BaseModel):
@@ -139,15 +142,16 @@ def _map_garment(item: CompleteGarmentDto) -> Garment:
     primary_color = item.colors[0].name if item.colors and item.colors[0].name else None
     inferred_type = item.category.name if item.category and item.category.name else None
     style_name = item.style.name if item.style and item.style.name else None
-    # Get warm_index from DTO if available, else default to 5 (neutral warmth)
-    warm_index_value = getattr(item, 'warm_index', None)
-    warm_index = warm_index_value if warm_index_value is not None else 5
+    brand_name = item.brand.name if item.brand and item.brand.name else None
+    warm_index = item.warm_index if item.warm_index is not None else 5
     return Garment(
         uuid=item.id,
         type=inferred_type,
         color=primary_color,
         warm_index=warm_index,
         style=style_name,
+        brand=brand_name,
+        score=item.score,
     )
 
 

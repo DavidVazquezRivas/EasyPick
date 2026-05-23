@@ -1,11 +1,14 @@
-try:
-    from pydantic_settings import BaseSettings
-except Exception:
-    from pydantic import BaseSettings
+from pydantic import ConfigDict
+from pydantic_settings import BaseSettings
 from typing import Optional
 
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
+
     EASYPICK_API_BASE_URL: Optional[str] = None
     EASYPICK_REFRESH_TOKEN: Optional[str] = None
     MAIN_API_BASE_URL: Optional[str] = None
@@ -14,7 +17,6 @@ class Settings(BaseSettings):
     GARMENT_CONFIG_ENDPOINT: str = "/garments/configurations"
     LLM_MODEL_PATH: Optional[str] = None
     LLM_MODEL_ID: str = "google/gemma-2-2b-it"
-    # 'auto' will pick GPU if available, otherwise CPU. Can be 'auto', 'gpu' or 'cpu'.
     LLM_BACKEND: str = "auto"
     HUGGINGFACE_ACCESS_TOKEN: Optional[str] = None
     HUGGINGFACE_HUB_TOKEN: Optional[str] = None
@@ -23,9 +25,6 @@ class Settings(BaseSettings):
     GARMENT_CONFIG_TIMEOUT_SECONDS: int = 10
     SUGGESTION_PROCESS_ENDPOINT: str = "/suggest"
     PORT: int = 8083
-
-    class Config:
-        env_file = ".env"
 
     @property
     def api_base_url(self) -> Optional[str]:

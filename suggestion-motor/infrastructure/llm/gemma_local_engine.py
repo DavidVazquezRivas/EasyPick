@@ -6,6 +6,7 @@ import os
 from typing import Any, Optional
 
 from application.interfaces.llm_provider import LLMProvider
+from core.config import Settings
 
 logger = logging.getLogger("gemma_local_engine")
 
@@ -23,11 +24,14 @@ class GemmaLocalEngine(LLMProvider):
         self._torch = None
 
     def _resolve_hf_token(self) -> Optional[str]:
+        settings = Settings()
         return (
-            os.getenv("HUGGINGFACE_ACCESS_TOKEN")
+            settings.HUGGINGFACE_ACCESS_TOKEN
+            or settings.HUGGINGFACE_HUB_TOKEN
+            or settings.HF_TOKEN
+            or os.getenv("HUGGINGFACE_ACCESS_TOKEN")
             or os.getenv("HUGGINGFACE_HUB_TOKEN")
             or os.getenv("HF_TOKEN")
-            or os.getenv("HUGGNINGFACE_ACCESS_TOKEN")
         )
 
     def _resolve_model_name(self) -> str:

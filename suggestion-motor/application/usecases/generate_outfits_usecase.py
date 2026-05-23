@@ -5,24 +5,24 @@ import json
 from presentation.schemas.suggestion_requests import SuggestionRequest, Garment
 from presentation.schemas.suggestion_responses import SuggestionResponse, Outfit, OutfitGarment
 from application.interfaces.weather_provider import WeatherProvider
+from infrastructure.state.memory_cache import MemoryCache
 
 logger = logging.getLogger("generate_outfits_usecase")
 
-# Temperature thresholds for warm_index filtering
-COLD_TEMP_THRESHOLD = 10.0  # celsius; if below, prefer lower warm_index
-WARM_TEMP_THRESHOLD = 25.0  # celsius; if above, prefer higher warm_index
-HOT_TEMP_THRESHOLD = 30.0   # celsius; if above, strongly prefer low warm_index
+COLD_TEMP_THRESHOLD = 10.0
+WARM_TEMP_THRESHOLD = 25.0
+HOT_TEMP_THRESHOLD = 30.0
 
-# Warm index limits based on temperature
-WARM_INDEX_COLD_MAX = 3.0    # Max warm_index when cold
-WARM_INDEX_MODERATE_MAX = 6.0  # Max warm_index when moderate
-WARM_INDEX_HOT_MAX = 2.0     # Max warm_index when hot
+WARM_INDEX_COLD_MAX = 3.0
+WARM_INDEX_MODERATE_MAX = 6.0
+WARM_INDEX_HOT_MAX = 2.0
+
+MIN_PREFERENCE_SCORE = -20
 
 
 def _get_max_warm_index(temperature: Optional[float]) -> float:
-    """Determine max acceptable warm_index based on temperature."""
     if temperature is None:
-        return 10.0  # No constraint if temp unknown
+        return 10.0
     if temperature >= HOT_TEMP_THRESHOLD:
         return WARM_INDEX_HOT_MAX
     elif temperature >= WARM_TEMP_THRESHOLD:
@@ -30,24 +30,23 @@ def _get_max_warm_index(temperature: Optional[float]) -> float:
     elif temperature <= COLD_TEMP_THRESHOLD:
         return WARM_INDEX_COLD_MAX
     else:
-        # Interpolate between moderate and cold
         return WARM_INDEX_MODERATE_MAX
 
 
-def _filter_garments_by_temperature(garments: List[Garment], max_warm_index: float) -> List[Garment]:
-    """Filter garments to exclude those that are too warm for the current temperature."""
+def _filter_garments(garments: List[Garment], max_warm_index: float) -> List[Garment]:
     filtered = []
     for g in garments:
-        if g.warm_index is not None and g.warm_index <= max_warm_index:
-            filtered.append(g)
-        elif g.warm_index is None:
-            # Include garments with unknown warm_index
-            filtered.append(g)
+        if g.warm_index is not None and g.warm_index > max_warm_index:
+            logger.debug("Filtered out by warmth: %s (warm_index=%s > max=%s)", g.uuid, g.warm_index, max_warm_index)
+            continue
+        if g.score is not None and g.score < MIN_PREFERENCE_SCORE:
+            logger.debug("Filtered out by score: %s (score=%s < %s)", g.uuid, g.score, MIN_PREFERENCE_SCORE)
+            continue
+        filtered.append(g)
     return filtered
 
 
 def _get_rejected_combinations(request: SuggestionRequest) -> Set[frozenset]:
-    """Extract rejected outfit combinations as frozensets for O(1) lookup."""
     rejected = set()
     if request.history and request.history.rejections:
         for rejection in request.history.rejections:
@@ -57,8 +56,82 @@ def _get_rejected_combinations(request: SuggestionRequest) -> Set[frozenset]:
 
 
 def _is_combination_rejected(outfit_garment_uuids: List[str], rejected_combos: Set[frozenset]) -> bool:
-    """Check if a combination of garments was previously rejected."""
     return frozenset(outfit_garment_uuids) in rejected_combos
+
+
+def _translate(name: str, category: str) -> str:
+    translations = MemoryCache.get("name_translations", {})
+    mapping = translations.get(category, {}) if isinstance(translations, dict) else {}
+    return mapping.get(name, name)
+
+
+def _build_wardrobe_table(garments: List[Garment]) -> str:
+    header = f"{'ID':<4} {'Type':<16} {'Color':<16} {'Style':<16} {'Brand':<16} {'Warmth':<7} {'Score':<6}"
+    rows = [header]
+    rows.append("-" * len(header))
+    for i, g in enumerate(garments, start=1):
+        rows.append(
+            f"{str(i):<4} "
+            f"{(_translate(g.type or '?', 'categories')):<16.16} "
+            f"{(_translate(g.color or '?', 'colors')):<16.16} "
+            f"{(_translate(g.style or '?', 'styles')):<16.16} "
+            f"{(g.brand or '?'):<16.16} "
+            f"{str(g.warm_index or '?'):<7} "
+            f"{str(g.score) if g.score is not None else '?':<6}"
+        )
+    return "\n".join(rows)
+
+
+def _build_prompt(
+    garment_list_str: str,
+    preferences_context: str,
+    rejections_context: str,
+    temperature: Optional[float],
+    expected: int,
+) -> str:
+    temp_line = f"{temperature:.1f}\u00b0C" if temperature is not None else "unknown"
+
+    sections = [
+        "=== WEATHER ===",
+        f"Temperature: {temp_line}",
+        "",
+        "=== YOUR WARDROBE ===",
+        f"Each garment has an ID (use it in your response), type, color, style, brand, warmth index, and preference score.",
+        garment_list_str,
+    ]
+
+    if preferences_context and preferences_context != "No specific preferences":
+        sections.append("")
+        sections.append("=== YOUR PREFERENCES ===")
+        sections.append("Higher absolute score = stronger preference (positive) or aversion (negative).")
+        sections.append(preferences_context)
+
+    if rejections_context:
+        sections.append("")
+        sections.append("=== PREVIOUSLY REJECTED ===")
+        sections.append(rejections_context)
+
+    example_outfits = []
+    for e in range(expected):
+        base = e * 3 + 1
+        example_outfits.append(f'{{"garment_ids": ["{base}", "{base+1}", "{base+2}"]}}')
+    example = '{"outfits": [' + ", ".join(example_outfits) + "]}"
+    sections.extend([
+        "",
+        "=== TASK ===",
+        f"You MUST create exactly {expected} different outfit suggestions using exactly 3 garments each.",
+        "Rules:",
+        "- Make each outfit sensible for a normal person to wear, given the context provided.",
+        "- Combine garments of different types: typically one upper-body + one lower-body + one complement (shoes, outerwear, accessories).",
+        "- A one-piece garment (dress, suit, jumpsuit) can replace upper+lower.",
+        "- Do NOT suggest 3 of the same type (e.g. 3 accessories, 3 tops, or 3 pants).",
+        "- Consider warmth index against the temperature.",
+        "- Prefer garments with higher scores. Avoid those with very negative scores.",
+        "",
+        f'Return ONLY valid JSON with exactly {expected} outfits. Example format: {example}',
+    ])
+
+    return "\n".join(sections)
 
 
 async def generate_outfits(
@@ -68,109 +141,114 @@ async def generate_outfits(
     preferences_context: Optional[str] = None,
     rejections_context: Optional[str] = None,
 ) -> SuggestionResponse:
-    """Generate outfit suggestions combining deterministic filtering and LLM enhancement.
-    
-    Args:
-        llm: LLM provider instance
-        request: Suggestion request with garments, preferences, location
-        weather_provider: Optional weather provider for temperature-based filtering
-        preferences_context: Formatted preference string for LLM prompting
-        rejections_context: Formatted rejection string for LLM prompting
-    """
-    logger.info("Starting outfit generation for %d garments, expecting %d outfits", 
+    logger.info("Starting outfit generation for %d garments, expecting %d outfits",
                 len(request.garments), request.expected_outfits or 3)
 
     expected = request.expected_outfits or 3
     garments = request.garments
-    rejected_combos = _get_rejected_combinations(request)
 
-    # Phase 1: Deterministic pre-processing
-    # 1.1 Get temperature to filter by warm_index
+    # --- Deterministic filtering ---
     temperature = None
     if weather_provider and request.user_location:
         temperature = await weather_provider.get_temperature(
             request.user_location.latitude,
             request.user_location.longitude
         )
-        logger.info("Retrieved temperature: %s°C", temperature)
+        logger.info("Retrieved temperature: %s\u00b0C", temperature)
 
     max_warm_index = _get_max_warm_index(temperature)
-    logger.info("Max acceptable warm_index: %.2f for temp %.1f°C", max_warm_index, temperature or -1)
+    filtered = _filter_garments(garments, max_warm_index)
+    logger.info("Filtered garments: %d -> %d (warmth max=%.1f, score min=%d)",
+                len(garments), len(filtered), max_warm_index, MIN_PREFERENCE_SCORE)
 
-    # 1.2 Filter by warm_index
-    filtered_garments = _filter_garments_by_temperature(garments, max_warm_index)
-    logger.info("Filtered garments: %d -> %d after warm_index check", len(garments), len(filtered_garments))
+    if not filtered:
+        logger.warning("No garments after filtering")
+        return SuggestionResponse(outfits=[])
 
-    # 1.3 Generate deterministic outfits, skipping rejected combinations
-    outfits = []
-    idx = 0
-    attempt = 0
-    max_attempts = len(filtered_garments) * 2
+    if not llm:
+        logger.warning("No LLM provider available")
+        return SuggestionResponse(outfits=[])
 
-    while len(outfits) < expected and attempt < max_attempts:
-        if idx + 3 > len(filtered_garments):
-            idx = 0
-        if idx == 0 and len(outfits) > 0:
-            attempt += 1
+    # --- LLM generation ---
+    rejected_combos = _get_rejected_combinations(request)
 
-        slice_g = filtered_garments[idx: idx + 3]
-        if len(slice_g) < 3:
-            # Not enough garments left; break
-            break
+    id_to_uuid = {}
+    garment_list_for_table = []
+    for i, g in enumerate(filtered, start=1):
+        simple_id = str(i)
+        id_to_uuid[simple_id] = g.uuid
+        garment_list_for_table.append(g)
 
-        outfit_uuids = [g.uuid for g in slice_g]
-        if not _is_combination_rejected(outfit_uuids, rejected_combos):
-            outfits.append(Outfit(garments_list=[OutfitGarment(uuid=g.uuid) for g in slice_g]))
-            logger.info("Generated outfit %d: %s", len(outfits), outfit_uuids)
+    table_str = _build_wardrobe_table(garment_list_for_table)
+    prompt = _build_prompt(
+        table_str,
+        preferences_context or "",
+        rejections_context or "",
+        temperature,
+        expected,
+    )
 
-        idx += 1
+    try:
+        result = await llm.generate(prompt, temperature=0.5, max_tokens=512)
+        if result and isinstance(result, dict) and "text" in result:
+            text = result.get("text", "")
+            json_str = None
 
-    # Phase 2: If we don't have enough outfits, call LLM to generate more
-    if len(outfits) < expected and llm:
-        garment_list_str = json.dumps([{"uuid": g.uuid, "type": g.type, "warm_index": g.warm_index} for g in filtered_garments[:50]])
-        
-        # Build enriched prompt with user preferences and rejection history
-        prompt_context = f"Temperature: {temperature}°C"
-        if preferences_context:
-            prompt_context += f"\n{preferences_context}"
-        if rejections_context:
-            prompt_context += f"\n{rejections_context}"
-        
-        prompt = f"""You are an expert fashion stylist. Generate {expected - len(outfits)} outfit suggestions.
-Garments available: {garment_list_str}
+            if "```json" in text:
+                start = text.rfind("```json") + len("```json")
+                end = text.find("```", start)
+                if end > start:
+                    json_str = text[start:end].strip()
 
-{prompt_context}
+            if json_str is None:
+                pos = text.rfind('{"outfits"')
+                if pos >= 0:
+                    brace_count = 0
+                    for i in range(pos, len(text)):
+                        if text[i] == "{":
+                            brace_count += 1
+                        elif text[i] == "}":
+                            brace_count -= 1
+                            if brace_count == 0:
+                                json_str = text[pos:i + 1]
+                                break
 
-Return valid JSON with structure: {{"outfits": [{{"garment_uuids": ["uuid1", "uuid2", "uuid3"]}}]}}
-Ensure each outfit has exactly 3 garments from the provided list and respects user preferences."""
-
-        try:
-            result = await llm.generate(prompt, temperature=0.5, max_tokens=512)
-            if result and isinstance(result, dict) and "text" in result:
-                # Try to parse LLM output as JSON
-                text = result.get("text", "")
-                # Simple extraction: look for JSON structure
+            if json_str:
                 try:
-                    json_start = text.find("{")
-                    json_end = text.rfind("}") + 1
-                    if json_start >= 0 and json_end > json_start:
-                        json_str = text[json_start:json_end]
-                        llm_outfits = json.loads(json_str)
-                        llm_list = llm_outfits.get("outfits", [])
-                        for llm_outfit in llm_list:
-                            uuids = llm_outfit.get("garment_uuids", [])
-                            if len(uuids) == 3 and all(any(g.uuid == u for g in filtered_garments) for u in uuids):
-                                if not _is_combination_rejected(uuids, rejected_combos):
-                                    garment_objs = [next(g for g in filtered_garments if g.uuid == u) for u in uuids]
-                                    outfits.append(Outfit(garments_list=[OutfitGarment(uuid=g.uuid) for g in garment_objs]))
-                                    logger.info("Generated LLM outfit %d: %s", len(outfits), uuids)
-                                    if len(outfits) >= expected:
-                                        break
+                    llm_outfits = json.loads(json_str)
                 except json.JSONDecodeError:
-                    logger.warning("Failed to parse LLM JSON output")
-        except Exception as exc:
-            logger.warning("LLM generation failed: %s", exc)
+                    logger.warning("Failed to parse LLM JSON: %s", json_str[:200])
+                    return SuggestionResponse(outfits=[])
 
-    # Phase 3: Return response
-    logger.info("Returning %d outfits (requested %d)", len(outfits), expected)
-    return SuggestionResponse(outfits=outfits)
+                llm_list = llm_outfits.get("outfits", [])
+                outfits = []
+                seen = set()
+
+                for llm_outfit in llm_list:
+                    if len(outfits) >= expected:
+                        break
+                    simple_ids = llm_outfit.get("garment_ids", [])
+                    uuids = [id_to_uuid.get(sid) for sid in simple_ids]
+                    uuids = [u for u in uuids if u is not None]
+
+                    if len(uuids) != 3:
+                        continue
+
+                    combo_key = frozenset(uuids)
+                    if combo_key in seen or _is_combination_rejected(uuids, rejected_combos):
+                        continue
+
+                    seen.add(combo_key)
+                    garment_objs = [next(g for g in filtered if g.uuid == u) for u in uuids]
+                    outfits.append(Outfit(garments_list=[OutfitGarment(uuid=g.uuid) for g in garment_objs]))
+                    logger.info("Generated outfit %d: %s", len(outfits), uuids)
+
+                logger.info("LLM produced %d outfits (requested %d)", len(outfits), expected)
+                return SuggestionResponse(outfits=outfits)
+            else:
+                logger.warning("No JSON found in LLM output: %s", text[:200])
+
+    except Exception as exc:
+        logger.warning("LLM generation failed: %s", exc)
+
+    return SuggestionResponse(outfits=[])
