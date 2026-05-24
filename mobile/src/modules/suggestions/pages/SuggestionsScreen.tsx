@@ -40,7 +40,7 @@ export default function SuggestionsScreen() {
   )
 
   return (
-    <View className='flex-1 bg-background px-4 pt-12'>
+    <View className='flex-1 bg-background pb-2 px-4 pt-12'>
       <View className='mb-4 flex-row items-end justify-between px-1'>
         <View>
           <Text variant='h1' className='text-left text-4xl'>

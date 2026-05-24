@@ -21,7 +21,7 @@ public class SuggestionClientConfig {
             GlobalHttpErrorHandler errorHandler) {
 
         RestClient restClient = builder
-                .baseUrl(properties.baseUrl())
+                .baseUrl(properties.baseUrl() + properties.processEndpoint())
                 .defaultStatusHandler(HttpStatusCode::isError,
                         (request, response) -> errorHandler.handle(response.getStatusCode(), response, ErrorCode.SUGGESTION_SERVICE_ERROR))
                 .build();

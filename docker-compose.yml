@@ -69,10 +69,10 @@ services:
       - GARMENT_PROCESSOR_BASE_URL=http://garment-processor:8082
       - GARMENT_PROCESSOR_PROCESS_ENDPOINT=/process-garments
       - GARMENT_PROCESSOR_TIMEOUT_SECONDS=${PROCESSOR_TIMEOUT_SECONDS}
-      - PROCESSOR_MODE=http
+      - PROCESSOR_MODE=hhtp
 
       # Suggestion Motor overrides
-      - SUGGESTION_MODE=mock
+      - SUGGESTION_MODE=http
       - SUGGESTION_BASE_URL=http://suggestion-motor:8083
       - SUGGESTION_PROCESS_ENDPOINT=/suggest
 
@@ -111,7 +111,44 @@ services:
       retries: 3
       start_period: 90s
 
+  suggestion-motor:
+    build:
+      context: ./suggestion-motor
+      args:
+        PORT: 8083
+    container_name: easypick-suggestion-motor
+    ports:
+      - '8083:8083'
+    depends_on:
+      - api
+    environment:
+      - EASYPICK_API_BASE_URL=http://api:8080/api/v1
+      - EASYPICK_REFRESH_TOKEN=${EASYPICK_REFRESH_TOKEN}
+      - EASYPICK_AUTH_REFRESH_ENDPOINT=/auth/refresh
+      - GARMENT_CONFIG_ENDPOINT=/garments/configurations
+      - LLM_BACKEND=${LLM_BACKEND:-cpu}
+      - LLM_MODEL_ID=google/gemma-2-2b-it
+      - HUGGINGFACE_ACCESS_TOKEN=${HUGGINGFACE_ACCESS_TOKEN}
+      - PORT=8083
+      - TRANSFORMERS_CACHE=/app/.cache/models
+      - HF_HOME=/app/.cache/huggingface
+    volumes:
+      - suggestion_motor_models:/app/.cache
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://localhost:8083/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
 volumes:
   pgdata:
   minio_data:
   garment_processor_models:
+  suggestion_motor_models:
