@@ -69,7 +69,7 @@ services:
       - GARMENT_PROCESSOR_BASE_URL=http://garment-processor:8082
       - GARMENT_PROCESSOR_PROCESS_ENDPOINT=/process-garments
       - GARMENT_PROCESSOR_TIMEOUT_SECONDS=${PROCESSOR_TIMEOUT_SECONDS}
-      - PROCESSOR_MODE=hhtp
+      - PROCESSOR_MODE=http
 
       # Suggestion Motor overrides
       - SUGGESTION_MODE=http
