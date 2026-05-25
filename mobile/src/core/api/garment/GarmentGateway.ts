@@ -13,12 +13,44 @@ export type UploadImageFile = {
   type: string
 }
 
+export type GetMyGarmentsParams = {
+  search?: string
+  categoryIds?: string[]
+  styleIds?: string[]
+  colorIds?: string[]
+}
+
+const serializeGarmentFilters = (params: GetMyGarmentsParams) => {
+  const searchParams = new URLSearchParams()
+
+  if (params.search?.trim()) {
+    searchParams.append('search', params.search.trim())
+  }
+
+  params.categoryIds?.forEach((id) => {
+    if (id?.trim()) searchParams.append('categoryIds', id.trim())
+  })
+
+  params.styleIds?.forEach((id) => {
+    if (id?.trim()) searchParams.append('styleIds', id.trim())
+  })
+
+  params.colorIds?.forEach((id) => {
+    if (id?.trim()) searchParams.append('colorIds', id.trim())
+  })
+
+  return searchParams.toString()
+}
+
 export const GarmentGateway = {
   /**
    * Fetches all garments for the authenticated user.
    */
-  getMyGarments: async (): Promise<SimpleGarment[]> => {
-    const response = await httpClient.get<ApiResponse<SimpleGarment[]>>(ApiRoutes.Garments.GetAll)
+  getMyGarments: async (params?: GetMyGarmentsParams): Promise<SimpleGarment[]> => {
+    const queryString = params ? serializeGarmentFilters(params) : ''
+    const url = queryString ? `${ApiRoutes.Garments.GetAll}?${queryString}` : ApiRoutes.Garments.GetAll
+
+    const response = await httpClient.get<ApiResponse<SimpleGarment[]>>(url)
 
     if (!response.data.success) {
       const code = response.data.message?.code ?? 0

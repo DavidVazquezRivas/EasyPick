@@ -81,7 +81,13 @@ public class GenerateSuggestionsUseCase {
 
             SuggestionEntity saved = suggestionRepository.save(suggestion);
 
-            results.add(new GeneratedSuggestionResponse(saved.getId(), saved.getName(), garmentsForResponse, saved.getStatus().name()));
+                results.add(new GeneratedSuggestionResponse(
+                    saved.getId(),
+                    saved.getName(),
+                    garmentsForResponse,
+                    saved.getStatus().name(),
+                    Boolean.TRUE.equals(saved.getIsFavorite())
+                ));
             idx++;
         }
 
@@ -98,7 +104,8 @@ public class GenerateSuggestionsUseCase {
                 suggestion.getId(),
                 suggestion.getName(),
                 garments,
-                suggestion.getStatus().name()
+            suggestion.getStatus().name(),
+            Boolean.TRUE.equals(suggestion.getIsFavorite())
         );
     }
 }

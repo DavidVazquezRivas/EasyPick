@@ -30,6 +30,27 @@ const common = {
     },
     placeholder: 'Placeholder screen',
   },
+  outfits: {
+    loading: 'Loading your saved outfits...',
+    tabs: {
+      saved: 'Saved',
+      favorites: 'Favorites',
+    },
+    detailTitle: 'Outfit details',
+    empty: {
+      saved: 'You have not saved any outfits yet.',
+      favorites: 'You do not have any favorite outfits yet.',
+    },
+    labels: {
+      saved: 'Saved',
+      favorite: 'Favorite',
+      pieces: '{{count}} pieces',
+    },
+    actions: {
+      favoriteOn: 'Mark as favorite',
+      favoriteOff: 'Remove from favorites',
+    },
+  },
   suggestions: {
     loading: 'Finding your outfit suggestions...',
     empty: 'No suggestions are available right now.',

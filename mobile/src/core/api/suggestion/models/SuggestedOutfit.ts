@@ -9,4 +9,5 @@ export type SuggestedOutfit = {
   name: string
   garments: SuggestedGarment[]
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | string
+  isFavorite: boolean
 }

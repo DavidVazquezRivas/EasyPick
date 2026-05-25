@@ -1,7 +1,6 @@
 package es.uib.easypick.garment.application.usecases;
 
 import es.uib.easypick.garment.application.entities.GarmentEntity;
-import es.uib.easypick.garment.application.entities.GarmentStatus;
 import es.uib.easypick.garment.application.helpers.GarmentTestBuilder;
 import es.uib.easypick.garment.infrastructure.repositories.GarmentRepository;
 import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
@@ -12,6 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Collections;
 import java.util.List;
@@ -58,10 +59,10 @@ class GetUserGarmentsUseCaseTest {
         List<GarmentEntity> repositoryResult = List.of(winterJacket, summerShorts);
 
         // Mock the repository behavior
-        when(repository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED)).thenReturn(repositoryResult);
+        when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(repositoryResult);
 
         // Act
-        List<SimpleGarmentResponse> result = useCase.execute(userId);
+        List<SimpleGarmentResponse> result = useCase.execute(userId, new GetUserGarmentsFilters(null, null, null, null));
 
         // Assert
         assertNotNull(result, "The returned list should never be null");
@@ -71,22 +72,22 @@ class GetUserGarmentsUseCaseTest {
         assertEquals("Summer Shorts", result.get(1).name(), "The second garment name should be mapped correctly");
 
         // Verify repository interaction
-        verify(repository, times(1)).findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED);
+        verify(repository, times(1)).findAll(any(Specification.class), any(Sort.class));
     }
 
     @Test
     void execute_ShouldReturnEmptyList_WhenUserHasNoGarments() {
         // Arrange
-        when(repository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED)).thenReturn(Collections.emptyList());
+        when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(Collections.emptyList());
 
         // Act
-        List<SimpleGarmentResponse> result = useCase.execute(userId);
+        List<SimpleGarmentResponse> result = useCase.execute(userId, new GetUserGarmentsFilters(null, null, null, null));
 
         // Assert
         assertNotNull(result, "Even if there are no garments, it should return an empty list, not null");
         assertTrue(result.isEmpty(), "The returned list should be empty");
 
         // Verify repository interaction
-        verify(repository, times(1)).findByUserIdAndStatusOrderByUpdatedAtDesc(userId, GarmentStatus.CONFIRMED);
+        verify(repository, times(1)).findAll(any(Specification.class), any(Sort.class));
     }
 }

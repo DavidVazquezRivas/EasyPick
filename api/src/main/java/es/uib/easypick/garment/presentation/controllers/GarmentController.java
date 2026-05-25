@@ -5,6 +5,7 @@ import es.uib.easypick.core.presentation.web.response.ApiResponse;
 import es.uib.easypick.garment.application.usecases.AddUserGarmentUseCase;
 import es.uib.easypick.garment.application.usecases.GetGarmentByIdUseCase;
 import es.uib.easypick.garment.application.usecases.GetUserGarmentsUseCase;
+import es.uib.easypick.garment.application.usecases.GetUserGarmentsFilters;
 import es.uib.easypick.garment.application.usecases.PatchGarmentUseCase;
 import es.uib.easypick.garment.presentation.dtos.responses.CompleteGarmentResponse;
 import es.uib.easypick.garment.presentation.dtos.responses.SimpleGarmentResponse;
@@ -34,9 +35,14 @@ public class GarmentController {
 
     @GetMapping()
     public ResponseEntity<ApiResponse<List<SimpleGarmentResponse>>> getUserGarments(
-            @AuthenticatedUserId UUID userId
+            @AuthenticatedUserId UUID userId,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "categoryIds", required = false) List<String> categoryIds,
+            @RequestParam(value = "styleIds", required = false) List<String> styleIds,
+            @RequestParam(value = "colorIds", required = false) List<String> colorIds
     ) {
-        List<SimpleGarmentResponse> response = getUserGarmentsUseCase.execute(userId);
+        GetUserGarmentsFilters filters = new GetUserGarmentsFilters(search, categoryIds, styleIds, colorIds);
+        List<SimpleGarmentResponse> response = getUserGarmentsUseCase.execute(userId, filters);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

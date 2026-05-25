@@ -16,6 +16,7 @@ export const usePatchSuggestion = () => {
     onSuccess: () => {
       // Invalidate all suggestions queries so they refetch when user returns to the page
       queryClient.invalidateQueries({ queryKey: QueryKeys.suggestions.all })
+      queryClient.invalidateQueries({ queryKey: QueryKeys.suggestions.library })
     },
   })
 }

@@ -6,6 +6,8 @@ import { I18nextProvider } from 'react-i18next'
 import { AuthProvider } from '@/core/auth/AuthContext'
 import { ErrorBoundary } from '@/shared/components/layout/ErrorBoundary'
 import i18next from '@/core/i18n'
+import { useColorScheme } from 'nativewind'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +31,22 @@ interface AppProviderProps {
 }
 
 export const AppProvider = ({ children }: AppProviderProps) => {
+  const { setColorScheme } = useColorScheme()
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem('app_theme')
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          setColorScheme(savedTheme)
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error)
+      }
+    }
+    loadTheme()
+  }, [setColorScheme])
+
   useEffect(() => {
     if (Platform.OS === 'web') {
       return

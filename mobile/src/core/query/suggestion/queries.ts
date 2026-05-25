@@ -20,6 +20,15 @@ export const getSuggestionsQueryOptions = (location: SuggestionLocation | null) 
 
 export const useGetSuggestions = (location: SuggestionLocation | null) => useQuery(getSuggestionsQueryOptions(location))
 
+export const getUserOutfitsQueryOptions = () =>
+  queryOptions<SuggestedOutfit[]>({
+    queryKey: QueryKeys.suggestions.library,
+    queryFn: apiClient.suggestion.getUserOutfits,
+    staleTime: 1000 * 60 * 5,
+  })
+
+export const useGetUserOutfits = () => useQuery(getUserOutfitsQueryOptions())
+
 export const getSuggestionRejectionReasonsQueryOptions = () =>
   queryOptions<RejectionReason[]>({
     queryKey: QueryKeys.suggestions.rejectionReasons,

@@ -8,4 +8,5 @@ export type SuggestionRejectionPayload = {
 export type PatchSuggestionRequest = {
   status?: SuggestionStatus
   rejection?: SuggestionRejectionPayload
+  isFavorite?: boolean
 }
